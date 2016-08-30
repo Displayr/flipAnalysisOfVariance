@@ -90,7 +90,7 @@ CompareMeans <- function(outcome,
         #     rows[[i]] <- tidyFactor(rows[[i]])
         # row.variable.levels <- sapply()
     }
-    class(results) <- "CompareMeans"
+    class(results) <- c("CompareMeans", class(results))
     #results$column.names <- column.names
     attr(results, "compare") <- compare
     results
