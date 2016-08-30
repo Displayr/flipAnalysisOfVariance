@@ -1,7 +1,7 @@
 context("CompareMeans")
 data(cola, package = "flipExampleData")
 
-CompareMeans(cola$Q4_A, cola$Q3, compare = "Columns")#, type = "Linear")
+CompareMeans(cola$Q4_A, cola$Q3, compare = "Columns")
 CompareMultipleMeans(list(cola$Q4_A, cola$Q4_B, cola$Q4_C), cola$Q3, compare = "Columns")#, type = "Linear")
 
 
