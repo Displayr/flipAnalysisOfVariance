@@ -6,7 +6,8 @@
 Performs statistical tests comparing means of an outcome variable.}
 \usage{
 CompareMeans(outcome, columns, Rows, compare = "Columns",
-  correction = "False Discovery Rate", show.labels = TRUE, ...)
+  correction = "False Discovery Rate", show.labels = TRUE,
+  output = "Pretty", ...)
 }
 \arguments{
 \item{outcome}{The outcome variable.}
@@ -23,9 +24,9 @@ CompareMeans(outcome, columns, Rows, compare = "Columns",
 \item{show.labels}{Shows the variable labels, as opposed to the labels, in the outputs, where a
 variables label is an attribute (e.g., attr(foo, "label")).}
 
-\item{rows}{The list of factors representing the rows.}
+\item{output}{One of \code{"Pretty"} or \code{"Table"}.}
 
-\item{output}{When \code{TRUE}, all pairs of columns are compared.}
+\item{rows}{The list of factors representing the rows.}
 
 \item{subset}{An optional vector specifying a subset of observations to be
 used in the fitting process, or, the name of a variable in \code{data}. It
@@ -48,9 +49,6 @@ name of a variable in \code{data}. It may not be an expression.}
 \description{
 \code{CompareMeans}
 Performs statistical tests comparing means of an outcome variable.
-}
-\details{
-\code{"free"}
 }
 \references{
 Bretz,Frank, Torsten Hothorn and Peter Westfall (2010), Multiple Comparisons Using R, CRC Press, Boca Raton.

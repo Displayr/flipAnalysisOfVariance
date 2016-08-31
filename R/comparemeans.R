@@ -8,7 +8,7 @@
 #' "False Discovery Rate", "Benjamini & Yekutieli", "Bonferroni",
 #' "Free Combinations"} (Westfall et al. 1999), \code{"Hochberg", "Holm",
 #' "Hommel", "Single-step"} (Bretz et al. 2010) \code{"Shaffer"}, and \code{"Westfall"}.
-#' @param output  When \code{TRUE}, all pairs of columns are compared.
+#' @param output One of \code{"Pretty"} or \code{"Table"}.
 #' @param subset An optional vector specifying a subset of observations to be
 #'   used in the fitting process, or, the name of a variable in \code{data}. It
 #'   may not be an expression. \code{subset} may not
@@ -25,9 +25,6 @@
 #'   \code{"Multiple imputation"}.
 #' @param show.labels Shows the variable labels, as opposed to the labels, in the outputs, where a
 #' variables label is an attribute (e.g., attr(foo, "label")).
-
-
-#' @details \code{"free"}
 #' @references
 #' Bretz,Frank, Torsten Hothorn and Peter Westfall (2010), Multiple Comparisons Using R, CRC Press, Boca Raton.
 #' Benjamini, Y., and Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. Journal of the Royal Statistical Society Series B 57, 289–300.
@@ -52,7 +49,9 @@ CompareMeans <- function(outcome,
                          Rows,
                          compare = "Columns",
                          correction = "False Discovery Rate",
-                         show.labels = TRUE, ...)
+                         show.labels = TRUE,
+                         output = "Pretty",
+                         ...)
 {
     correction <- switch(correction, "Holm" = "holm", "Hochberg" = "hochberg", "Hommel" = "hommel", "Bonferroni" = "bonferroni",
         "Benjamini & Yekutieli" = "BY","False Discovery Rate" = "fdr", "None" = "none", "Single-step" = "single-step",
@@ -81,6 +80,9 @@ CompareMeans <- function(outcome,
         result$grand.mean <- GrandMean(regression)
         result$n <- table(columns[regression$subset])
         result$outcome.label <- outcome.label
+        result$r.squared <- regression$summary$r.squared
+        f <- regression$summary$fstatistic
+        result$p <- 1 - pf(f[1], f[2], f[3])
         results <- list(result)
         names(results)[1] = outcome.name
     }
@@ -93,6 +95,7 @@ CompareMeans <- function(outcome,
     class(results) <- c("CompareMeans", class(results))
     #results$column.names <- column.names
     attr(results, "compare") <- compare
+    attr(results, "output") <- output
     results
 }
 
@@ -119,31 +122,86 @@ CompareMultipleMeans <- function(outcomes,
 
 
 #' @export
-print.CompareMeans <- function(x, p.cutoff = 0.5, ...)
+print.CompareMeans <- function(x, p.cutoff = 0.05, ...)
 {
-    rows <- printRow(x[[1]], p.cutoff)
+    # Extacting information and creating a table.
+    rows <- extractRowData(x[[1]])
+    col.names <- names(rows)
     n.rows <- length(x)
     if (n.rows > 1)
         for (i in 2:n.rows)
-            rows <- rbind(rows, printRow(x[[i]], p.cutoff))
-    rows
-}
-
-printRow <- function(row, p.cutoff)
-{
-    p <- row$test$pvalues
-    column.names <- names(row$n)#x$column.names
-    n.columns <- length(p)
-    coefs <- row$test$coefficients
-    means <- row$grand.mean + coefs
-    arrows <- rep("", n.columns)
-    result <- matrix("", 2, n.columns)
-    rownames(result) <- c(row$outcome.label, "")
-    colnames(result) <- paste0(column.names, "\n", "n = ", row$n)
-    result[1, ] <- format(round(means, 2), nsmall = 2)
-    result[2, coefs < 0 & p <= p.cutoff] <- "  ⇓"
-    result[2, coefs > 0 & p <= p.cutoff] <- "  ⇑"
+            rows <- rbind(rows, extractRowData(x[[i]]))
+    row.names <- sapply(x, function(x) x$outcome.label)
+    df <- matrix(rows, nrow = n.rows, dimnames = list(row.names, col.names))
+    df <- as.data.frame(df)
+    # Creating the column names.
+    n <- x[[1]]$n
+    k <- length(n)
+    column.names <- names(n)
+    attr(df, "column.names") <- c(paste0(column.names, "\n", "n = ", x[[1]]$n), "R-Squared", "p")
+    print(df)
+    result <- prettyMeanComparisons(df,"My footer", title = "my title", subtitle = "Sub-title")
     print(result)
+    #rownames(rows) <- sapply(x, function(x) x$outcome.label)
+    #colnames(rows) <- LETTERS[1:ncol(rows)]
+    #print(rows)
+    # output <- attr(x, "output")
+    # if (output == "Pretty")
+    # {
+    # }
+    # else
+    # {
+    #     rows <- printRow(x[[1]], p.cutoff)
+    #     n.rows <- length(x)
+    #     if (n.rows > 1)
+    #         for (i in 2:n.rows)
+    #             rows <- rbind(rows, printRow(x[[i]], p.cutoff))
+    # }
+    # print("dog")
+    # rows
+}
+#
+# printRow <- function(row, p.cutoff)
+# {
+#     p <- row$test$pvalues
+#     column.names <- names(row$n)#x$column.names
+#     n.columns <- length(p)
+#     coefs <- row$test$coefficients
+#     means <- row$grand.mean + coefs
+#     arrows <- rep("", n.columns)
+#     result <- matrix("", 2, n.columns)
+#     rownames(result) <- c(row$outcome.label, "")
+#     colnames(result) <- paste0(column.names, "\n", "n = ", row$n)
+#     result[1, ] <- format(round(means, 2), nsmall = 2)
+#     result[2, coefs < 0 & p <= p.cutoff] <- "  ⇓"
+#     result[2, coefs > 0 & p <= p.cutoff] <- "  ⇑"
+#     print(result)
+# }
+
+extractRowData <- function(row)
+{
+    #column.names <- names(row$n)#x$column.names
+    #n.columns <- length(p)
+    coefs <- row$test$coefficients
+    k <- length(coefs)
+    names(coefs) <- LETTERS[1:k]
+    means <- row$grand.mean + coefs
+    p <- row$test$pvalues
+    names(p) <- paste0(LETTERS[1:k], "1")
+    p[coefs < 0] <- -p[coefs < 0] # Encoding direction via a negative sign on the p-value.
+    result <- c(means, p, rsquared = row$r.squared, pvalue = as.numeric(row$p))
+    result
+
+#
+#
+#     arrows <- rep("", n.columns)
+#     result <- matrix("", 2, n.columns)
+#     rownames(result) <- c(row$outcome.label, "")
+#     colnames(result) <- paste0(column.names, "\n", "n = ", row$n)
+#     result[1, ] <- format(round(means, 2), nsmall = 2)
+#     result[2, coefs < 0 & p <= p.cutoff] <- "  ⇓"
+#     result[2, coefs > 0 & p <= p.cutoff] <- "  ⇑"
+#     print(result)
 }
 
 #' @importFrom flipTransformations Factor
