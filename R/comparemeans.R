@@ -63,7 +63,7 @@ CompareMeans <- function(outcome,
     #column.names <- levels(columns)
     #levels(columns) <- 1:n.columns # Using integers to make it easier to match things.
     # Should be removed when hooking up GLM
-    outcome <- AsNumeric(outcome, binary = FALSE)
+    outcome <- if (is.factor(outcome)) AsNumeric(outcome, binary = FALSE) else outcome
     if (missing(Rows))
     {
         if (any(compare %in% c("Rows", "All")))
@@ -92,13 +92,16 @@ CompareMeans <- function(outcome,
         #     rows[[i]] <- tidyFactor(rows[[i]])
         # row.variable.levels <- sapply()
     }
-    class(results) <- c("CompareMeans", class(results))
-    #results$column.names <- column.names
+    attr(results, "outcome.label") <- outcome.label
+    attr(results, "column.names") <- levels(columns)
     attr(results, "compare") <- compare
     attr(results, "output") <- output
     results
 }
 
+#' \code{CompareMultipleMeans}
+#' Compares means of multiple variables.
+#' @param outcome The outcome variable.
 
 #' @export
 CompareMultipleMeans <- function(outcomes,
@@ -111,98 +114,68 @@ CompareMultipleMeans <- function(outcomes,
     n.outcome.variables <- length(outcomes)
     results <- list()
     for (i in 1:n.outcome.variables)
-    {
-        row <- CompareMeans(outcomes[[i]], columns, Rows, compare, correction, show.labels, ...)
-        results[[i]] <- row[[1]]
-    }
-    class(results) <- "CompareMeans"
+        results[[i]] <- CompareMeans(outcomes[[i]], columns, Rows, compare, correction, show.labels, ...)
+    attr(results, "column.names") <- attr(results[[1]], "column.names")
+    names(results) <- sapply(outcomes, function(x) deparse(substitute(x)))
+    class(results) <- c("CompareMultipleMeans", class(results))
     results
 }
 
-
-
-#' @export
-print.CompareMeans <- function(x, p.cutoff = 0.05, ...)
-{
-    # Extacting information and creating a table.
-    rows <- extractRowData(x[[1]])
-    col.names <- names(rows)
-    n.rows <- length(x)
-    if (n.rows > 1)
-        for (i in 2:n.rows)
-            rows <- rbind(rows, extractRowData(x[[i]]))
-    row.names <- sapply(x, function(x) x$outcome.label)
-    df <- matrix(rows, nrow = n.rows, dimnames = list(row.names, col.names))
-    df <- as.data.frame(df)
-    # Creating the column names.
-    n <- x[[1]]$n
-    k <- length(n)
-    column.names <- names(n)
-    attr(df, "column.names") <- c(paste0(column.names, "\n", "n = ", x[[1]]$n), "R-Squared", "p")
-    print(df)
-    result <- prettyMeanComparisons(df,"My footer", title = "my title", subtitle = "Sub-title")
-    print(result)
-    #rownames(rows) <- sapply(x, function(x) x$outcome.label)
-    #colnames(rows) <- LETTERS[1:ncol(rows)]
-    #print(rows)
-    # output <- attr(x, "output")
-    # if (output == "Pretty")
-    # {
-    # }
-    # else
-    # {
-    #     rows <- printRow(x[[1]], p.cutoff)
-    #     n.rows <- length(x)
-    #     if (n.rows > 1)
-    #         for (i in 2:n.rows)
-    #             rows <- rbind(rows, printRow(x[[i]], p.cutoff))
-    # }
-    # print("dog")
-    # rows
-}
-#
-# printRow <- function(row, p.cutoff)
-# {
-#     p <- row$test$pvalues
-#     column.names <- names(row$n)#x$column.names
-#     n.columns <- length(p)
-#     coefs <- row$test$coefficients
-#     means <- row$grand.mean + coefs
-#     arrows <- rep("", n.columns)
-#     result <- matrix("", 2, n.columns)
-#     rownames(result) <- c(row$outcome.label, "")
-#     colnames(result) <- paste0(column.names, "\n", "n = ", row$n)
-#     result[1, ] <- format(round(means, 2), nsmall = 2)
-#     result[2, coefs < 0 & p <= p.cutoff] <- "  ⇓"
-#     result[2, coefs > 0 & p <= p.cutoff] <- "  ⇑"
-#     print(result)
-# }
-
 extractRowData <- function(row)
 {
-    #column.names <- names(row$n)#x$column.names
-    #n.columns <- length(p)
     coefs <- row$test$coefficients
     k <- length(coefs)
     names(coefs) <- LETTERS[1:k]
     means <- row$grand.mean + coefs
-    p <- row$test$pvalues
-    names(p) <- paste0(LETTERS[1:k], "1")
-    p[coefs < 0] <- -p[coefs < 0] # Encoding direction via a negative sign on the p-value.
-    result <- c(means, p, rsquared = row$r.squared, pvalue = as.numeric(row$p))
-    result
-
-#
-#
-#     arrows <- rep("", n.columns)
-#     result <- matrix("", 2, n.columns)
-#     rownames(result) <- c(row$outcome.label, "")
-#     colnames(result) <- paste0(column.names, "\n", "n = ", row$n)
-#     result[1, ] <- format(round(means, 2), nsmall = 2)
-#     result[2, coefs < 0 & p <= p.cutoff] <- "  ⇓"
-#     result[2, coefs > 0 & p <= p.cutoff] <- "  ⇑"
-#     print(result)
+    ps <- row$test$pvalues
+    names(ps) <- paste0(LETTERS[1:k], "1")
+    return(list(means = means,
+           zs = row$test$tstat,
+           ps = ps,
+           r.squared = row$r.squared,
+           overall.p = as.numeric(row$p)))
 }
+
+#' \code{CompareMeans}
+#' Performs statistical tests comparing means of an outcome variable.
+#' @param outcome The outcome variable.
+#' @export
+MeansTables <- function(x)
+{
+    means <- NULL
+    zs <- NULL
+    ps <- NULL
+    r.squared <- NULL
+    overall.p <- NULL
+    for (i in 1:length(x))
+    {
+        row <- extractRowData(x[[i]][[1]])
+        means <- rbind(means, row$means)
+        zs <- rbind(zs, row$zs)
+        ps <- rbind(ps, row$ps)
+        r.squared <- c(r.squared, row$r.squared)
+        overall.p <- c(overall.p, row$overall.p)
+    }
+    rownames(means) <- sapply(x, function(x) attr(x, "outcome.label"))
+    column.names <- paste0(attr(x, "column.names"), "<br>","n = ",x[[1]][[1]]$n)
+    return(list(means = means,
+                zs = zs,
+                ps = ps,
+                r.squared = r.squared,
+                overall.p = overall.p,
+                column.names = column.names))
+}
+
+#' @importFrom flipFormat MeanComparisonsTable
+#' @export
+print.CompareMultipleMeans <- function(x, p.cutoff = 0.05, ...)
+{
+    m <- MeansTables(x)
+    result <- MeanComparisonsTable(m$means, m$zs, m$ps, m$r.squared, m$overall.p, m$column.names, "", title = "Table of Means", subtitle = "")
+    print(result)
+}
+
+
 
 #' @importFrom flipTransformations Factor
 tidyFactor <- function(x)

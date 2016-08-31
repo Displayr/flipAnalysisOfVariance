@@ -1,17 +1,28 @@
-#' PrettyMeanComparisons
+#' MeanComparisonsTable
 #'
 #' Creates a pretty formattable table.
-#' @param means A table of regression coefficients, standard errors, z or t statistics, and p-values.
+#' @param means The means to be shown on the table.
+#' @param zs Z-Statistics. Only used to determine the color of the fonts.
+#' @param ps P-Values associated with each mean. Used to determine whether or not to color the cells.
+#' @param r.squared The r-squared value for the regression predicting the row variable by the columns.
+#' @param overall.p The P-value for the regression (e.g., an ANOVA F-Test for a linear model).
+#' @param column.names The names to put on the columns of the table (other than for the R-Squared and overall P).
 #' @param footer Text to place in the footer of the table.
 #' @param title The title for the table.
 #' @param subtitle Subtitle for the table.
 #' @references This is based on code written by Kenton Russell.
 #' @importFrom rmarkdown html_dependency_jquery html_dependency_bootstrap
-#' @importFrom formattable format_table formatter digits style gradient csscolor as.htmlwidget formattable
+#' @importFrom formattable format_table formatter digits style gradient csscolor as.htmlwidget formattable color_tile
 #' @importFrom htmltools tags tagList browsable attachDependencies HTML
-prettyMeanComparisons <- function(means,footer, title = "", subtitle = "")
+MeanComparisonsTable <- function(means, zs, ps, r.squared, overall.p, column.names, footer, title = "", subtitle = "")
 {
-    k <- (ncol(means) - 2) / 2  #Number of alternatives.
+    # Putting all the tables into a single data.frame, as required by formattable.
+    ps[zs < 0] <- -ps[zs < 0]
+    means <- as.data.frame(cbind(means, ps, rsquared = r.squared, pvalue = overall.p))
+    column.names <- c(column.names, "R-Squared", "<i>p</i>")
+
+
+    k <- length(column.names) #Number of being compared.
 
     # Set the number of decimails
     fixedDigits <- function(x, n = 2) {
@@ -84,7 +95,6 @@ prettyMeanComparisons <- function(means,footer, title = "", subtitle = "")
         p.values <- rep(FALSE, k)
         names(p.values) <- paste0(LETTERS[1:k],"1")
         formatters <- c(formatters, as.list(p.values))
-        column.names <- attr(means, "column.names")
         subtitle.format <- if (subtitle == "") NULL else tags$h4(class=".h4",
             style="color:green; text-align:left;line-height:0.75;", subtitle)
         title.format <- if (title == "") NULL else tags$h2(class=".h3",style="color:blue; text-align:center;",title)
