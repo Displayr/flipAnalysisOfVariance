@@ -43,6 +43,7 @@
 #' @importFrom flipRegression Regression GrandMean
 #' @importFrom flipTransformations AsNumeric
 #' @importFrom multcomp glht mcp adjusted
+#' @importFrom survey regTermTest
 #' @export
 CompareMeans <- function(outcome,
                          columns,
@@ -51,13 +52,14 @@ CompareMeans <- function(outcome,
                          correction = "False Discovery Rate",
                          show.labels = TRUE,
                          output = "Pretty",
+                         outcome.name = NULL,
                          ...)
 {
     correction <- switch(correction, "Holm" = "holm", "Hochberg" = "hochberg", "Hommel" = "hommel", "Bonferroni" = "bonferroni",
         "Benjamini & Yekutieli" = "BY","False Discovery Rate" = "fdr", "None" = "none", "Single-step" = "single-step",
         "Shaffer" = "Shaffer", "Westfall" = "Westfall", "Free Combinations" = "free")
     columns <- tidyFactor(columns)
-    outcome.name = deparse(substitute(outcome))
+    outcome.name = if(is.null(outcome.name)) deparse(substitute(outcome)) else outcome.name
     outcome.label = if (show.labels & !is.null(attr(outcome, "label"))) attr(outcome, "label") else outcome.name
     n.columns <- nlevels(columns)
     #column.names <- levels(columns)
@@ -81,8 +83,14 @@ CompareMeans <- function(outcome,
         result$n <- table(columns[regression$subset])
         result$outcome.label <- outcome.label
         result$r.squared <- regression$summary$r.squared
-        f <- regression$summary$fstatistic
-        result$p <- 1 - pf(f[1], f[2], f[3])
+        print(model)
+        if (inherits(model, "svyglm"))
+            result$p <- regTermTest(model, outcome.name)$p
+        else
+        {
+            f <- regression$summary$fstatistic
+            result$p <- 1 - pf(f[1], f[2], f[3])
+        }
         results <- list(result)
         names(results)[1] = outcome.name
     }
@@ -112,9 +120,15 @@ CompareMultipleMeans <- function(outcomes,
                          show.labels = TRUE, ...)
 {
     n.outcome.variables <- length(outcomes)
+    outcome.names <- names(outcomes)
     results <- list()
     for (i in 1:n.outcome.variables)
-        results[[i]] <- CompareMeans(outcomes[[i]], columns, Rows, compare, correction, show.labels, ...)
+        results[[i]] <- CompareMeans(outcomes[[i]], columns, Rows,
+                                     compare,
+                                     correction,
+                                     show.labels,
+                                     outcome.name = (outcome.names[i]),
+                                     ...)
     attr(results, "column.names") <- attr(results[[1]], "column.names")
     names(results) <- sapply(outcomes, function(x) deparse(substitute(x)))
     class(results) <- c("CompareMultipleMeans", class(results))
@@ -165,16 +179,6 @@ MeansTables <- function(x)
                 overall.p = overall.p,
                 column.names = column.names))
 }
-
-#' @importFrom flipFormat MeanComparisonsTable
-#' @export
-print.CompareMultipleMeans <- function(x, p.cutoff = 0.05, ...)
-{
-    m <- MeansTables(x)
-    result <- MeanComparisonsTable(m$means, m$zs, m$ps, m$r.squared, m$overall.p, m$column.names, "", title = "Table of Means", subtitle = "")
-    print(result)
-}
-
 
 
 #' @importFrom flipTransformations Factor

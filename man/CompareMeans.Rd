@@ -7,7 +7,7 @@ Performs statistical tests comparing means of an outcome variable.}
 \usage{
 CompareMeans(outcome, columns, Rows, compare = "Columns",
   correction = "False Discovery Rate", show.labels = TRUE,
-  output = "Pretty", ...)
+  output = "Pretty", outcome.name = NULL, ...)
 }
 \arguments{
 \item{outcome}{The outcome variable.}
