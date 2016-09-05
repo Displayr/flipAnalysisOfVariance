@@ -75,7 +75,6 @@ CompareMeans <- function(outcome,
         # model$outcome.name <- regression$outcome.variable
         # model$weights <- regression$outcome.variable
         model <- regression$original
-        #print(model)
         contrasts <- mcp(columns = switch(compare, "Columns pairwise" = "Tukey", "Columns" = "GrandMean"))
         comparisons <- glht(model, linfct = contrasts)
         result <- summary(comparisons, test = adjusted(type = correction))
@@ -83,7 +82,6 @@ CompareMeans <- function(outcome,
         result$n <- table(columns[regression$subset])
         result$outcome.label <- outcome.label
         result$r.squared <- regression$summary$r.squared
-        print(model)
         if (inherits(model, "svyglm"))
             result$p <- regTermTest(model, outcome.name)$p
         else
@@ -134,6 +132,25 @@ CompareMultipleMeans <- function(outcomes,
     class(results) <- c("CompareMultipleMeans", class(results))
     results
 }
+
+#' @importFrom flipFormat MeanComparisonsTable
+#' @export
+print.CompareMultipleMeans <- function(x, ...)
+{
+    mt <- MeansTables(x)
+    mct <- MeanComparisonsTable(
+        means = mt$means,
+        zs = mt$zs,
+        ps = mt$ps,
+        r.squared = mt$r.squared,
+        overall.p = mt$overall.p,
+        column.names = mt$column.names,
+        footer = ""
+    )
+    print(mct)
+    invisible(x)
+}
+
 
 extractRowData <- function(row)
 {
