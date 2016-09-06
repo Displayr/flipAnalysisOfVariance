@@ -70,7 +70,14 @@ CompareMeans <- function(outcome,
     {
         if (any(compare %in% c("Rows", "All")))
             stop("To compare 'Rows' or 'All', you need to specify an input for 'Rows'.")
-        regression <- Regression(outcome ~ columns, ...)
+
+        t <- if (is.null(list(...)$type)) "Linear" else list(...)$type
+        m <- if (is.null(list(...)$missing)) "Exclude cases with missing data" else list(...)$missing
+        regression <- Regression(outcome ~ columns,
+                                 weights = list(...)$weights,
+                                 subset = list(...)$subset,
+                                type = t,
+                                 missing = m)
         # model$outcome.name <- outcome.name
         # model$outcome.name <- regression$outcome.variable
         # model$weights <- regression$outcome.variable
