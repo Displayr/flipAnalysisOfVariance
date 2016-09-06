@@ -81,9 +81,11 @@ CompareMeans <- function(outcome,
         result$grand.mean <- GrandMean(regression)
         result$n <- table(columns[regression$subset])
         result$outcome.label <- outcome.label
-        result$r.squared <- regression$summary$r.squared
+        result$r.squared <- regression$r.squared
         if (inherits(model, "svyglm"))
-            result$p <- regTermTest(model, outcome.name)$p
+        {
+            result$p <- regTermTest(model, "columns")$p
+        }
         else
         {
             f <- regression$summary$fstatistic
