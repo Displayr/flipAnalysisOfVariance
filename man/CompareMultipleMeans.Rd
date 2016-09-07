@@ -5,7 +5,7 @@
 \title{\code{CompareMultipleMeans}
 Compares means of multiple variables.}
 \usage{
-CompareMultipleMeans(outcomes, columns, Rows, compare = "Columns",
+CompareMultipleMeans(outcomes, columns, Rows = NULL, compare = "Columns",
   correction = "False Discovery Rate", show.labels = TRUE, ...)
 }
 \arguments{

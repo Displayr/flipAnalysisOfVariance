@@ -41,13 +41,14 @@
 #' P. H. Westfall, R. D. Tobias, D. Rom, R. D. Wolfinger, Y. Hochberg (1999). Multiple Comparisons and Multiple Tests Using the SAS System. Cary, NC: SAS Institute Inc.
 #' Wright, S. P. (1992). Adjusted P-values for simultaneous inference. Biometrics 48, 1005–1013.
 #' @importFrom flipRegression Regression GrandMean
-#' @importFrom flipTransformations AsNumeric
+#' @importFrom flipTransformations AsNumeric Factor
 #' @importFrom multcomp glht mcp adjusted
+#' @importFrom flipFormat Labels
 #' @importFrom survey regTermTest
 #' @export
 CompareMeans <- function(outcome,
                          columns,
-                         Rows,
+                         Rows = NULL,
                          compare = "Columns",
                          correction = "False Discovery Rate",
                          show.labels = TRUE,
@@ -55,6 +56,36 @@ CompareMeans <- function(outcome,
                          outcome.name = NULL,
                          ...)
 {
+    if (length(Rows) == 1)
+    {
+        variable <- Factor(Rows[[1]])
+        variable.name <- names(Rows)
+        levs <- levels(variable)
+        k <- nlevels(variable)
+        outcomes <- vector("list")
+        for (i in 1:k)
+        {
+            temp.outcome <- outcome
+            print(class(outcome))
+            lev <- levs[k]
+            temp.outcome[variable != lev | is.na(variable)] <- NA
+            nm <- paste0(Labels(outcome), ": ", lev)
+            attr(temp.outcome, "label") <- nm
+            print(table(temp.outcome))
+            print(i)
+            print(outcomes)
+            outcomes[[i]] <- temp.outcome
+            names(outcomes)[i] <- nm
+
+        }
+        return(CompareMultipleMeans(outcomes = outcomes,
+                                     columns = columns,
+                                     Rows = NULL,
+                                     compare = compare,
+                                     correction = correction,
+                                     show.labels = show.labels,
+                                    ...))
+    }
     correction <- switch(correction, "Holm" = "holm", "Hochberg" = "hochberg", "Hommel" = "hommel", "Bonferroni" = "bonferroni",
         "Benjamini & Yekutieli" = "BY","False Discovery Rate" = "fdr", "None" = "none", "Single-step" = "single-step",
         "Shaffer" = "Shaffer", "Westfall" = "Westfall", "Free Combinations" = "free")
@@ -66,7 +97,7 @@ CompareMeans <- function(outcome,
     #levels(columns) <- 1:n.columns # Using integers to make it easier to match things.
     # Should be removed when hooking up GLM
     outcome <- if (is.factor(outcome)) AsNumeric(outcome, binary = FALSE) else outcome
-    if (missing(Rows))
+    if (is.null(Rows))
     {
         if (any(compare %in% c("Rows", "All")))
             stop("To compare 'Rows' or 'All', you need to specify an input for 'Rows'.")
@@ -121,7 +152,7 @@ CompareMeans <- function(outcome,
 #' @export
 CompareMultipleMeans <- function(outcomes,
                          columns,
-                         Rows,
+                         Rows = NULL,
                          compare = "Columns",
                          correction = "False Discovery Rate",
                          show.labels = TRUE, ...)

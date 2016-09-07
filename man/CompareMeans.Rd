@@ -5,7 +5,7 @@
 \title{\code{CompareMeans}
 Performs statistical tests comparing means of an outcome variable.}
 \usage{
-CompareMeans(outcome, columns, Rows, compare = "Columns",
+CompareMeans(outcome, columns, Rows = NULL, compare = "Columns",
   correction = "False Discovery Rate", show.labels = TRUE,
   output = "Pretty", outcome.name = NULL, ...)
 }

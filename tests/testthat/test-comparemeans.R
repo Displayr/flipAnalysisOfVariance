@@ -1,9 +1,13 @@
 context("CompareMeans")
 
 test_that("Print", {
-
+    # One dependnet variable, one factor
     data(cola, package = "flipExampleData")
     CompareMeans(cola$Q4_A, cola$Q3, compare = "Columns", weights = runif(length(cola$Q4_A)))
+
+    # One dependnet variable, two factors
+    data(cola, package = "flipExampleData")
+    CompareMeans(cola$Q4_A, cola$Q3, list(cola$Q4), compare = "Columns", weights = runif(length(cola$Q4_A)))
 
 
     expect_error(capture.output(print(CompareMeans(cola$Q4_A, cola$Q3, compare = "Columns"))), NA)
