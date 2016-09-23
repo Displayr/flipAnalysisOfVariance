@@ -1,14 +1,13 @@
-#' \code{CompareMeans}
-#' Performs statistical tests comparing means of an outcome variable.
-#' @param outcome The outcome variable.
-#' @param columns The factor representing the columns.
+#' \code{MultipleANOVAs}
+#'
+#' Computes multiple ANOVAs.
+#' @param outcomes The outcome variables, as a data frame.
+#' @param groups The factor representing the groups.
 #' @param rows The list of factors representing the rows.
-#' @param compare One of \code{"Rows", "Columns", "Columns pairwise"}, or \code{"All"}
 #' @param correction The multiple comparison adjustment method: \code{"None",
 #' "False Discovery Rate", "Benjamini & Yekutieli", "Bonferroni",
 #' "Free Combinations"} (Westfall et al. 1999), \code{"Hochberg", "Holm",
 #' "Hommel", "Single-step"} (Bretz et al. 2010) \code{"Shaffer"}, and \code{"Westfall"}.
-#' @param output One of \code{"Pretty"} or \code{"Table"}.
 #' @param subset An optional vector specifying a subset of observations to be
 #'   used in the fitting process, or, the name of a variable in \code{data}. It
 #'   may not be an expression. \code{subset} may not
@@ -18,13 +17,11 @@
 #'   \code{"Quasi-Poisson"}, \code{"Binary Logit"}, \code{"NBD"}, and
 #'   \code{"Ordered Logit"}.
 #' @param missing How missing data is to be treated in the regression. Options:
-#'   \code{"Error if missing data"},
-#'   \code{"Exclude cases with missing data"},
-#'   \code{"Use partial data (pairwise correlations)"},
-#'   \code{"Imputation (replace missing values with estimates)"}, and
-#'   \code{"Multiple imputation"}.
+#'   \code{"Error if missing data"}.
 #' @param show.labels Shows the variable labels, as opposed to the labels, in the outputs, where a
 #' variables label is an attribute (e.g., attr(foo, "label")).
+#' @param p.cutoff The alpha level to be used in testing.
+#' @param ... Other parameters to be passed to wrapped functions.
 #' @references
 #' Bretz,Frank, Torsten Hothorn and Peter Westfall (2010), Multiple Comparisons Using R, CRC Press, Boca Raton.
 #' Benjamini, Y., and Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. Journal of the Royal Statistical Society Series B 57, 289–300.
@@ -40,172 +37,79 @@
 #' Peter H. Westfall (1997), Multiple testing of general contrasts using logical constraints and correlations. Journal of the American Statistical Association, 92, 299–306.
 #' P. H. Westfall, R. D. Tobias, D. Rom, R. D. Wolfinger, Y. Hochberg (1999). Multiple Comparisons and Multiple Tests Using the SAS System. Cary, NC: SAS Institute Inc.
 #' Wright, S. P. (1992). Adjusted P-values for simultaneous inference. Biometrics 48, 1005–1013.
-#' @importFrom flipRegression Regression GrandMean
-#' @importFrom flipTransformations AsNumeric Factor
-#' @importFrom multcomp glht mcp adjusted
 #' @importFrom flipFormat Labels
-#' @importFrom survey regTermTest
 #' @export
-CompareMeans <- function(outcome,
-                         columns,
-                         Rows = NULL,
-                         compare = "Columns",
-                         correction = "False Discovery Rate",
-                         show.labels = TRUE,
-                         output = "Pretty",
-                         outcome.name = NULL,
-                         ...)
+MultipleANOVAs <- function(outcomes,
+                        groups,
+                        subset = NULL,
+                        weights = NULL,
+                        compare = "Pairwise",
+                        correction = "False Discovery Rate",
+                        show.labels = TRUE,
+                        output = "Pretty",
+                        outcome.name = NULL,
+                        p.cutoff = 0.05,
+                        ...)
 {
-    if (length(Rows) == 1)
-    {
-        variable <- Factor(Rows[[1]])
-        variable.name <- names(Rows)
-        levs <- levels(variable)
-        k <- nlevels(variable)
-        outcomes <- vector("list")
-        for (i in 1:k)
-        {
-            temp.outcome <- outcome
-            print(class(outcome))
-            lev <- levs[k]
-            temp.outcome[variable != lev | is.na(variable)] <- NA
-            nm <- paste0(Labels(outcome), ": ", lev)
-            attr(temp.outcome, "label") <- nm
-            print(table(temp.outcome))
-            print(i)
-            print(outcomes)
-            outcomes[[i]] <- temp.outcome
-            names(outcomes)[i] <- nm
-
-        }
-        return(CompareMultipleMeans(outcomes = outcomes,
-                                     columns = columns,
-                                     Rows = NULL,
-                                     compare = compare,
-                                     correction = correction,
-                                     show.labels = show.labels,
-                                    ...))
-    }
-    correction <- switch(correction, "Holm" = "holm", "Hochberg" = "hochberg", "Hommel" = "hommel", "Bonferroni" = "bonferroni",
-        "Benjamini & Yekutieli" = "BY","False Discovery Rate" = "fdr", "None" = "none", "Single-step" = "single-step",
-        "Shaffer" = "Shaffer", "Westfall" = "Westfall", "Free Combinations" = "free")
-    columns <- tidyFactor(columns)
-    outcome.name = if(is.null(outcome.name)) deparse(substitute(outcome)) else outcome.name
-    outcome.label = if (show.labels & !is.null(attr(outcome, "label"))) attr(outcome, "label") else outcome.name
-    n.columns <- nlevels(columns)
-    #column.names <- levels(columns)
-    #levels(columns) <- 1:n.columns # Using integers to make it easier to match things.
-    # Should be removed when hooking up GLM
-    outcome <- if (is.factor(outcome)) AsNumeric(outcome, binary = FALSE) else outcome
-    if (is.null(Rows))
-    {
-        if (any(compare %in% c("Rows", "All")))
-            stop("To compare 'Rows' or 'All', you need to specify an input for 'Rows'.")
-
-        t <- if (is.null(list(...)$type)) "Linear" else list(...)$type
-        m <- if (is.null(list(...)$missing)) "Exclude cases with missing data" else list(...)$missing
-        regression <- Regression(outcome ~ columns,
-                                 weights = list(...)$weights,
-                                 subset = list(...)$subset,
-                                type = t,
-                                 missing = m)
-        # model$outcome.name <- outcome.name
-        # model$outcome.name <- regression$outcome.variable
-        # model$weights <- regression$outcome.variable
-        model <- regression$original
-        contrasts <- mcp(columns = switch(compare, "Columns pairwise" = "Tukey", "Columns" = "GrandMean"))
-        comparisons <- glht(model, linfct = contrasts)
-        result <- summary(comparisons, test = adjusted(type = correction))
-        result$grand.mean <- GrandMean(regression)
-        result$n <- table(columns[regression$subset])
-        result$outcome.label <- outcome.label
-        result$r.squared <- regression$r.squared
-        if (inherits(model, "svyglm"))
-        {
-            result$p <- regTermTest(model, "columns")$p
-        }
-        else
-        {
-            f <- regression$summary$fstatistic
-            result$p <- 1 - pf(f[1], f[2], f[3])
-        }
-        results <- list(result)
-        names(results)[1] = outcome.name
-    }
+    anovas <- lapply(outcomes, function(x) OneWayANOVA(x, groups, compare = "To mean", weights = weights, ...))
+    if (is.data.frame(outcomes))
+        names(anovas) <- flipFormat::Labels(outcomes)
     else
     {
-        # for (i in 1:length(rows))
-        #     rows[[i]] <- tidyFactor(rows[[i]])
-        # row.variable.levels <- sapply()
+        nms <- names(outcomes)
+        if (is.null(nms))
+            paste("Variable", 1:length(anovas))
     }
-    attr(results, "outcome.label") <- outcome.label
-    attr(results, "column.names") <- levels(columns)
-    attr(results, "compare") <- compare
-    attr(results, "output") <- output
-    results
+    anovas
 }
+
 
 #' \code{CompareMultipleMeans}
 #' Compares means of multiple variables.
 #' @param outcome The outcome variable.
-
 #' @export
-CompareMultipleMeans <- function(outcomes,
-                         columns,
-                         Rows = NULL,
-                         compare = "Columns",
-                         correction = "False Discovery Rate",
-                         show.labels = TRUE, ...)
+CompareMultipleMeans <- function(variables,
+                         groups,
+                         title = "",
+                         subtitle = "",
+                         footer = "",
+                         weights = NULL,
+                          ...)
 {
-    n.outcome.variables <- length(outcomes)
-    outcome.names <- names(outcomes)
-    results <- list()
-    for (i in 1:n.outcome.variables)
-        results[[i]] <- CompareMeans(outcomes[[i]], columns, Rows,
-                                     compare,
-                                     correction,
-                                     show.labels,
-                                     outcome.name = (outcome.names[i]),
-                                     ...)
-    attr(results, "column.names") <- attr(results[[1]], "column.names")
-    names(results) <- sapply(outcomes, function(x) deparse(substitute(x)))
-    class(results) <- c("CompareMultipleMeans", class(results))
-    results
+    if (!is.list(variables))
+        stop("'variables' must be a list or data.frame.")
+    n.outcome.variables <- length(variables)
+    result <- list(anovas = MultipleANOVAs(variables, groups, weights = weights, ...),
+                   title = title,
+                   subtitle = subtitle,
+                   footer = footer)
+    class(result) <- "CompareMultipleMeans"
+    result
 }
 
 #' @importFrom flipFormat MeanComparisonsTable
 #' @export
 print.CompareMultipleMeans <- function(x, ...)
 {
-    mt <- MeansTables(x)
-    mct <- MeanComparisonsTable(
-        means = mt$means,
-        zs = mt$zs,
-        ps = mt$ps,
-        r.squared = mt$r.squared,
-        overall.p = mt$overall.p,
-        column.names = mt$column.names,
-        footer = ""
-    )
-    print(mct)
+    printFormattableANOVAs(x$anovas, x$title, x$subtitle, x$footer, ...)
     invisible(x)
 }
-
-
-extractRowData <- function(row)
-{
-    coefs <- row$test$coefficients
-    k <- length(coefs)
-    names(coefs) <- LETTERS[1:k]
-    means <- row$grand.mean + coefs
-    ps <- row$test$pvalues
-    names(ps) <- paste0(LETTERS[1:k], "1")
-    return(list(means = means,
-           zs = row$test$tstat,
-           ps = ps,
-           r.squared = row$r.squared,
-           overall.p = as.numeric(row$p)))
-}
+#
+#
+# extractRowData <- function(row)
+# {
+#     coefs <- row$test$coefficients
+#     k <- length(coefs)
+#     names(coefs) <- LETTERS[1:k]
+#     means <- row$grand.mean + coefs
+#     ps <- row$test$pvalues
+#     names(ps) <- paste0(LETTERS[1:k], "1")
+#     return(list(means = means,
+#            zs = row$test$tstat,
+#            ps = ps,
+#            r.squared = row$r.squared,
+#            overall.p = as.numeric(row$p)))
+# }
 
 #' \code{CompareMeans}
 #' Performs statistical tests comparing means of an outcome variable.
@@ -238,11 +142,4 @@ MeansTables <- function(x)
 }
 
 
-#' @importFrom flipTransformations Factor
-tidyFactor <- function(x)
-{
-    x <- Factor(x)
-    levels(x)[table(x) == 0] <- NA # Same basic idea as droplevels, except that it retains the attribute 'label'.
-    x
-}
 
