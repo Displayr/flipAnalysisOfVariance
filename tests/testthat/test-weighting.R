@@ -40,6 +40,6 @@ summary(glm(preference ~ state, family = quasibinomial, weights = calibrated.wei
 calibrated.weight <- unit.weights / sum(unit.weights) * ess
 flipRegression::Regression(preference ~ state, type = "Binary Logit", weights = gross.weights, data = dat)
 
-supressWarnings(flipAnalysisOfVariance::OneWayANOVA(dat$state, dat$preference, type = "Binary Logit", weights = gross.weights, correction = "None"))
+suppressWarnings(flipAnalysisOfVariance::OneWayANOVA(dat$state, dat$preference, type = "Binary Logit", weights = gross.weights, correction = "None"))
 
 })
