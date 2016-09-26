@@ -8,7 +8,56 @@ flipFormat::Labels(z) <- "Like Coca-Cola"
 colas$like.coke <- z - 3
 colas$balanced <- c(rep(1:3, rep(100,3)), rep(NA, 27))
 colas$agenumeric <- car::recode(colas$d1, as.factor.result = FALSE, recodes = "'18 to 24' = 21; '25 to 29' = 27; '30 to 34' = 32; '35 to 39' = 37; '40 to 44' = 42; '45 to 49' = 47; '50 to 54' = 52; '55 to 64' = 60; '65 or more' = 77")
+    z2 = OneWayANOVA(colas$like.coke, colas$d1, compare = "Pairwise")
+colas$d1MISSING <- colas$d1
+colas$like.cokeMISSING <-  colas$like.coke
+set.seed(123)
+colas$d1MISSING[runif(length(colas$d1MISSING)) > .75] <- NA
+colas$like.cokeMISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 
+
+
+test_that("One Way ANOVA - Comparing options", {
+    z = OneWayANOVA(colas$like.coke, colas$d1, compare = "To first")
+    z1 = OneWayANOVA(colas$like.coke, colas$d1, compare = "To mean")
+    z2 = OneWayANOVA(colas$like.coke, colas$d1, compare = "Pairwise")
+    expect_true(nrow(z$coefs) < nrow(z1$coefs) & nrow(z1$coefs) < nrow(z2$coefs))
+    # Correction
+    z = OneWayANOVA(colas$like.coke, colas$d1)
+    z1 = OneWayANOVA(colas$like.coke, colas$d1, correction = "Bonferroni")
+    expect_true(all(z$coefs[, 4] <= z1$coefs[, 4]) & sum(z$coefs[, 4] < z1$coefs[, 4]) > 0)
+    # Alternative
+    z = OneWayANOVA(colas$like.coke, colas$d1)
+    z1 = OneWayANOVA(colas$like.coke, colas$d1, alternative = "Greater")
+    expect_true(z$coefs[9, 4] > z1$coefs[9, 4] & z$coefs[1, 4] < z1$coefs[1, 4])
+    # Missing data
+    expect_error(OneWayANOVA(colas$like.coke, colas$d1, missing = "Error if missing data", compare = "To mean"), NA)
+    expect_error(OneWayANOVA(colas$like.coke, colas$d1MISSING, missing = "Error if missing data", compare = "To mean"))
+    expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, missing = "Error if missing data", compare = "To mean"))
+    expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Error if missing data", compare = "To mean"))
+    # Exclude missing
+    OneWayANOVA(colas$like.coke, colas$d1MISSING, compare = "To mean")
+    OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, compare = "To mean")
+    OneWayANOVA(colas$like.cokeMISSING, colas$d1, compare = "To mean")
+    # Imputation
+    OneWayANOVA(colas$like.coke, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean")
+    OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean")
+    OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Imputation (replace missing values with estimates)", compare = "To mean")
+    # Show Labels
+    z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first")
+    expect_equal(z$title,  "One-way ANOVA: Like Coca-Cola by Age")
+    z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = FALSE, compare = "To first")
+    expect_equal(z$title,  "One-way ANOVA: colas$like.coke by colas$d1MISSING")
+    z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", outcome.name = "Dog", predictor.name = "Cat")
+    expect_equal(z$title,  "One-way ANOVA: Like Coca-Cola by Age")
+    z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = FALSE, compare = "To first", outcome.name = "Dog", predictor.name = "Cat")
+    expect_equal(z$title,  "One-way ANOVA: Dog by Cat")
+    # p.cutoff
+    z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", correction = "None", p.cutoff = .5)
+    expect_equal(z$subtitle, "Not significant: F = 0.645 on 8 and 240 degrees-of-freedom: p = 0.74; R-squared: 0.02105")
+    z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", correction = "None", p.cutoff = .85)
+    expect_equal(z$subtitle, "Significant: F = 0.645 on 8 and 240 degrees-of-freedom: p = 0.74; R-squared: 0.02105")
+})
 
 test_that("One Way ANOVA - vs SPSS", {
     # Unweighted - cells
@@ -78,99 +127,4 @@ test_that("One Way ANOVA - vs Stata",
 
 })
 
-#
-# summary(aov(lm(colas$like.coke ~ colas$d1)))
-#
-# f <- function(y, x, w)
-# {
-#     summary(aov(lm(y ~ x, weights = w)))[[1]][1,4]
-#
-# }
-#
-# fs <- rep(NA, 500)
-# for (i in 1:500)
-# {
-#     s <- sample(1:327, replace = TRUE)
-#     fs[i] <- f(colas$like.coke[s], colas$d1[s], rep(1, 327)[s])
-# }
-#
-# mean(fs > 1.251)
-#
-#
-#
-# X <- runif(100)
-# Y <- X + rnorm(100, sd = 2)
-# fs <- rep(NA, 5000)
-# z <- flipRegression::Regression(Y ~ X)
-# for (i in 1:5000)
-# {
-#     s <- sample(1:327, replace = TRUE)
-#     dep <- resid(z)[s] + colas$like.coke
-#     fs[i] <- f(dep, colas$d1, rep(1, 327))
-# }
-#
-# mean(fs > 1.246)
-
-#
-#
-#
-#      OneWayANOVA(colas$like.coke, colas$balanced, compare = "To first", correction = "Tukey HSD")
-#
-# xmean = -0.100000
-# xsd = 0.154782
-# xloewr = -0.468301
-# xt <- (xmean - xloewr)  / xsd
-#
-#
-#     z <- aov(lm(like.coke ~ d1, data = colas))
-#     TukeyHSD(z)
-#     summary(glht(lm(like.coke ~ d1, data = colas), linfct = mcp(d1 = "Tukey")))
-#
-#     # Weighted - cells
-#     wgt <- as.numeric(unclass((colas$q7)))
-#     z = OneWayANOVA(colas$like.coke, colas$d1, compare = "Cells", weights = wgt)
-#     z# Weighted - pairwise
-#     OneWayANOVA(colas$like.coke, colas$d1, compare = "Pairwise", weights = wgt, correction = "None")
-# })
-#
-#
-# library(multcomp)
-# immer.aov <- aov(like.coke ~ d1, data = colas)
-# immer.mc <- glht(immer.aov, linfct = mcp(d1 = "Tukey"))
-# summary(immer.mc)
-# TukeyHSD(immer.aov)$d1[, 4]
-#
-#
-# library(TukeyC)
-# z = colas$like.coke
-# summary(TukeyC(x=z, y=colas$d1, model='y ~ x', which='x'))
-#
-#
-# data("immer", package = "MASS")
-# immer <- immer[-29:-30, ]
-# library(multcomp)
-# immer.aov <- aov(Y1 ~ Var, data = immer)
-# immer.mc <- glht(immer.aov, linfct = mcp(Var = "Tukey"))
-# summary(immer.mc)
-# TukeyHSD(immer.aov)$Var[, 4]
-#
-#
-# library(TukeyC)
-# summary(TukeyC(x=immer$Var, y=immer$Y1, model='y ~ x', which='x'))
-#
-#
-#
-# test_that("One Way ANOVA - vs SPSS", {
-#     # Unweighted - cells
-#     z = OneWayANOVA(colas$like.coke, colas$d1, compare = "Cells")
-#     z$p
-#     # Unweighted - pairwise
-#     OneWayANOVA(colas$like.coke, colas$d1, compare = "Pairwise", correction = "None")
-#
-#     # Weighted - cells
-#     wgt <- as.numeric(unclass((colas$q7)))
-#     z = OneWayANOVA(colas$like.coke, colas$d1, compare = "Cells", weights = wgt)
-#     z# Weighted - pairwise
-#     OneWayANOVA(colas$like.coke, colas$d1, compare = "Pairwise", weights = wgt, correction = "None")
-# })
 #

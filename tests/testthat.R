@@ -1,4 +1,4 @@
 library(testthat)
-library(flipAnalysisOfVariances)
+library(flipAnalysisOfVariance)
 
-test_check("flipAnalysisOfVariances")
+test_check("flipAnalysisOfVariance")

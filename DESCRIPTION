@@ -2,15 +2,18 @@ Package: flipAnalysisOfVariance
 Type: Package
 Title: What the Package Does (Title Case)
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: Tim Bock
+Maintainer: Tim Bock <tim.bock@numbers.net.au>
+Description: Analysis of Variance, MANOVA, post-hoc corrections. All One-Way.
+License: GPL-3
 Imports:
+    car,
+    flipData,
     flipFormat,
     flipRegression,
     flipTransformations,
-    multcomp
+    multcomp,
+    survey
 LazyData: NA
 Suggests:
     testthat

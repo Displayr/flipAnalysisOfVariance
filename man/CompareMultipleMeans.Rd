@@ -2,17 +2,27 @@
 % Please edit documentation in R/comparemeans.R
 \name{CompareMultipleMeans}
 \alias{CompareMultipleMeans}
-\title{\code{CompareMultipleMeans}
-Compares means of multiple variables.}
+\title{\code{CompareMultipleMeans}}
 \usage{
-CompareMultipleMeans(variables, groups, title = "", subtitle = "",
+CompareMultipleMeans(outcomes, predictor, title = "", subtitle = "",
   footer = "", weights = NULL, ...)
 }
 \arguments{
-\item{outcome}{The outcome variable.}
+\item{outcomes}{The outcome variables.}
+
+\item{predictor}{The factor indicating group membership.}
+
+\item{title}{Main title for the table.}
+
+\item{subtitle}{Subtitle for the table.}
+
+\item{footer}{Footer of the table.}
+
+\item{weights}{The sampling weights}
+
+\item{...}{Parameters to pass to \code{\link{OneWayANOVA}}.}
 }
 \description{
-\code{CompareMultipleMeans}
 Compares means of multiple variables.
 }
 

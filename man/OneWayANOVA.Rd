@@ -4,16 +4,24 @@
 \alias{OneWayANOVA}
 \title{\code{OneWayANOVA}}
 \usage{
-OneWayANOVA(outcome, groups, compare = "Pairwise",
-  correction = "Tukey Range", robust.se = FALSE,
-  alternative = "Two-sided", show.labels = TRUE, output = "Pretty",
-  outcome.name = NULL, p.cutoff = 0.05, seed = 1223, weights = NULL,
-  ...)
+OneWayANOVA(outcome, predictor, subset = NULL, weights = NULL,
+  compare = "Pairwise", correction = "Tukey Range", robust.se = FALSE,
+  alternative = "Two-sided", missing = "Exclude cases with missing data",
+  show.labels = TRUE, outcome.name = deparse(substitute(outcome)),
+  predictor.name = deparse(substitute(predictor)), p.cutoff = 0.05,
+  seed = 1223, ...)
 }
 \arguments{
 \item{outcome}{The outcome variable.}
 
-\item{groups}{The factor representing the groups.}
+\item{predictor}{The factor representing the groups.}
+
+\item{subset}{An optional vector specifying a subset of observations to be
+used in the fitting process, or, the name of a variable in \code{data}. It
+may not be an expression. \code{subset} may not}
+
+\item{weights}{An optional vector of sampling weights, or, the name or, the
+name of a variable in \code{data}. It may not be an expression.}
 
 \item{compare}{One of \code{"To mean", "Pairwise", "To first"} (which implement's Dunnett's C, when
 combined with 'correction' == 'Tukey Range'), or \code{"All"}}
@@ -23,40 +31,34 @@ combined with 'correction' == 'Tukey Range'), or \code{"All"}}
 "Free Combinations"} (Westfall et al. 1999), \code{"Hochberg", "Holm",
 "Hommel", "Single-step"} (Bretz et al. 2010) \code{"Shaffer"}, and \code{"Westfall"}.}
 
-\item{robust.se}{Computes heteroscedastic-consistent standard errors, using the
-\code{sandwich} package (Zeileis, 2004, 2006), that are robust to violations of
-  the assumption of constant variance.}
+\item{robust.se}{Computes standard errors that are robust to violations of
+the assumption of constant variance, using the HC1 (degrees of freedom)
+modification of White's (1980) estimator (Long and Ervin, 2000). This parameter is ignored
+if weights are applied (as weights already employ a sandwich estimator).}
 
 \item{alternative}{The alternative hypothesis: "Two sided", "Greater", or "Less". The main application of this is when
 Compare us set 'To first' (e.g., if testing a new product, where the purpose is to work out of the new product is superior
 to an existing product, "Greater" would be chosen).}
 
+\item{missing}{How missing data is to be treated in the ANOVA. Options:
+\code{"Error if missing data"}.
+\code{"Exclude cases with missing data"}, and
+\code{"Imputation (replace missing values with estimates)"}.}
+
 \item{show.labels}{Shows the variable labels, as opposed to the labels, in the outputs, where a
 variables label is an attribute (e.g., attr(foo, "label")).}
 
-\item{output}{One of \code{"Standard"}, \code{"ANOVA"}, or \code{"Table"}.}
+\item{outcome.name}{The name of the outcome  variable. Only used when \code{show.labels} is FALSE. Defaults to
+the actual variable name, which does not work so well if the function is being called by another function.}
+
+\item{predictor.name}{The name of the predictor variable. Only used when \code{show.labels} is FALSE. Defaults to
+the actual variable name, which does not work so well if the function is being called by another function.}
 
 \item{p.cutoff}{The alpha level to be used in testing.}
 
 \item{seed}{The random number seed used when evaluating the multivariate t-distribution.}
 
-\item{weights}{An optional vector of sampling weights, or, the name or, the
-name of a variable in \code{data}. It may not be an expression.}
-
 \item{...}{Other parameters to be passed to wrapped functions.}
-
-\item{rows}{The list of factors representing the rows.}
-
-\item{subset}{An optional vector specifying a subset of observations to be
-used in the fitting process, or, the name of a variable in \code{data}. It
-may not be an expression. \code{subset} may not}
-
-\item{type}{Defaults to \code{"linear"}. Other types are: \code{"Poisson"},
-\code{"Quasi-Poisson"}, \code{"Binary Logit"}, \code{"NBD"}, and
-\code{"Ordered Logit"}.}
-
-\item{missing}{How missing data is to be treated in the regression. Options:
-\code{"Error if missing data"}.}
 }
 \description{
 Computes a one-way analysis of variance with post hoc tests.
@@ -68,26 +70,37 @@ the biggest difference between the smallest and largest means). This is a single
 of calculation is valid for both balanced and unbalanced samples (Bretz et al. 2011), and consequently the results
 may differ for unbalanced samples to those that appear in most software and books (which instead employee an approximation
 when the samples are unbalanced).
+
+When \code{missing = "Imputation (replace missing values with estimates)"}, all selected
+outcome and predictor variables are included in the imputation, along with
+all \code{auxiliary.data}, excluding cases that are excluded via subset or
+have invalid weights, but including cases with missing values of the outcome variable.
+Then, cases with missing values in the outcome variable are excluded from
+the analysis (von Hippel 2007). See \code{\link[flipImputation]{Imputation}}.
 }
 \references{
 Bretz,Frank, Torsten Hothorn and Peter Westfall (2011), Multiple Comparisons Using R, CRC Press, Boca Raton.
-Benjamini, Y., and Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. Journal of the Royal Statistical Society Series B 57, 289–300.
-Benjamini, Y., and Yekutieli, D. (2001). The control of the false discovery rate in multiple testing under dependency. Annals of Statistics 29, 1165–1188.
-Holm, S. (1979). A simple sequentially rejective multiple test procedure. Scandinavian Journal of Statistics 6, 65–70.
-Hochberg, Y. (1988). A sharper Bonferroni procedure for multiple tests of significance. Biometrika 75, 800–803.
-Hommel, G. (1988). A stagewise rejective multiple test procedure based on a modified Bonferroni test. Biometrika 75, 383–386.
-Hothorn, Torsten, Frank Bretz and Peter Westfall (2008), Simultaneous Inference in General Parametric Models. Biometrical Journal, 50(3), 346–363.
-Shaffer, Juliet P. (1986), Modified sequentially rejective multiple test procedures. Journal of the American Statistical Association, 81, 826–831.
-Shaffer, Juliet P. (1995). Multiple hypothesis testing. Annual Review of Psychology 46, 561–576.
-Sarkar, S. (1998). Some probability inequalities for ordered MTP2 random variables: a proof of Simes conjecture. Annals of Statistics 26, 494–504.
-Sarkar, S., and Chang, C. K. (1997). Simes' method for multiple hypothesis testing with positively dependent test statistics. Journal of the American Statistical Association 92, 1601–1608.
-Tukey, John (1949). "Comparing Individual Means in the Analysis of Variance". Biometrics. 5 (2): 99–114. JSTOR 3001913.
-Peter H. Westfall (1997), Multiple testing of general contrasts using logical constraints and correlations. Journal of the American Statistical Association, 92, 299–306.
+Benjamini, Y., and Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. Journal of the Royal Statistical Society Series B 57, 289-300.
+Benjamini, Y., and Yekutieli, D. (2001). The control of the false discovery rate in multiple testing under dependency. Annals of Statistics 29, 1165-1188.
+Holm, S. (1979). A simple sequentially rejective multiple test procedure. Scandinavian Journal of Statistics 6, 65-70.
+Hochberg, Y. (1988). A sharper Bonferroni procedure for multiple tests of significance. Biometrika 75, 800-803.
+Hommel, G. (1988). A stagewise rejective multiple test procedure based on a modified Bonferroni test. Biometrika 75, 383-386.
+Hothorn, Torsten, Frank Bretz and Peter Westfall (2008), Simultaneous Inference in General Parametric Models. Biometrical Journal, 50(3), 346-363.
+Long, J. S. and Ervin, L. H. (2000). Using
+heteroscedasticity consistent standard errors in the linear regression
+model. The American Statistician, 54(3): 217-224.
+Shaffer, Juliet P. (1986), Modified sequentially rejective multiple test procedures. Journal of the American Statistical Association, 81, 826-831.
+Shaffer, Juliet P. (1995). Multiple hypothesis testing. Annual Review of Psychology 46, 561-576.
+Sarkar, S. (1998). Some probability inequalities for ordered MTP2 random variables: a proof of Simes conjecture. Annals of Statistics 26, 494-504.
+Sarkar, S., and Chang, C. K. (1997). Simes' method for multiple hypothesis testing with positively dependent test statistics. Journal of the American Statistical Association 92, 1601-1608.
+Tukey, John (1949). "Comparing Individual Means in the Analysis of Variance". Biometrics. 5 (2): 99-114.
+Peter H. Westfall (1997), Multiple testing of general contrasts using logical constraints and correlations. Journal of the American Statistical Association, 92, 299-306.
 P. H. Westfall, R. D. Tobias, D. Rom, R. D. Wolfinger, Y. Hochberg (1999). Multiple Comparisons and Multiple Tests Using the SAS System. Cary, NC: SAS Institute Inc.
-Wright, S. P. (1992). Adjusted P-values for simultaneous inference. Biometrics 48, 1005–1013.
-Zeileis, Achim  (2004). Econometric computing with HC and HAC covariance matrix estimators.
-Journal of Statistical Software, 11(10):1–17, URL http://www.jstatsoft.org/v11/i10/.
-Zeileis, Achim  (2006). Achim Zeileis. Object-oriented computation of sandwich estimators. Journal of Statistical
-Software, 16(9):1–16 URL http://www.jstatsoft.org/v16/i09/
+von Hippel, Paul T. 2007. "Regression With Missing Y's: An
+Improved Strategy for Analyzing Multiply Imputed Data." Sociological
+Methodology 37:83-117.
+Wright, S. P. (1992). Adjusted P-values for simultaneous inference. Biometrics 48, 1005-1013.
+White, H. (1980), A heteroskedastic-consistent covariance matrix estimator and a direct test of heteroskedasticity.
+Econometrica, 48, 817-838.
 }
 
