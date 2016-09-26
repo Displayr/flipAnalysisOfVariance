@@ -36,7 +36,8 @@ CompareMultipleMeans <- function(outcomes,
 #' @export
 print.CompareMultipleMeans <- function(x, ...)
 {
-    PrintFormattableANOVAs(x$anovas, x$title, x$subtitle, x$footer, ...)
+    p <- FormattableANOVAs(x$anovas, x$title, x$subtitle, x$footer, ...)
+    print(p)
     invisible(x)
 }
 

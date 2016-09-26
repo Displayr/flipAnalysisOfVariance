@@ -5,10 +5,9 @@
 \title{\code{OneWayMANOVA}}
 \usage{
 OneWayMANOVA(outcomes, predictor, subset = NULL, weights = NULL,
-  compare = "To mean", correction = "Tukey Range", robust.se = FALSE,
-  alternative = "Two-sided", missing = "Exclude cases with missing data",
-  show.labels = FALSE, seed = 1223, p.cutoff = 0.05, binary = FALSE,
-  ...)
+  correction = "Tukey Range", robust.se = FALSE,
+  missing = "Exclude cases with missing data", show.labels = FALSE,
+  seed = 1223, p.cutoff = 0.05, binary = FALSE, ...)
 }
 \arguments{
 \item{outcomes}{The outcome variables.}
@@ -22,9 +21,6 @@ may not be an expression. \code{subset} may not}
 \item{weights}{An optional vector of sampling weights, or, the name or, the
 name of a variable in \code{data}. It may not be an expression.}
 
-\item{compare}{One of \code{"To mean", "Pairwise", "To first"} (which implement's Dunnett's C, when
-combined with 'correction' == 'Tukey Range'), or \code{"All"}}
-
 \item{correction}{The multiple comparison adjustment method: \code{"Tukey Range", "None",
 "False Discovery Rate", "Benjamini & Yekutieli", "Bonferroni",
 "Free Combinations"}, \code{"Hochberg", "Holm",
@@ -34,14 +30,9 @@ combined with 'correction' == 'Tukey Range'), or \code{"All"}}
 the assumption of constant variance. This parameter is ignored
 if weights are applied (as weights already employ a sandwich estimator).}
 
-\item{alternative}{The alternative hypothesis: "Two sided", "Greater", or "Less". The main application of this is when
-Compare us set 'To first' (e.g., if testing a new product, where the purpose is to work out of the new product is superior
-to an existing product, "Greater" would be chosen).}
-
 \item{missing}{How missing data is to be treated in the ANOVA. Options:
-\code{"Error if missing data"}.
-\code{"Exclude cases with missing data"}, and
-\code{"Imputation (replace missing values with estimates)"}.}
+\code{"Error if missing data"}, and
+\code{"Exclude cases with missing data"}.}
 
 \item{show.labels}{Shows the variable labels, as opposed to the labels, in the outputs, where a
 variables label is an attribute (e.g., attr(foo, "label")).}
@@ -60,6 +51,8 @@ Computes a one-way analysis of variance with post hoc tests.
 \details{
 Where sampling weights are provided, a sample is constructed via bootstrapping, and this
 sample is used in the testing for the MANOVA (but no for the individual ANOVAs or post hoc tests). See \code{OneWayANOVA} for more about the other parameters.
+
+Tests are two-sided, comparing to the Grand Mean (i.e., "To mean").
 
 Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 }

@@ -28,7 +28,6 @@
 #' variables label is an attribute (e.g., attr(foo, "label")).
 #' @param p.cutoff The alpha level to be used in testing.
 #' @param seed The random number seed used when evaluating the multivariate t-distribution.
-#' @param binary Automatically converts non-ordered factors to dummy-coded (binary indicator) variables.
 #' @param ... Other parameters to be passed to \code{OneWayANOVA}.
 #' @details Conducts multiple \code{OneWayANOVA}s, and puts them in a list.
 #' Additional detail about the other parameters can be found in \code{OneWayANOVA}.
@@ -46,10 +45,18 @@ MultipleANOVAs <- function(outcomes,
                            show.labels = FALSE,
                            seed = 1223,
                            p.cutoff = 0.05,
-                           binary = FALSE,
                            ...)
 {
-    anovas <- lapply(outcomes, function(x) OneWayANOVA(x, predictor, compare = "To mean", weights = weights, ...))
+    anovas <- lapply(outcomes, function(x) OneWayANOVA(x,
+                                                       predictor,
+                                                       compare = "To mean",
+                                                       subset = subset,
+                                                       weights = weights,
+                                                       correction = correction,
+                                                       alternative = alternative,
+                                                       p.cutoff = p.cutoff,
+                                                       seed = seed,
+                                                       ...))
     if (is.data.frame(outcomes))
         names(anovas) <- flipFormat::Labels(outcomes)
     else
@@ -61,4 +68,60 @@ MultipleANOVAs <- function(outcomes,
     anovas
 }
 
+
+#' FormattableANOVAs
+#'
+#' @param anovas List of OneWayANOVA objects.
+#' @param title String showing the title of the table.
+#' @param subtitle String showing the subtitle of the table.
+#' @param footer String showing the title of the table.
+#' @importFrom flipFormat MeanComparisonsTable
+#' @export
+FormattableANOVAs <- function(anovas, title, subtitle, footer)
+{
+    mt <- ANOVAsAsTable(anovas)
+    mct <- MeanComparisonsTable(
+        means = mt$means,
+        zs = mt$zs,
+        ps = mt$ps,
+        r.squared = mt$r.squared,
+        overall.p = mt$overall.p,
+        column.names = mt$column.names,
+        title = title,
+        subtitle = subtitle,
+        footer = footer,
+        p.cutoff = anovas[[1]]$p.cutoff)
+}
+
+#' \code{ANOVAsAsTable}
+#' Converts a list of ANOVAs into a format that can be prettily formatted.
+#' @param x The list of ANOVAs.
+#' @export
+ANOVAsAsTable <- function(x)
+{
+    means <- NULL
+    zs <- NULL
+    ps <- NULL
+    r.squared <- NULL
+    overall.p <- NULL
+    for (i in x)
+    {
+        coefs <- i$coefs
+        means <- rbind(means, coefs[, 1])
+        zs <- rbind(zs, coefs[, 3])
+        ps <- rbind(ps, coefs[, 4])
+        r.squared <- c(r.squared, i$r.squared)
+        overall.p <- c(overall.p, i$p)
+    }
+    rownames(means) <- names(x)
+    column.names <- paste0(x[[1]]$column.names, "<br>","n = ",x[[1]]$n)
+    colnames(means) <- LETTERS[1:(k <- ncol(means))]
+    colnames(ps) <- paste0(LETTERS[1:k], "1")
+    return(list(means = means,
+                zs = zs,
+                ps = ps,
+                r.squared = r.squared,
+                overall.p = overall.p,
+                column.names = column.names))
+}
 

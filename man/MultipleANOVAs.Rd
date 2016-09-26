@@ -7,8 +7,7 @@
 MultipleANOVAs(outcomes, predictor, subset = NULL, weights = NULL,
   compare = "To mean", correction = "Tukey Range", robust.se = FALSE,
   alternative = "Two-sided", missing = "Exclude cases with missing data",
-  show.labels = FALSE, seed = 1223, p.cutoff = 0.05, binary = FALSE,
-  ...)
+  show.labels = FALSE, seed = 1223, p.cutoff = 0.05, ...)
 }
 \arguments{
 \item{outcomes}{The outcome variables.}
@@ -49,8 +48,6 @@ variables label is an attribute (e.g., attr(foo, "label")).}
 \item{seed}{The random number seed used when evaluating the multivariate t-distribution.}
 
 \item{p.cutoff}{The alpha level to be used in testing.}
-
-\item{binary}{Automatically converts non-ordered factors to dummy-coded (binary indicator) variables.}
 
 \item{...}{Other parameters to be passed to \code{OneWayANOVA}.}
 }

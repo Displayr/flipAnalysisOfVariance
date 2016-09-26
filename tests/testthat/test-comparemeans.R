@@ -15,42 +15,12 @@ test_that("Bug: System is computationally singular.CE-626 ",
                     suppressWarnings(OneWayANOVA(dep, ind, weigts = wgt))
                 }, NA)
                 expect_error(CompareMultipleMeans(dep, ind, weights = wgt))
-                #expect_error(suppressWarnings(CompareMultipleMeans(list(dep), ind, weights = wgt)), NA)
-
-#
-#                 colas$num <- unclass(colas$Q5_7_1)
-#                 z = survey::svyglm(num ~ q3, flipRegression::weightedSurveyDesign(colas, weights = wgt))
-#                 survey::regTermTest(z, "q3")
-#
-#
-#                 z = flipRegression::Regression(colas$Q5_7_1 ~ colas$q3, weights = wgt)
-#                 OneWayANOVA(colas$Q5_7_1, colas$q3, weights = wgt, compare = "To mean")
-#                 MultipleANOVAs(list(colas$Q5_7_1), colas$q3, weights = wgt, compare = "To mean")
-#                 CompareMultipleMeans(list(colas$Q5_7_1), colas$q3, weights = wgt)
-#
-#
-#                 OneWayANOVA(colas$Q5_5_1, colas$q3, weigts = wgt)
-#                 CompareMultipleMeans(list(colas$Q5_5_1), colas$q3, weights = wgt)
-#                 CompareMultipleMeans(, colas$q3, weights = wgt)
-
 
           })
 
 
 test_that("Print", {
-    # One dependnet variable, one factor - unweighted, pairwise
-    #CompareMeans(colas$like.coke, colas$d1, compare = "Cells")
-    #z <- CompareMeans(colas$like.coke, colas$d1, compare = "Pairwise", correction = "None")
-
-    # # Weighted
      data(cola, package = "flipExampleData")
-    # CompareMeans(cola$Q4_A, cola$Q3, compare = "Columns", weights = runif(length(cola$Q4_A)))
-    # # One dependnet variable, two factors
-    # data(cola, package = "flipExampleData")
-    # CompareMeans(cola$Q4_A, cola$Q3, list(cola$Q4), compare = "Columns", weights = runif(length(cola$Q4_A)))
-
-
- #   expect_error(capture.output(print(CompareMeans(cola$Q4_A, cola$Q3, compare = "Columns"))), NA)
     z <- list(cola$Q4_A, cola$Q4_B, cola$Q4_C)
     zz <- CompareMultipleMeans(z, cola$Q3, title = "Title", subtitle = "Sub title", footer = "footer")
     expect_error(print(zz), NA)
