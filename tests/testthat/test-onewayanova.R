@@ -8,7 +8,6 @@ flipFormat::Labels(z) <- "Like Coca-Cola"
 colas$like.coke <- z - 3
 colas$balanced <- c(rep(1:3, rep(100,3)), rep(NA, 27))
 colas$agenumeric <- car::recode(colas$d1, as.factor.result = FALSE, recodes = "'18 to 24' = 21; '25 to 29' = 27; '30 to 34' = 32; '35 to 39' = 37; '40 to 44' = 42; '45 to 49' = 47; '50 to 54' = 52; '55 to 64' = 60; '65 or more' = 77")
-    z2 = OneWayANOVA(colas$like.coke, colas$d1, compare = "Pairwise")
 colas$d1MISSING <- colas$d1
 colas$like.cokeMISSING <-  colas$like.coke
 set.seed(123)

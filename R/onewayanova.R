@@ -14,13 +14,13 @@
 #' "False Discovery Rate", "Benjamini & Yekutieli", "Bonferroni",
 #' "Free Combinations"} (Westfall et al. 1999), \code{"Hochberg", "Holm",
 #' "Hommel", "Single-step"} (Bretz et al. 2010) \code{"Shaffer"}, and \code{"Westfall"}.
+#' @param alternative The alternative hypothesis: "Two sided", "Greater", or "Less". The main application of this is when
+#' Compare us set 'To first' (e.g., if testing a new product, where the purpose is to work out of the new product is superior
+#' to an existing product, "Greater" would be chosen).
 #' @param robust.se Computes standard errors that are robust to violations of
 #'   the assumption of constant variance, using the HC1 (degrees of freedom)
 #'   modification of White's (1980) estimator (Long and Ervin, 2000). This parameter is ignored
 #'   if weights are applied (as weights already employ a sandwich estimator).
-#' @param alternative The alternative hypothesis: "Two sided", "Greater", or "Less". The main application of this is when
-#' Compare us set 'To first' (e.g., if testing a new product, where the purpose is to work out of the new product is superior
-#' to an existing product, "Greater" would be chosen).
 #' @param missing How missing data is to be treated in the ANOVA. Options:
 #'   \code{"Error if missing data"}.
 #'   \code{"Exclude cases with missing data"}, and
@@ -86,8 +86,8 @@ OneWayANOVA <- function(outcome,
                         weights = NULL,
                         compare = "Pairwise",
                         correction = "Tukey Range",
-                        robust.se = FALSE,
                         alternative = "Two-sided",
+                        robust.se = FALSE,
                         missing = "Exclude cases with missing data",
                         show.labels = TRUE,
                         outcome.name = deparse(substitute(outcome)),
@@ -122,10 +122,6 @@ OneWayANOVA <- function(outcome,
     robust.se <- if (regression$robust.se) "; robust standard errors" else "" # Taking from regression, as regression checks for weight.
     contrasts <- mcp(predictor = switch(compare, "Pairwise" = "Tukey", "To mean" = "GrandMean", "To first" = "Dunnett"))
     comparisons <- glht(model, linfct = contrasts, alternative = alternative)
-    # comparisons <- if (robust.se)
-    #                     glht(model, linfct = contrasts, vcov = hccm(model, type = "hc1"), alternative = alternative)
-    #                 else
-    #                     glht(model, linfct = contrasts, alternative = alternative)
     set.seed(seed)
     mcomp <- if (correct == "Tukey Range")
                     suppressWarnings(summary(comparisons))

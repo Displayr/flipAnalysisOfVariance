@@ -50,7 +50,8 @@ Computes a one-way analysis of variance with post hoc tests.
 }
 \details{
 Where sampling weights are provided, a sample is constructed via bootstrapping, and this
-sample is used in the testing for the MANOVA (but no for the individual ANOVAs or post hoc tests). See \code{OneWayANOVA} for more about the other parameters.
+sample is used in the testing for the MANOVA (but no for the individual ANOVAs or post hoc tests).
+See \code{OneWayANOVA} for more about the other parameters.
 
 Tests are two-sided, comparing to the Grand Mean (i.e., "To mean").
 

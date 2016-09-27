@@ -25,7 +25,8 @@
 #' @param binary Automatically converts non-ordered factors to dummy-coded (binary indicator) variables.
 #' @param ... Other parameters to be passed to \code{OneWayANOVA}.
 #' @details Where sampling weights are provided, a sample is constructed via bootstrapping, and this
-#' sample is used in the testing for the MANOVA (but no for the individual ANOVAs or post hoc tests). See \code{OneWayANOVA} for more about the other parameters.
+#' sample is used in the testing for the MANOVA (but no for the individual ANOVAs or post hoc tests).
+#' See \code{OneWayANOVA} for more about the other parameters.
 #'
 #' Tests are two-sided, comparing to the Grand Mean (i.e., "To mean").
 #'
@@ -53,6 +54,7 @@ OneWayMANOVA <- function(outcomes,
                         ...)
 {
     # Removing missing values and filtering weights.
+    predictor.label <- if(show.labels & (lab <- Labels(predictor)) != "predictor") lab else deparse(substitute(predictor))
     n.total <- length(predictor)
     weighted <- !is.null(weights)
     if (!weighted)
@@ -66,7 +68,6 @@ OneWayMANOVA <- function(outcomes,
     n.subset <- sum(subset)
     outcomes <- AsNumeric(data.frame(outcomes), binary = binary, remove.first = TRUE)
     labels <- Labels(outcomes)
-    predictor.label <- if(show.labels) Labels(predictor) else deparse(substitute(predictor))
     df <- cbind(outcomes, predictor, weights)
     df <- subset(df, subset = subset & complete.cases(df))
     n.estimation <- nrow(df)
@@ -92,8 +93,8 @@ OneWayMANOVA <- function(outcomes,
     else
         model <- lm(as.matrix(outcomes) ~ predictor)
     result <- list(manova = summary(manova(model)))
-    result$anovas <- MultipleANOVAs(outcomes = outcomes,
-                        predictor = predictor,
+    result$anovas <- MultipleANOVAs( outcomes,
+                        predictor,
                         subset = NULL,
                         weights = NULL,
                         compare = "To mean",

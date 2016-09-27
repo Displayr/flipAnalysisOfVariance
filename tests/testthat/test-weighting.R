@@ -38,7 +38,7 @@ summary(glm(preference ~ state, family = quasibinomial, weights = calibrated.wei
 
 # taylor series linearized weight
 calibrated.weight <- unit.weights / sum(unit.weights) * ess
-flipRegression::Regression(preference ~ state, type = "Binary Logit", weights = gross.weights, data = dat)
+suppressWarnings(flipRegression::Regression(preference ~ state, type = "Binary Logit", weights = gross.weights, data = dat))
 
 suppressWarnings(flipAnalysisOfVariance::OneWayANOVA(dat$state, dat$preference, type = "Binary Logit", weights = gross.weights, correction = "None"))
 

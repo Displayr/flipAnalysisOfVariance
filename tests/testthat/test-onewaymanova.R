@@ -1,4 +1,4 @@
-context("manova")
+context("One-Way MANOVA")
 data(colas, package = "flipExampleData")
 z <- unclass(colas$q4a)
 #z[z == 4] <- 9
@@ -19,10 +19,12 @@ test_that("MANOVA",{
         op <- options(contrasts = c("contr.helmert", "contr.poly"))
         npk2 <- within(npk, foo <- rnorm(24))
         npk2.aov <- manova(cbind(yield, foo) ~ block, npk2)
-        z <- OneWayMANOVA(cbind(npk2$yield, npk2$foo), npk2$block)
+        dog <- npk2$yield
+        attr(dog, "question") <- "Soloman"
+        z <- OneWayMANOVA(data.frame(dog, npk2$foo), npk2$block, show.labels = TRUE)
         expect_equal(summary(npk2.aov)$stats[1,6], z$manova$stats[1,6])
         # binary.
-        z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = FALSE, show.labels = TRUE)
+        z <- suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = FALSE, show.labels = TRUE))
         z1 <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE)
         expect_true(length(z$anovas) < length(z1$anovas))
         # show.labels
@@ -51,8 +53,8 @@ test_that("MANOVA",{
         expect_error(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.cokeMISSING), colas$d1, missing = m, binary = TRUE, show.labels = TRUE))
         expect_error(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.cokeMISSING), colas$d1MISSING, missing = m, binary = TRUE, show.labels = TRUE))
         # p.cutoff
-        z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, p.cutoff = 0.5)
+        z <- suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, p.cutoff = 0.5))
         expect_equal(z$subtitle, "Significant: Pillai's Trace: 0.0764, approximate p-value: 0.41")
-        z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, p.cutoff = 0.05)
+        z <- suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, p.cutoff = 0.05))
         expect_equal(z$subtitle, "Not significant: Pillai's Trace: 0.0764, approximate p-value: 0.41")
 })
