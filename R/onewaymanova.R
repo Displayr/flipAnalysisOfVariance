@@ -131,6 +131,5 @@ print.OneWayMANOVA <- function(x, ...)
         title = x$title,
         subtitle = x$subtitle,
         footer = paste0(x$anovas[[1]]$footer, " (corrections performed within rows)")))
-
 }
 

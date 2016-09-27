@@ -221,6 +221,5 @@ print.OneWayANOVA <- function(x, ...)
                           estimate.name = estimate.name,
                           p.name = p.name, p.cutoff = x$p.cutoff)
     print(dt)
-    invisible(x)
 }
 
