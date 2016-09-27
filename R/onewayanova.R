@@ -119,15 +119,18 @@ OneWayANOVA <- function(outcome,
                              type = if (is.null(list(...)$type)) "Linear" else list(...)$type,
                              robust.se = robust.se)
     model <- regression$original
-    robust.se <- if (regression$robust.se) "; robust standard errors" else "" # Taking from regression, as regression checks for weight.
+    robust.se.text <- if (robust.se <- regression$robust.se) "; robust standard errors" else "" # Taking from regression, as regression checks for weight.
     contrasts <- mcp(predictor = switch(compare, "Pairwise" = "Tukey", "To mean" = "GrandMean", "To first" = "Dunnett"))
-    comparisons <- glht(model, linfct = contrasts, alternative = alternative)
+    comparisons <- if (robust.se)
+        glht(model, linfct = contrasts, alternative = alternative, vcov = hccm(model, type = "hc1"))
+    else
+        glht(model, linfct = contrasts, alternative = alternative)
     set.seed(seed)
     mcomp <- if (correct == "Tukey Range")
                     suppressWarnings(summary(comparisons))
                 else
                     suppressWarnings(summary(comparisons, test = adjusted(type = correction)))
-    result <- list(original = mcomp)
+    result <- list(original = mcomp, robust.se = robust.se)
     result$grand.mean <- GrandMean(regression)
     result$correction <- correct
     result$n <- table(predictor[regression$subset])
@@ -147,9 +150,9 @@ OneWayANOVA <- function(outcome,
              "; R-squared: ", FormatAsReal(regression$r.squared, 4))
     result$title <-paste0("One-way ANOVA: ", outcome.label, " by ", predictor.label)
     mc.correction <- paste0("; multiple comparisons correction: ", correct)
-    alpha <- paste0("results highlighted when ", (if (no.correction) "" else "corrected "),"p <= " , p.cutoff, "; null hypothesis: ", tolower(alt))
+    alpha <- paste0(" results highlighted when ", (if (no.correction) "" else "corrected "),"p <= " , p.cutoff, "; null hypothesis: ", tolower(alt))
     result$footer <- paste0(regression$sample.description,
-                            alpha,mc.correction,robust.se)
+                            alpha,mc.correction, robust.se.text)
     result$column.names <- levels(predictor)
     result$compare <- compare
     result$r.squared <- regression$r.squared
@@ -219,7 +222,9 @@ print.OneWayANOVA <- function(x, ...)
                           subtitle = x$subtitle,
                           footer = x$footer,
                           estimate.name = estimate.name,
-                          p.name = p.name, p.cutoff = x$p.cutoff)
+                          se.name = if (x$robust.se) "Robust SE" else "Standard Error",
+                          p.name = p.name,
+                          p.cutoff = x$p.cutoff)
     print(dt)
 }
 

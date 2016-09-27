@@ -29,6 +29,10 @@ test_that("One Way ANOVA - Comparing options", {
     z = OneWayANOVA(colas$like.coke, colas$d1)
     z1 = OneWayANOVA(colas$like.coke, colas$d1, alternative = "Greater")
     expect_true(z$coefs[9, 4] > z1$coefs[9, 4] & z$coefs[1, 4] < z1$coefs[1, 4])
+    # Alternative
+    z = OneWayANOVA(colas$like.coke, colas$d1)
+    z1 = OneWayANOVA(colas$like.coke, colas$d1, robust.se = TRUE)
+    expect_true(z$coefs[1, 4] != z1$coefs[1, 4])
     # Missing data
     expect_error(OneWayANOVA(colas$like.coke, colas$d1, missing = "Error if missing data", compare = "To mean"), NA)
     expect_error(OneWayANOVA(colas$like.coke, colas$d1MISSING, missing = "Error if missing data", compare = "To mean"))
