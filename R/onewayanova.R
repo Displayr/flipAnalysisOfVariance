@@ -75,7 +75,7 @@
 #' @importFrom flipRegression Regression GrandMean
 #' @importFrom flipTransformations AsNumeric Factor
 #' @importFrom multcomp glht mcp adjusted
-#' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable
+#' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName
 #' @importFrom survey regTermTest
 #' @importFrom car hccm
 #' @importFrom stats aov pf
@@ -90,12 +90,17 @@ OneWayANOVA <- function(outcome,
                         robust.se = FALSE,
                         missing = "Exclude cases with missing data",
                         show.labels = TRUE,
-                        outcome.name = deparse(substitute(outcome)),
-                        predictor.name = deparse(substitute(predictor)),
+                        outcome.name = NULL,
+                        predictor.name = NULL,
                         p.cutoff = 0.05,
                         seed = 1223,
                         ...)
 {
+    if (is.null(outcome.name))
+        outcome.name <- OriginalName(outcome)
+    if (is.null(predictor.name))
+        predictor.name <- OriginalName(predictor)
+ #   print(predictor)
     correct <- correction
     no.correction <- correction == "None"
     alt <- alternative

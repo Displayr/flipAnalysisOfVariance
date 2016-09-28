@@ -8,8 +8,7 @@ OneWayANOVA(outcome, predictor, subset = NULL, weights = NULL,
   compare = "Pairwise", correction = "Tukey Range",
   alternative = "Two-sided", robust.se = FALSE,
   missing = "Exclude cases with missing data", show.labels = TRUE,
-  outcome.name = deparse(substitute(outcome)),
-  predictor.name = deparse(substitute(predictor)), p.cutoff = 0.05,
+  outcome.name = NULL, predictor.name = NULL, p.cutoff = 0.05,
   seed = 1223, ...)
 }
 \arguments{

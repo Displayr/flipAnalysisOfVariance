@@ -34,7 +34,7 @@
 #' @importFrom flipRegression Regression GrandMean
 #' @importFrom flipTransformations AsNumeric Factor
 #' @importFrom multcomp glht mcp adjusted
-#' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable
+#' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName
 #' @importFrom survey regTermTest
 #' @importFrom flipData SampleDescription CalibrateWeight
 #' @importFrom flipTransformations AdjustDataToReflectWeights
@@ -54,7 +54,7 @@ OneWayMANOVA <- function(outcomes,
                         ...)
 {
     # Removing missing values and filtering weights.
-    predictor.label <- if(show.labels & (lab <- Labels(predictor)) != "predictor") lab else deparse(substitute(predictor))
+    predictor.label <- if(show.labels) Labels(predictor) else OriginalName(predictor)
     n.total <- length(predictor)
     weighted <- !is.null(weights)
     if (!weighted)
