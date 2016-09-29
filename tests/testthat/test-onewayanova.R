@@ -14,7 +14,25 @@ set.seed(123)
 colas$d1MISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 colas$like.cokeMISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 
+OneWayANOVA(colas$q4a, colas$d1, compare = "To first")
 
+
+test_that("One Way ANOVA - with a weight that removes a category in the predictor",
+{
+
+    y <- colas$like.coke
+    attr(y, "name") <- "q2a"
+    attr(y, "question") <- "Q2 - Liking"
+    attr(y, "label") <- "Coca-Cola"
+    x <- colas$d1
+    attr(x, "name") <- "d1"
+    attr(x, "question") <- "D1. Age"
+    attr(x, "label") <- "D1. Age"
+    expect_error(OneWayANOVA(y, x, subset = x != "25 to 29", compare = "To mean"), NA)
+    wgt <- as.numeric(x != "25 to 29")
+    expect_error(OneWayANOVA(y, x, weights = wgt, compare = "To mean"), NA)
+    expect_error(OneWayANOVA(y, x, weights = wgt, subset = x != "25 to 29", compare = "To mean"), NA)
+})
 
 test_that("One Way ANOVA - Comparing options", {
     z = OneWayANOVA(colas$like.coke, colas$d1, compare = "To first")

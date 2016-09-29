@@ -158,7 +158,7 @@ OneWayANOVA <- function(outcome,
     alpha <- paste0(" results highlighted when ", (if (no.correction) "" else "corrected "),"p <= " , p.cutoff, "; null hypothesis: ", tolower(alt))
     result$footer <- paste0(regression$sample.description,
                             alpha,mc.correction, robust.se.text)
-    result$column.names <- levels(predictor)
+    result$column.names <- levels(factor(predictor[regression$subset]))
     result$compare <- compare
     result$r.squared <- regression$r.squared
 
@@ -182,7 +182,7 @@ OneWayANOVA <- function(outcome,
     colnames(coefs) <- colnames(regression$summary$coefficients)
     if (compare == "To mean")
     {
-        rownames(coefs) <- levels(predictor)
+        rownames(coefs) <- result$column.names
         colnames(coefs)[1] <- "Mean"
     }
     else
