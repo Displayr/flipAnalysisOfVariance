@@ -37,7 +37,7 @@ test_that("MANOVA",{
         # F P-Value
         z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE)
         z1 = OneWayANOVA(colas$like.coke, colas$d1)
-        expect_equal( z$anovas[[6]]$p, z1$p)
+        expect_equal(z$anovas[[6]]$p, z1$p)
         # t p-value
         z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE)
         z1 = OneWayANOVA(colas$like.coke, colas$d1, compare = "To mean")
@@ -57,4 +57,16 @@ test_that("MANOVA",{
         expect_equal(z$subtitle, "Significant: Pillai's Trace: 0.0764, approximate p-value: 0.41")
         z <- suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, p.cutoff = 0.05))
         expect_equal(z$subtitle, "Not significant: Pillai's Trace: 0.0764, approximate p-value: 0.41")
+        # Weights
+        y <- colas$like.coke
+        attr(y, "name") <- "q2a"
+        attr(y, "question") <- "Q2 - Liking"
+        attr(y, "label") <- "Coca-Cola"
+        x <- colas$d1
+        attr(x, "name") <- "d1"
+        attr(x, "question") <- "D1. Age"
+        attr(x, "label") <- "D1. Age"
+        wgt <- as.numeric(x != "25 to 29")
+        expect_error(suppressWarnings(OneWayMANOVA(data.frame(y, colas$d3, colas$like.coke), colas$d1, weights = wgt, show.labels = TRUE)))
+        expect_error(suppressWarnings(OneWayMANOVA(data.frame(colas$d3, colas$like.coke), colas$d1, weights = wgt, show.labels = TRUE)), NA)
 })

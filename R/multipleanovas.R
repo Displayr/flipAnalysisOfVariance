@@ -57,14 +57,7 @@ MultipleANOVAs <- function(dependents,
                                                        p.cutoff = p.cutoff,
                                                        seed = seed,
                                                        ...))
-    if (is.data.frame(dependents))
-        names(anovas) <- flipFormat::Labels(dependents)
-    else
-    {
-        nms <- names(dependents)
-        if (is.null(nms))
-            paste("Variable", 1:length(anovas))
-    }
+    names(anovas) <- flipFormat::Labels(dependents)
     anovas
 }
 

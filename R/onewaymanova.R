@@ -33,6 +33,7 @@
 #' Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 #' @importFrom flipRegression Regression GrandMean
 #' @importFrom flipTransformations AsNumeric Factor
+#' @importFrom flipData CheckForLinearDependence
 #' @importFrom multcomp glht mcp adjusted
 #' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName
 #' @importFrom survey regTermTest
@@ -76,13 +77,16 @@ OneWayMANOVA <- function(outcomes,
     n.variables <- ncol(outcomes)
     predictor <- df[, n.variables + 1]
     outcomes <- df[, 1:n.variables]
+
     footer <- SampleDescription(n.total, n.subset, n.estimation, subset.label, weighted, weight.label, missing = "", imputation.label = NULL, NULL)
     if (weighted)
     {
         wgt <- CalibrateWeight(df[, n.variables + 2])
         df <- AdjustDataToReflectWeights(df[, 1:(n.variables + 1)], wgt)
-        o.matrix <- as.matrix(df[, -1:-n.variables])
+        o.matrix <- as.matrix(df[, 1:n.variables])
+        CheckForLinearDependence(o.matrix)
         g <- df[, n.variables + 1]
+        g <- removeMissingLevels(g)
         footer <- paste0(footer,
                          "; Pillau's trace computed using a resampled sample of ",
                          nrow(df),
@@ -91,7 +95,12 @@ OneWayMANOVA <- function(outcomes,
         model <- lm(o.matrix ~ g)
     }
     else
-        model <- lm(as.matrix(outcomes) ~ predictor)
+    {
+        o.matrix <- as.matrix(outcomes)
+        CheckForLinearDependence(o.matrix)
+        predictor <- removeMissingLevels(predictor)
+        model <- lm(o.matrix ~ predictor)
+    }
     result <- list(manova = summary(manova(model)))
     result$anovas <- MultipleANOVAs( outcomes,
                         predictor,
@@ -116,8 +125,26 @@ OneWayMANOVA <- function(outcomes,
                               ", approximate p-value: ",
                               FormatAsPValue(p))
     result
-    }
+}
 
+
+#' removeMissingLevels
+#' @param x A factor
+removeMissingLevels <- function(x)
+{
+    tbl <- table(x)
+    if (min(tbl) == 0)
+    {
+        label <- Labels(x)
+        print(label)
+        stop("dog")
+        warning(paste0("One or more categories of ", label, " do not appear in the data: ", names(tbl[tbl == 0]),
+                       ". This may be because they are empty in the raw data, or because they are empty after any weights, filters/subsets, or missing data settings are applied. ",
+                        "This may cause an error. It is recommended that you merge categories prior to estimating the model, use an alternative missing data method, filter the data, or make the data numeric."))
+        x <- Factor(x)
+    }
+    x
+}
 #' print.OneWayMANOVA
 #'
 #' Returns the OneWayMANOVA as a pretty table.

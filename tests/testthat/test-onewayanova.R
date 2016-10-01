@@ -14,9 +14,6 @@ set.seed(123)
 colas$d1MISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 colas$like.cokeMISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 
-OneWayANOVA(colas$q4a, colas$d1, compare = "To first")
-
-
 test_that("One Way ANOVA - with a weight that removes a category in the predictor",
 {
 
@@ -28,10 +25,10 @@ test_that("One Way ANOVA - with a weight that removes a category in the predicto
     attr(x, "name") <- "d1"
     attr(x, "question") <- "D1. Age"
     attr(x, "label") <- "D1. Age"
-    expect_error(OneWayANOVA(y, x, subset = x != "25 to 29", compare = "To mean"), NA)
+    expect_error(suppressWarnings(OneWayANOVA(y, x, subset = x != "25 to 29", compare = "To mean")), NA)
     wgt <- as.numeric(x != "25 to 29")
-    expect_error(OneWayANOVA(y, x, weights = wgt, compare = "To mean"), NA)
-    expect_error(OneWayANOVA(y, x, weights = wgt, subset = x != "25 to 29", compare = "To mean"), NA)
+    expect_error(suppressWarnings(OneWayANOVA(y, x, weights = wgt, compare = "To mean")))
+    expect_error(suppressWarnings(OneWayANOVA(y, x, weights = wgt, subset = x != "25 to 29", compare = "To mean")))
 })
 
 test_that("One Way ANOVA - Comparing options", {
@@ -57,13 +54,13 @@ test_that("One Way ANOVA - Comparing options", {
     expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, missing = "Error if missing data", compare = "To mean"))
     expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Error if missing data", compare = "To mean"))
     # Exclude missing
-    OneWayANOVA(colas$like.coke, colas$d1MISSING, compare = "To mean")
-    OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, compare = "To mean")
-    OneWayANOVA(colas$like.cokeMISSING, colas$d1, compare = "To mean")
+    expect_error(OneWayANOVA(colas$like.coke, colas$d1MISSING, compare = "To mean"), NA)
+    expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, compare = "To mean"), NA)
+    expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1, compare = "To mean"), NA)
     # Imputation
-    OneWayANOVA(colas$like.coke, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean")
-    OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean")
-    OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Imputation (replace missing values with estimates)", compare = "To mean")
+    expect_error(OneWayANOVA(colas$like.coke, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean"), NA)
+    expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean"), NA)
+    expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Imputation (replace missing values with estimates)", compare = "To mean"))
     # Show Labels
     z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first")
     expect_equal(z$title,  "One-way ANOVA: Like Coca-Cola by Age")
@@ -75,9 +72,9 @@ test_that("One Way ANOVA - Comparing options", {
     expect_equal(z$title,  "One-way ANOVA: Dog by Cat")
     # p.cutoff
     z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", correction = "None", p.cutoff = .5)
-    expect_equal(z$subtitle, "Not significant: F = 0.645 on 8 and 240 degrees-of-freedom: p = 0.74; R-squared: 0.02105")
+    expect_equal(z$subtitle, "Not significant: F: 0.645 on 8 and 240 degrees-of-freedom: p: 0.74; R-squared: 0.02105")
     z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", correction = "None", p.cutoff = .85)
-    expect_equal(z$subtitle, "Significant: F = 0.645 on 8 and 240 degrees-of-freedom: p = 0.74; R-squared: 0.02105")
+    expect_equal(z$subtitle, "Significant: F: 0.645 on 8 and 240 degrees-of-freedom: p: 0.74; R-squared: 0.02105")
 })
 
 test_that("One Way ANOVA - vs SPSS", {

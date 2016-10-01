@@ -101,6 +101,8 @@ OneWayANOVA <- function(outcome,
     if (is.null(predictor.name))
         predictor.name <- OriginalName(predictor)
  #   print(predictor)
+    if (!is.null(subset))
+        attr(subset, "name") = OriginalName(subset)
     correct <- correction
     no.correction <- correction == "None"
     alt <- alternative
@@ -150,8 +152,8 @@ OneWayANOVA <- function(outcome,
     result$p <- p <- if(weighted) f.test$p else 1 - pf(f, df, ddf)
     result$p.cutoff <- p.cutoff
     result$subtitle <- paste0(if (p <= p.cutoff) "Significant" else "Not significant",
-             ": F = ", FormatAsReal(f, 4),
-             " on ", df, " and ", ddf, " degrees-of-freedom: p = ", FormatAsPValue(p),
+             ": F: ", FormatAsReal(f, 4),
+             " on ", df, " and ", ddf, " degrees-of-freedom; p: ", FormatAsPValue(p),
              "; R-squared: ", FormatAsReal(regression$r.squared, 4))
     result$title <-paste0("One-way ANOVA: ", outcome.label, " by ", predictor.label)
     mc.correction <- paste0("; multiple comparisons correction: ", correct)
