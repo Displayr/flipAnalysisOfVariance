@@ -136,8 +136,6 @@ removeMissingLevels <- function(x)
     if (min(tbl) == 0)
     {
         label <- Labels(x)
-        print(label)
-        stop("dog")
         warning(paste0("One or more categories of ", label, " do not appear in the data: ", names(tbl[tbl == 0]),
                        ". This may be because they are empty in the raw data, or because they are empty after any weights, filters/subsets, or missing data settings are applied. ",
                         "This may cause an error. It is recommended that you merge categories prior to estimating the model, use an alternative missing data method, filter the data, or make the data numeric."))

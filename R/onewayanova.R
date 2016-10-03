@@ -101,8 +101,7 @@ OneWayANOVA <- function(outcome,
     if (is.null(predictor.name))
         predictor.name <- OriginalName(predictor)
  #   print(predictor)
-    if (!is.null(subset))
-        attr(subset, "name") = OriginalName(subset)
+    subset.description <- try(deparse(substitute(subset)), silent = TRUE) #We don't know whether subset is a variable in the environment or in data.
     correct <- correction
     no.correction <- correction == "None"
     alt <- alternative
@@ -151,7 +150,7 @@ OneWayANOVA <- function(outcome,
     result$ddf <- ddf <- if(weighted) f.test$ddf else regression$summary$fstatistic[3]
     result$p <- p <- if(weighted) f.test$p else 1 - pf(f, df, ddf)
     result$p.cutoff <- p.cutoff
-    result$subtitle <- paste0(if (p <= p.cutoff) "Significant" else "Not significant",
+    result$subtitle <- if (is.na(p)) "Error computing p-value" else paste0(if (p <= p.cutoff) "Significant" else "Not significant",
              ": F: ", FormatAsReal(f, 4),
              " on ", df, " and ", ddf, " degrees-of-freedom; p: ", FormatAsPValue(p),
              "; R-squared: ", FormatAsReal(regression$r.squared, 4))
@@ -205,7 +204,7 @@ politeWeightedFTest <- function(model)
             return(TRUE)
         FALSE
     }
-    test <- suppressWarnings(try(regTermTest(model, "predictor")))
+    test <- suppressWarnings(try(regTermTest(model, "predictor"), silent = TRUE))
     if(.errorInTest(test))
     {
         warning("Unable to compute weighted F-test; probably due to a problem with the data (e.g., too small sample size in a group).")

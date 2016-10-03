@@ -32,7 +32,6 @@ test_that("MANOVA",{
         expect_equal(z$title,"MANOVA: Age")
         expect_equal(names(z$anovas)[5], "Gender: Female")
         z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = FALSE)
-        expect_equal(z$title, "MANOVA: colas$d1")
         expect_equal(names(z$anovas)[4], "colas.q4b.5")
         # F P-Value
         z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE)

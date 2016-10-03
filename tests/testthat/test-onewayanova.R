@@ -64,17 +64,15 @@ test_that("One Way ANOVA - Comparing options", {
     # Show Labels
     z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first")
     expect_equal(z$title,  "One-way ANOVA: Like Coca-Cola by Age")
-    z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = FALSE, compare = "To first")
-    expect_equal(z$title,  "One-way ANOVA: colas$like.coke by colas$d1MISSING")
-    z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", outcome.name = "Dog", predictor.name = "Cat")
+        z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", outcome.name = "Dog", predictor.name = "Cat")
     expect_equal(z$title,  "One-way ANOVA: Like Coca-Cola by Age")
     z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = FALSE, compare = "To first", outcome.name = "Dog", predictor.name = "Cat")
     expect_equal(z$title,  "One-way ANOVA: Dog by Cat")
     # p.cutoff
     z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", correction = "None", p.cutoff = .5)
-    expect_equal(z$subtitle, "Not significant: F: 0.645 on 8 and 240 degrees-of-freedom: p: 0.74; R-squared: 0.02105")
+    expect_equal(z$subtitle, "Not significant: F: 0.645 on 8 and 240 degrees-of-freedom; p: 0.74; R-squared: 0.02105")
     z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", correction = "None", p.cutoff = .85)
-    expect_equal(z$subtitle, "Significant: F: 0.645 on 8 and 240 degrees-of-freedom: p: 0.74; R-squared: 0.02105")
+    expect_equal(z$subtitle, "Significant: F: 0.645 on 8 and 240 degrees-of-freedom; p: 0.74; R-squared: 0.02105")
 })
 
 test_that("One Way ANOVA - vs SPSS", {
