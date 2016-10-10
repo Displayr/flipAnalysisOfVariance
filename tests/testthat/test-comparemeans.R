@@ -15,7 +15,6 @@ test_that("Bug: System is computationally singular.CE-626 ",
                     suppressWarnings(OneWayANOVA(dep, ind, weigts = wgt))
                 }, NA)
                 expect_error(CompareMultipleMeans(dep, ind, weights = wgt))
-
           })
 
 

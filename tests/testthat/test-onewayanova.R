@@ -14,9 +14,14 @@ set.seed(123)
 colas$d1MISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 colas$like.cokeMISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 
+test_that("Fallback due to problems with underlying sandwich variance estimates",
+          {
+              suppressWarnings(flipU::ExpectWarning(OneWayANOVA(colas$Q5_7_1, colas$d1, weights = rep(1, 327)),"technical problem"))
+              suppressWarnings(flipU::ExpectWarning(OneWayANOVA(colas$Q5_7_1, colas$d1, robust.se = TRUE), "technical problem"))
+          })
+
 test_that("One Way ANOVA - with a weight that removes a category in the predictor",
 {
-
     y <- colas$like.coke
     attr(y, "name") <- "q2a"
     attr(y, "question") <- "Q2 - Liking"
@@ -27,26 +32,26 @@ test_that("One Way ANOVA - with a weight that removes a category in the predicto
     attr(x, "label") <- "D1. Age"
     expect_error(suppressWarnings(OneWayANOVA(y, x, subset = x != "25 to 29", compare = "To mean")), NA)
     wgt <- as.numeric(x != "25 to 29")
-    expect_error(suppressWarnings(OneWayANOVA(y, x, weights = wgt, compare = "To mean")))
-    expect_error(suppressWarnings(OneWayANOVA(y, x, weights = wgt, subset = x != "25 to 29", compare = "To mean")))
+    expect_error(suppressWarnings(OneWayANOVA(y, x, weights = wgt, compare = "To mean")), NA)
+    expect_error(suppressWarnings(OneWayANOVA(y, x, weights = wgt, subset = x != "25 to 29", compare = "To mean")), NA)
 })
 
 test_that("One Way ANOVA - Comparing options", {
     z = OneWayANOVA(colas$like.coke, colas$d1, compare = "To first")
     z1 = OneWayANOVA(colas$like.coke, colas$d1, compare = "To mean")
-    z2 = OneWayANOVA(colas$like.coke, colas$d1, compare = "Pairwise")
+    z2 = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1, compare = "Pairwise"))
     expect_true(nrow(z$coefs) < nrow(z1$coefs) & nrow(z1$coefs) < nrow(z2$coefs))
     # Correction
-    z = OneWayANOVA(colas$like.coke, colas$d1)
+    z = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1))
     z1 = OneWayANOVA(colas$like.coke, colas$d1, correction = "Bonferroni")
     expect_true(all(z$coefs[, 4] <= z1$coefs[, 4]) & sum(z$coefs[, 4] < z1$coefs[, 4]) > 0)
     # Alternative
-    z = OneWayANOVA(colas$like.coke, colas$d1)
-    z1 = OneWayANOVA(colas$like.coke, colas$d1, alternative = "Greater")
+    z = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1))
+    z1 = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1, alternative = "Greater"))
     expect_true(z$coefs[9, 4] > z1$coefs[9, 4] & z$coefs[1, 4] < z1$coefs[1, 4])
     # Alternative
-    z = OneWayANOVA(colas$like.coke, colas$d1)
-    z1 = OneWayANOVA(colas$like.coke, colas$d1, robust.se = TRUE)
+    z = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1))
+    z1 = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1, robust.se = TRUE))
     expect_true(z$coefs[1, 4] != z1$coefs[1, 4])
     # Missing data
     expect_error(OneWayANOVA(colas$like.coke, colas$d1, missing = "Error if missing data", compare = "To mean"), NA)
@@ -123,20 +128,20 @@ test_that("One Way ANOVA - vs Stata",
     z <- OneWayANOVA(colas$like.coke, colas$d1, compare = "To first", correction = "None")
     expect_equal(z$coefs[1,4], 0.157, tolerance = 0.0005)
     # F
-    expect_equal(as.numeric(z$f), 1.25, tolerance = 0.005)
+    expect_equal(as.numeric(z$Ftest), 1.25, tolerance = 0.005)
     expect_equal(as.numeric(z$p), 0.2688, tolerance = 0.005)
 
     # Weighted stata - binary predictor  "svy linearized : regress q4a age25"
     num <- as.numeric(colas$d1)
     age25 <- as.integer(colas$d1 == "25 to 29")
-    z = OneWayANOVA(colas$like.coke, age25, weights = colas$agenumeric, compare = "To first", correction = "None")#    z = flipRegression::Regression(colas$like.coke ~ age25, weights = colas$agenumeric)
-    expect_equal(as.numeric(z$f), 1.39, tolerance = 0.005)
+    z = OneWayANOVA(colas$like.coke, age25, weights = colas$agenumeric, compare = "To first", correction = "None")
+    expect_equal(as.numeric(z$Ftest), 1.39, tolerance = 0.005)
     expect_equal(as.numeric(z$p), .239, tolerance = 0.005)
     expect_equal(z$coefs[1,4], .2387010622, tolerance = 0.005)
 
     # Weighted stata - categorical predictor  "svy linearized : regress q4a i.d1"
     z = OneWayANOVA(colas$like.coke, colas$d1, weights = colas$agenumeric, compare = "To first", correction = "None")#
-    expect_equal(as.numeric(z$f), 1.28, tolerance = 0.03) # F is quite different.
+    expect_equal(as.numeric(z$Ftest), 1.28, tolerance = 0.03) # F is quite different.
     expect_equal(as.numeric(z$p), 0.2553, tolerance = 0.015)
     expect_equal(z$coefs[1,4], 0.1223921195, tolerance = 0.00005)
 

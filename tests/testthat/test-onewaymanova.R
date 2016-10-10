@@ -35,7 +35,7 @@ test_that("MANOVA",{
         expect_equal(names(z$anovas)[4], "colas.q4b.5")
         # F P-Value
         z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE)
-        z1 = OneWayANOVA(colas$like.coke, colas$d1)
+        z1 = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1))
         expect_equal(z$anovas[[6]]$p, z1$p)
         # t p-value
         z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE)
