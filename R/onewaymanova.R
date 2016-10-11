@@ -8,10 +8,6 @@
 #'   may not be an expression. \code{subset} may not
 #' @param weights An optional vector of sampling weights, or, the name or, the
 #'   name of a variable in \code{data}. It may not be an expression.
-#' @param correction The multiple comparison adjustment method: \code{"Tukey Range", "None",
-#' "False Discovery Rate", "Benjamini & Yekutieli", "Bonferroni",
-#' "Free Combinations"}, \code{"Hochberg", "Holm",
-#' "Hommel", "Single-step"} \code{"Shaffer"}, and \code{"Westfall"}.
 #' @param robust.se Computes standard errors that are robust to violations of
 #'   the assumption of constant variance. This parameter is ignored
 #'   if weights are applied (as weights already employ a sandwich estimator).
@@ -23,12 +19,15 @@
 #' @param p.cutoff The alpha level to be used in testing.
 #' @param seed The random number seed used when evaluating the multivariate t-distribution.
 #' @param binary Automatically converts non-ordered factors to dummy-coded (binary indicator) variables.
+#' @param pillai If \code{TRUE}, Pillai's Trace is computed as the overall MANOVA statistic.
+#' @param fdr If \code{TRUE}, the False Discovery Rate correction is applied. This is the default.
 #' @param ... Other parameters to be passed to \code{OneWayANOVA}.
-#' @details Where sampling weights are provided, a sample is constructed via bootstrapping, and this
-#' sample is used in the testing for the MANOVA (but no for the individual ANOVAs or post hoc tests).
-#' See \code{OneWayANOVA} for more about the other parameters.
+#' @details By default, the overall p-value is computed as the smallest p-value in any cell following application of the
+#' False Discovery Rate correction to the p-values. If the\code{fdr} is set to \code{FALSE}, the correction is not applied, which means
+#' that the overall p-value is the smallest of the uncorrected p-values, and, additionally, the p-values for each row
+#' are from the \link{OneWayANOVA} F-tests.
 #'
-#' Tests are two-sided, comparing to the Grand Mean (i.e., "To mean").
+#' Tests are two-sided, comparing to the Grand Mean (i.e., "To mean" in \link{OneWayANOVA}).
 #'
 #' Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 #' @importFrom flipRegression Regression GrandMean
@@ -39,19 +38,20 @@
 #' @importFrom survey regTermTest
 #' @importFrom flipData SampleDescription CalibrateWeight
 #' @importFrom flipTransformations AdjustDataToReflectWeights
-#' @importFrom stats complete.cases lm manova
+#' @importFrom stats complete.cases lm manova p.adjust
 #' @export
 OneWayMANOVA <- function(outcomes,
                         predictor,
                         subset = NULL,
                         weights = NULL,
-                        correction = "Tukey Range",
                         robust.se = FALSE,
                         missing = "Exclude cases with missing data",
                         show.labels = FALSE,
                         seed = 1223,
                         p.cutoff = 0.05,
                         binary = FALSE,
+                        pillai = FALSE,
+                        fdr = TRUE,
                         ...)
 {
     # Removing missing values and filtering weights.
@@ -79,6 +79,7 @@ OneWayMANOVA <- function(outcomes,
     outcomes <- df[, 1:n.variables]
 
     footer <- SampleDescription(n.total, n.subset, n.estimation, subset.label, weighted, weight.label, missing = "", imputation.label = NULL, NULL)
+    footer <- paste0(footer, "two-sided comparisons against the row means", if (fdr) " (p-values corrected using False Discovery Rate)")
     if (weighted)
     {
         wgt <- CalibrateWeight(df[, n.variables + 2])
@@ -87,11 +88,8 @@ OneWayMANOVA <- function(outcomes,
         CheckForLinearDependence(o.matrix)
         g <- df[, n.variables + 1]
         g <- removeMissingLevels(g)
-        footer <- paste0(footer,
-                         "; Pillau's trace computed using a resampled sample of ",
-                         nrow(df),
-                         " observations (the effective sample is ", nrow(df),
-                         ")")
+        if (pillai)
+            stop("Pillai's trace cannot be correctly computed with weighted data.")
         model <- lm(o.matrix ~ g)
     }
     else
@@ -101,29 +99,48 @@ OneWayMANOVA <- function(outcomes,
         predictor <- removeMissingLevels(predictor)
         model <- lm(o.matrix ~ predictor)
     }
-    result <- list(manova = summary(manova(model)))
-    result$anovas <- MultipleANOVAs( outcomes,
+    result <- list()
+    if (pillai) result$manova <- summary(manova(model))
+    result$anovas <- MultipleANOVAs(data.frame(outcomes),
                         predictor,
                         subset = NULL,
                         weights = NULL,
                         compare = "To mean",
-                        correction = correction,
+                        correction = "None",
                         alernative = "Two-sided",
                         show.labels = show.labels,
                         p.cutoff = p.cutoff,
                         seed = seed,
                         ...)
+    # Performing FDR correction.
+    ps <- unlist(lapply(result$anovas, function(x) x$coefs[, 4]))
+    if (fdr)
+    {
+        ps <- p.adjust(ps, method = "fdr")
+        n.pars <- length(ps) / n.variables
+        for (a in 1:n.variables)
+        {
+            var.ps <- ps[(a - 1) + 1:n.pars]
+            result$anovas[[a]]$coefs[, 4] <- var.ps
+            result$anovas[[a]]$p <- min(var.ps)
+        }
+    }
+    # Tidying up outputs
     if (show.labels)
         names(result$anovas) <- labels
     class(result) <- "OneWayMANOVA"
     result$title <- paste0("MANOVA: ", predictor.label)
-    result$p <- p <- result$manova$stats[1,6]
-    result$pillai <- pillai <- result$manova$stats[1,2]
-    result$subtitle <- paste0(if (p <= p.cutoff) "Significant" else "Not significant",
-                              ": Pillai's Trace: ",
-                              FormatAsReal(pillai, 3),
-                              ", approximate p-value: ",
+
+    result$p <- p <- if (pillai) result$manova$stats[1,6] else min(ps)
+    if (pillai)
+        result$pillai <- result$manova$stats[1,2]
+    subtitle <- if (p <= p.cutoff) "Significant" else "Not significant"
+    result$subtitle <- paste0(subtitle, " - ", if (pillai)
+                    paste0("Pillai's Trace: ", FormatAsReal(result$pillai, 3), ", approximate p-value: ")
+                else
+                    paste0("Smallest p-value", (if (fdr) " (after applying False Discovery Rate correction)"),  ": "),
                               FormatAsPValue(p))
+    result$footer <- footer
     result
 }
 
@@ -155,6 +172,6 @@ print.OneWayMANOVA <- function(x, ...)
     print(FormattableANOVAs(x$anovas,
         title = x$title,
         subtitle = x$subtitle,
-        footer = paste0(x$anovas[[1]]$footer, " (corrections performed within rows)")))
+        footer = x$footer))
 }
 
