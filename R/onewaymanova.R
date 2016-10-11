@@ -120,7 +120,7 @@ OneWayMANOVA <- function(outcomes,
         n.pars <- length(ps) / n.variables
         for (a in 1:n.variables)
         {
-            var.ps <- ps[(a - 1) + 1:n.pars]
+            var.ps <- ps[(a - 1)*n.pars + 1:n.pars]
             result$anovas[[a]]$coefs[, 4] <- var.ps
             result$anovas[[a]]$p <- min(var.ps)
         }

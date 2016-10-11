@@ -11,6 +11,13 @@ set.seed(123)
 colas$d1MISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 colas$like.cokeMISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 
+
+library(flipAnalysisOfVariance)
+manova <- OneWayMANOVA(data.frame(colas$q4a, colas$q4c, colas$q4b, colas$q4d, colas$q4e, colas$q4f),
+    colas$d1)
+
+
+
 test_that("MANOVA",{
         # Pillai's trace.
         op <- options(contrasts = c("contr.helmert", "contr.poly"))
