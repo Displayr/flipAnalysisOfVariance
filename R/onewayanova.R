@@ -175,7 +175,7 @@ OneWayANOVA <- function(outcome,
              "; R-squared: ", FormatAsReal(result$r.squared, 4))
     result$title <-paste0("One-way ANOVA: ", outcome.label, " by ", predictor.label)
     mc.correction <- paste0("; multiple comparisons correction: ", correct)
-    alpha <- paste0("; null hypothesis: ", tolower(alt))
+    alpha <- paste0("null hypothesis: ", tolower(alt))
     result$footer <- paste0(regression$sample.description,
                             alpha, mc.correction, robust.se.text)
     r <- result$original$test
