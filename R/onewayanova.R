@@ -33,6 +33,8 @@
 #' the actual variable name, which does not work so well if the function is being called by another function.
 #' @param p.cutoff The alpha level to be used in testing.
 #' @param seed The random number seed used when evaluating the multivariate t-distribution.
+#' @param return.all If \code{TRUE}, returns all the internal computations in the output object. If \code{FALSE},
+#' returns just the information required to print the output.
 #' @param ... Other parameters to be passed to wrapped functions.
 #' @details When 'Tukey Range' is selected, p-values are computed using t'tests, with a correction for the family-wise
 #' error rate such that the p-values are correct for the largest range of values being compared (i.e.,
@@ -96,6 +98,7 @@ OneWayANOVA <- function(outcome,
                         predictor.name = NULL,
                         p.cutoff = 0.05,
                         seed = 1223,
+                        return.all = FALSE,
                         ...)
 {
     .multcompSummary <- function(comparisons, correct)
@@ -206,6 +209,25 @@ OneWayANOVA <- function(outcome,
     if (!no.correction)
         colnames(coefs)[4] <- "Corrected p"
     result$coefs <- coefs
+    # Creating the final outputs.
+    is.t <- result$original$df > 0
+    estimate.name <- if (result$compare == "To mean") "Estimate" else "Difference"
+    p.name <- if(result$correction == "NONE")
+        "<span style='font-style:italic;'>p</span>"
+    else
+        "Corrected <span style='font-style:italic;'>p</span>"
+
+    result$table <- RegressionTable(result$coefs,
+                          title = result$title,
+                          subtitle = result$subtitle,
+                          footer = result$footer,
+                          estimate.name = estimate.name,
+                          se.name = if (result$robust.se) "Robust SE" else "Standard Error",
+                          p.name = p.name,
+                          p.cutoff = result$p.cutoff)
+
+    if (!return.all)
+        result <- list(table = result$table)
     class(result) <- "OneWayANOVA"
     result
 }
@@ -275,22 +297,7 @@ aovFTest <- function(model)
 #' @export
 print.OneWayANOVA <- function(x, ...)
 {
-    is.t <- x$original$df > 0
-    estimate.name <- if (x$compare == "To mean") "Estimate" else "Difference"
-    p.name <- if(x$correction == "NONE")
-        "<span style='font-style:italic;'>p</span>"
-    else
-        "Corrected <span style='font-style:italic;'>p</span>"
-
-    dt <- RegressionTable(x$coefs,
-                          title = x$title,
-                          subtitle = x$subtitle,
-                          footer = x$footer,
-                          estimate.name = estimate.name,
-                          se.name = if (x$robust.se) "Robust SE" else "Standard Error",
-                          p.name = p.name,
-                          p.cutoff = x$p.cutoff)
-    print(dt)
+    print(x$table)
 }
 
 

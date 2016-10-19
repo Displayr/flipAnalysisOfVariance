@@ -9,7 +9,7 @@ OneWayANOVA(outcome, predictor, subset = NULL, weights = NULL,
   alternative = "Two-sided", robust.se = FALSE,
   missing = "Exclude cases with missing data", show.labels = TRUE,
   outcome.name = NULL, predictor.name = NULL, p.cutoff = 0.05,
-  seed = 1223, ...)
+  seed = 1223, return.all = FALSE, ...)
 }
 \arguments{
 \item{outcome}{The outcome variable.}
@@ -57,6 +57,9 @@ the actual variable name, which does not work so well if the function is being c
 \item{p.cutoff}{The alpha level to be used in testing.}
 
 \item{seed}{The random number seed used when evaluating the multivariate t-distribution.}
+
+\item{return.all}{If \code{TRUE}, returns all the internal computations in the output object. If \code{FALSE},
+returns just the information required to print the output.}
 
 \item{...}{Other parameters to be passed to wrapped functions.}
 }

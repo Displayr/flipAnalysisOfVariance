@@ -21,6 +21,8 @@
 #' @param binary Automatically converts non-ordered factors to dummy-coded (binary indicator) variables.
 #' @param pillai If \code{TRUE}, Pillai's Trace is computed as the overall MANOVA statistic.
 #' @param fdr If \code{TRUE}, the False Discovery Rate correction is applied. This is the default.
+#' @param return.all If \code{TRUE}, returns all the internal computations in the output object. If \code{FALSE},
+#' returns just the information required to print the output.
 #' @param ... Other parameters to be passed to \code{OneWayANOVA}.
 #' @details By default, the overall p-value is computed as the smallest p-value in any cell following application of the
 #' False Discovery Rate correction to the p-values. If the\code{fdr} is set to \code{FALSE}, the correction is not applied, which means
@@ -52,6 +54,7 @@ OneWayMANOVA <- function(outcomes,
                         binary = FALSE,
                         pillai = FALSE,
                         fdr = TRUE,
+                        return.all = FALSE,
                         ...)
 {
     # Removing missing values and filtering weights.
@@ -111,6 +114,7 @@ OneWayMANOVA <- function(outcomes,
                         show.labels = show.labels,
                         p.cutoff = p.cutoff,
                         seed = seed,
+                        return.all = TRUE,
                         ...)
     # Performing FDR correction.
     ps <- unlist(lapply(result$anovas, function(x) x$coefs[, 4]))
@@ -128,7 +132,6 @@ OneWayMANOVA <- function(outcomes,
     # Tidying up outputs
     if (show.labels)
         names(result$anovas) <- labels
-    class(result) <- "OneWayMANOVA"
     result$title <- paste0("MANOVA: ", predictor.label)
 
     result$p <- p <- if (pillai) result$manova$stats[1,6] else min(ps)
@@ -141,6 +144,13 @@ OneWayMANOVA <- function(outcomes,
                     paste0("Smallest p-value", (if (fdr) " (after applying False Discovery Rate correction)"),  ": "),
                               FormatAsPValue(p))
     result$footer <- footer
+    result$table <- FormattableANOVAs(result$anovas,
+                    title = result$title,
+                    subtitle = result$subtitle,
+                    footer = result$footer)
+    if (!return.all)
+        result <- list(table = result$table)
+    class(result) <- "OneWayMANOVA"
     result
 }
 
@@ -169,9 +179,6 @@ removeMissingLevels <- function(x)
 #' @export
 print.OneWayMANOVA <- function(x, ...)
 {
-    print(FormattableANOVAs(x$anovas,
-        title = x$title,
-        subtitle = x$subtitle,
-        footer = x$footer))
+    print(x$table)
 }
 

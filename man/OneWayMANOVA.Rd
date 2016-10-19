@@ -7,7 +7,7 @@
 OneWayMANOVA(outcomes, predictor, subset = NULL, weights = NULL,
   robust.se = FALSE, missing = "Exclude cases with missing data",
   show.labels = FALSE, seed = 1223, p.cutoff = 0.05, binary = FALSE,
-  pillai = FALSE, fdr = TRUE, ...)
+  pillai = FALSE, fdr = TRUE, return.all = FALSE, ...)
 }
 \arguments{
 \item{outcomes}{The outcome variables.}
@@ -41,6 +41,9 @@ variables label is an attribute (e.g., attr(foo, "label")).}
 \item{pillai}{If \code{TRUE}, Pillai's Trace is computed as the overall MANOVA statistic.}
 
 \item{fdr}{If \code{TRUE}, the False Discovery Rate correction is applied. This is the default.}
+
+\item{return.all}{If \code{TRUE}, returns all the internal computations in the output object. If \code{FALSE},
+returns just the information required to print the output.}
 
 \item{...}{Other parameters to be passed to \code{OneWayANOVA}.}
 }
