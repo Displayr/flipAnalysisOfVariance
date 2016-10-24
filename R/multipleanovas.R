@@ -1,8 +1,8 @@
-#' \code{MultipleANOVAs}
+    #' \code{MultipleANOVAs}
 #'
 #' Computes multiple ANOVAs.
-#' @param outcomes The outcome variables.
-#' @param predictor The factor representing the groups.
+#' @param dependents The outcome variables.
+#' @param independent The factor representing the groups.
 #' @param subset An optional vector specifying a subset of observations to be
 #'   used in the fitting process, or, the name of a variable in \code{data}. It
 #'   may not be an expression. \code{subset} may not
@@ -33,8 +33,8 @@
 #' Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 #' @importFrom flipFormat Labels
 #' @export
-MultipleANOVAs <- function(outcomes,
-                           predictor,
+MultipleANOVAs <- function(dependents,
+                           independent,
                            subset = NULL,
                            weights = NULL,
                            compare = "To mean",
@@ -47,8 +47,8 @@ MultipleANOVAs <- function(outcomes,
                            p.cutoff = 0.05,
                            ...)
 {
-    anovas <- lapply(outcomes, function(x) OneWayANOVA(x,
-                                                       predictor,
+    anovas <- lapply(dependents, function(x) OneWayANOVA(x,
+                                                       independent,
                                                        compare = "To mean",
                                                        subset = subset,
                                                        weights = weights,
@@ -56,15 +56,9 @@ MultipleANOVAs <- function(outcomes,
                                                        alternative = alternative,
                                                        p.cutoff = p.cutoff,
                                                        seed = seed,
+                                                       all.results = TRUE,
                                                        ...))
-    if (is.data.frame(outcomes))
-        names(anovas) <- flipFormat::Labels(outcomes)
-    else
-    {
-        nms <- names(outcomes)
-        if (is.null(nms))
-            paste("Variable", 1:length(anovas))
-    }
+    names(anovas) <- flipFormat::Labels(dependents)
     anovas
 }
 
@@ -91,6 +85,7 @@ FormattableANOVAs <- function(anovas, title, subtitle, footer)
         subtitle = subtitle,
         footer = footer,
         p.cutoff = anovas[[1]]$p.cutoff)
+    return(mct)
 }
 
 #' \code{ANOVAsAsTable}
@@ -114,7 +109,9 @@ ANOVAsAsTable <- function(x)
         overall.p <- c(overall.p, i$p)
     }
     rownames(means) <- names(x)
-    column.names <- paste0(x[[1]]$column.names, "<br>","n = ",x[[1]]$n)
+    group.names <- x[[1]]$column.names
+    n <- x[[1]]$n
+    column.names <- paste0(group.names, "<br>","n: ", n)
     colnames(means) <- LETTERS[1:(k <- ncol(means))]
     colnames(ps) <- paste0(LETTERS[1:k], "1")
     return(list(means = means,

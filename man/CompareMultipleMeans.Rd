@@ -5,7 +5,7 @@
 \title{\code{CompareMultipleMeans}}
 \usage{
 CompareMultipleMeans(outcomes, predictor, title = "", subtitle = "",
-  footer = "", weights = NULL, ...)
+  footer = "", weights = NULL, show.labels = TRUE, ...)
 }
 \arguments{
 \item{outcomes}{The outcome variables.}
@@ -19,6 +19,8 @@ CompareMultipleMeans(outcomes, predictor, title = "", subtitle = "",
 \item{footer}{Footer of the table.}
 
 \item{weights}{The sampling weights}
+
+\item{show.labels}{Show labels instead of variable names}
 
 \item{...}{Parameters to pass to \code{\link{OneWayANOVA}}.}
 }

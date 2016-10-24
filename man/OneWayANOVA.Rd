@@ -5,11 +5,11 @@
 \title{\code{OneWayANOVA}}
 \usage{
 OneWayANOVA(outcome, predictor, subset = NULL, weights = NULL,
-  compare = "Pairwise", correction = "Tukey Range", robust.se = FALSE,
-  alternative = "Two-sided", missing = "Exclude cases with missing data",
-  show.labels = TRUE, outcome.name = deparse(substitute(outcome)),
-  predictor.name = deparse(substitute(predictor)), p.cutoff = 0.05,
-  seed = 1223, ...)
+  compare = "Pairwise", correction = "Tukey Range",
+  alternative = "Two-sided", robust.se = FALSE,
+  missing = "Exclude cases with missing data", show.labels = TRUE,
+  outcome.name = NULL, predictor.name = NULL, p.cutoff = 0.05,
+  seed = 1223, return.all = FALSE, ...)
 }
 \arguments{
 \item{outcome}{The outcome variable.}
@@ -31,14 +31,14 @@ combined with 'correction' == 'Tukey Range'), or \code{"All"}}
 "Free Combinations"} (Westfall et al. 1999), \code{"Hochberg", "Holm",
 "Hommel", "Single-step"} (Bretz et al. 2010) \code{"Shaffer"}, and \code{"Westfall"}.}
 
+\item{alternative}{The alternative hypothesis: "Two sided", "Greater", or "Less". The main application of this is when
+Compare us set 'To first' (e.g., if testing a new product, where the purpose is to work out of the new product is superior
+to an existing product, "Greater" would be chosen).}
+
 \item{robust.se}{Computes standard errors that are robust to violations of
 the assumption of constant variance, using the HC1 (degrees of freedom)
 modification of White's (1980) estimator (Long and Ervin, 2000). This parameter is ignored
 if weights are applied (as weights already employ a sandwich estimator).}
-
-\item{alternative}{The alternative hypothesis: "Two sided", "Greater", or "Less". The main application of this is when
-Compare us set 'To first' (e.g., if testing a new product, where the purpose is to work out of the new product is superior
-to an existing product, "Greater" would be chosen).}
 
 \item{missing}{How missing data is to be treated in the ANOVA. Options:
 \code{"Error if missing data"}.
@@ -57,6 +57,9 @@ the actual variable name, which does not work so well if the function is being c
 \item{p.cutoff}{The alpha level to be used in testing.}
 
 \item{seed}{The random number seed used when evaluating the multivariate t-distribution.}
+
+\item{return.all}{If \code{TRUE}, returns all the internal computations in the output object. If \code{FALSE},
+returns just the information required to print the output.}
 
 \item{...}{Other parameters to be passed to wrapped functions.}
 }

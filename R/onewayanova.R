@@ -14,13 +14,13 @@
 #' "False Discovery Rate", "Benjamini & Yekutieli", "Bonferroni",
 #' "Free Combinations"} (Westfall et al. 1999), \code{"Hochberg", "Holm",
 #' "Hommel", "Single-step"} (Bretz et al. 2010) \code{"Shaffer"}, and \code{"Westfall"}.
+#' @param alternative The alternative hypothesis: "Two sided", "Greater", or "Less". The main application of this is when
+#' Compare us set 'To first' (e.g., if testing a new product, where the purpose is to work out of the new product is superior
+#' to an existing product, "Greater" would be chosen).
 #' @param robust.se Computes standard errors that are robust to violations of
 #'   the assumption of constant variance, using the HC1 (degrees of freedom)
 #'   modification of White's (1980) estimator (Long and Ervin, 2000). This parameter is ignored
 #'   if weights are applied (as weights already employ a sandwich estimator).
-#' @param alternative The alternative hypothesis: "Two sided", "Greater", or "Less". The main application of this is when
-#' Compare us set 'To first' (e.g., if testing a new product, where the purpose is to work out of the new product is superior
-#' to an existing product, "Greater" would be chosen).
 #' @param missing How missing data is to be treated in the ANOVA. Options:
 #'   \code{"Error if missing data"}.
 #'   \code{"Exclude cases with missing data"}, and
@@ -33,6 +33,8 @@
 #' the actual variable name, which does not work so well if the function is being called by another function.
 #' @param p.cutoff The alpha level to be used in testing.
 #' @param seed The random number seed used when evaluating the multivariate t-distribution.
+#' @param return.all If \code{TRUE}, returns all the internal computations in the output object. If \code{FALSE},
+#' returns just the information required to print the output.
 #' @param ... Other parameters to be passed to wrapped functions.
 #' @details When 'Tukey Range' is selected, p-values are computed using t'tests, with a correction for the family-wise
 #' error rate such that the p-values are correct for the largest range of values being compared (i.e.,
@@ -72,10 +74,12 @@
 #' Wright, S. P. (1992). Adjusted P-values for simultaneous inference. Biometrics 48, 1005-1013.
 #' White, H. (1980), A heteroskedastic-consistent covariance matrix estimator and a direct test of heteroskedasticity.
 #' Econometrica, 48, 817-838.
+#' @importFrom flipData Observed
+#' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName
 #' @importFrom flipRegression Regression GrandMean
+#' @importFrom flipStatistics Frequency
 #' @importFrom flipTransformations AsNumeric Factor
 #' @importFrom multcomp glht mcp adjusted
-#' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable
 #' @importFrom survey regTermTest
 #' @importFrom car hccm
 #' @importFrom stats aov pf
@@ -86,16 +90,29 @@ OneWayANOVA <- function(outcome,
                         weights = NULL,
                         compare = "Pairwise",
                         correction = "Tukey Range",
-                        robust.se = FALSE,
                         alternative = "Two-sided",
+                        robust.se = FALSE,
                         missing = "Exclude cases with missing data",
                         show.labels = TRUE,
-                        outcome.name = deparse(substitute(outcome)),
-                        predictor.name = deparse(substitute(predictor)),
+                        outcome.name = NULL,
+                        predictor.name = NULL,
                         p.cutoff = 0.05,
                         seed = 1223,
+                        return.all = FALSE,
                         ...)
 {
+    .multcompSummary <- function(comparisons, correct)
+    {
+        if (correct == "Tukey Range")
+            return(summary(comparisons))
+        return(summary(comparisons, test = adjusted(type = correction)))
+    }
+
+    if (is.null(outcome.name))
+        outcome.name <- OriginalName(outcome)
+    if (is.null(predictor.name))
+        predictor.name <- OriginalName(predictor)
+    subset.description <- try(deparse(substitute(subset)), silent = TRUE) #We don't know whether subset is a variable in the environment or in data.
     correct <- correction
     no.correction <- correction == "None"
     alt <- alternative
@@ -117,51 +134,57 @@ OneWayANOVA <- function(outcome,
                              missing = missing,
                              weights = weights,
                              type = if (is.null(list(...)$type)) "Linear" else list(...)$type,
-                             robust.se = robust.se)
+                             robust.se = robust.se,
+                             internal = TRUE)
     model <- regression$original
-    robust.se <- if (regression$robust.se) "; robust standard errors" else "" # Taking from regression, as regression checks for weight.
+    robust.se.text <- if (robust.se <- regression$robust.se) "; robust standard errors" else "" # Taking from regression, as regression checks for weight.
     contrasts <- mcp(predictor = switch(compare, "Pairwise" = "Tukey", "To mean" = "GrandMean", "To first" = "Dunnett"))
-    comparisons <- glht(model, linfct = contrasts, alternative = alternative)
-    # comparisons <- if (robust.se)
-    #                     glht(model, linfct = contrasts, vcov = hccm(model, type = "hc1"), alternative = alternative)
-    #                 else
-    #                     glht(model, linfct = contrasts, alternative = alternative)
+    vcov <- if (robust.se) hccm(model, type = "hc1") else vcov(model)
+    vcov <- FixVarianceCovarianceMatrix(vcov)
+    comparisons <- glht(model, linfct = contrasts, alternative = alternative, vcov = vcov)
     set.seed(seed)
-    mcomp <- if (correct == "Tukey Range")
-                    suppressWarnings(summary(comparisons))
-                else
-                    suppressWarnings(summary(comparisons, test = adjusted(type = correction)))
-    result <- list(original = mcomp)
-    result$grand.mean <- GrandMean(regression)
-    result$correction <- correct
-    result$n <- table(predictor[regression$subset])
-    result$outcome.label <- outcome.label
-    result$r.squared <- regression$r.squared
-    # Extracting/Computing F-test of equal parameters.
-    weighted <- inherits(model, "svyglm")
-    result$f.test <- f.test <- if(weighted) politeWeightedFTest(model) else summary(aov(model))
-    result$f <- f <- if(weighted) f.test$Ftest else regression$summary$fstatistic[1]
-    result$df <- df <- if(weighted) f.test$df else regression$summary$fstatistic[2]
-    result$ddf <- ddf <- if(weighted) f.test$ddf else regression$summary$fstatistic[3]
-    result$p <- p <- if(weighted) f.test$p else 1 - pf(f, df, ddf)
-    result$p.cutoff <- p.cutoff
-    result$subtitle <- paste0(if (p <= p.cutoff) "Significant" else "Not significant",
-             ": F = ", FormatAsReal(f, 4),
-             " on ", df, " and ", ddf, " degrees-of-freedom: p = ", FormatAsPValue(p),
-             "; R-squared: ", FormatAsReal(regression$r.squared, 4))
+    mcomp <- try(.multcompSummary(comparisons, correct), silent = TRUE)
+    if (tryError(mcomp))
+    {
+        if(robust.se)
+        {
+            warning("Due to a technical problem, it was not possible to compute robust standard errors.")
+            mcomp <- .multcompSummary(glht(model, linfct = contrasts, alternative = alternative), correct)
+        }
+        else if (!is.null(weights))
+            stop("Due to a technical problem, it is not possible to estimate the weighted model. Consider instead using an unweighted model.")
+    }
+    f.test <- FTest(regression)
+    sub <- if (is.null(subset)) rep(TRUE, length(predictor)) else subset
+    if (!is.null(weights))
+        sub <- sub & weights > 0
+    predictor.n <- Frequency(predictor, sub)
+    predictor.n <- predictor.n[predictor.n > 0]
+    result <- c(f.test,
+                list(original = mcomp,
+                robust.se = robust.se,
+                grand.mean = GrandMean(regression),
+                correction = correct,
+                outcome.label = outcome.label,
+                r.squared = rSquared(regression),
+                p.cutoff = p.cutoff,
+                compare = compare,
+                column.names = names(predictor.n),
+                n = predictor.n))
+    # Headers, subtitles, footers
+    result$subtitle <- if (is.na(f.test$p)) "Error computing p-value" else paste0(if (f.test$p <= p.cutoff) "Significant" else "Not significant",
+             ": F: ", FormatAsReal(f.test$Ftest, 4),
+             " on ", f.test$df, " and ", f.test$ddf, " degrees-of-freedom; p: ", FormatAsPValue(f.test$p),
+             "; R-squared: ", FormatAsReal(result$r.squared, 4))
     result$title <-paste0("One-way ANOVA: ", outcome.label, " by ", predictor.label)
     mc.correction <- paste0("; multiple comparisons correction: ", correct)
-    alpha <- paste0("results highlighted when ", (if (no.correction) "" else "corrected "),"p <= " , p.cutoff, "; null hypothesis: ", tolower(alt))
+    alpha <- paste0("null hypothesis: ", tolower(alt))
     result$footer <- paste0(regression$sample.description,
-                            alpha,mc.correction,robust.se)
-    result$column.names <- levels(predictor)
-    result$compare <- compare
-    result$r.squared <- regression$r.squared
-
+                            alpha, mc.correction, robust.se.text)
     r <- result$original$test
     if (no.correction & compare == "To first")
     {# Using more precise results from Regression rather than glht
-        rcoefs <- regression$summary$coefficients[-1, , drop = FALSE]
+        rcoefs <- summary(model)$coef[-1, , drop = FALSE]
         k <- nrow(rcoefs)
         r$coefficients[1:k] <- rcoefs[1:k, 1] # Retaining the labels.
         r$sigma <- rcoefs[, 2]
@@ -175,10 +198,10 @@ OneWayANOVA <- function(outcome,
     }
     coefs <- r$coefficients + if (compare == "To mean") result$grand.mean else 0
     coefs <- cbind(coefs, r$sigma, r$tstat, r$pvalues)
-    colnames(coefs) <- colnames(regression$summary$coefficients)
+    colnames(coefs) <- c("Estimate", "Std. Error", "t value", "Pr(>|t|))")
     if (compare == "To mean")
     {
-        rownames(coefs) <- levels(predictor)
+        rownames(coefs) <- result$column.names
         colnames(coefs)[1] <- "Mean"
     }
     else
@@ -186,45 +209,118 @@ OneWayANOVA <- function(outcome,
     if (!no.correction)
         colnames(coefs)[4] <- "Corrected p"
     result$coefs <- coefs
+    # Creating the final outputs.
+    is.t <- result$original$df > 0
+    estimate.name <- if (result$compare == "To mean") "Estimate" else "Difference"
+    p.name <- if(result$correction == "NONE")
+        "<span style='font-style:italic;'>p</span>"
+    else
+        "Corrected <span style='font-style:italic;'>p</span>"
+
+    result$table <- RegressionTable(result$coefs,
+                          title = result$title,
+                          subtitle = result$subtitle,
+                          footer = result$footer,
+                          estimate.name = estimate.name,
+                          se.name = if (result$robust.se) "Robust SE" else "Standard Error",
+                          p.name = p.name,
+                          p.cutoff = result$p.cutoff)
+
+    if (!return.all)
+        result <- list(table = result$table)
     class(result) <- "OneWayANOVA"
     result
 }
 
-
-politeWeightedFTest <- function(model)
+#' rSquared
+#'
+#' @param  object A \link{FitRegression} object.
+#' @import flipRegression
+#' @importFrom flipData Observed
+#' @importFrom flipStatistics Correlation
+#' @importFrom stats predict
+rSquared <- function(object)
 {
-    .errorInTest <- function(test)
-    {
-        if (any("try-error" %in% class(test)))
+    predicted <- predict(object$original)
+    observed <- Observed(object)
+    cor <- Correlation(predicted, observed, object$weights)
+    cor * cor
+}
+
+
+tryError <- function(x)
+{
+        if (any("try-error" %in% class(x)))
             return(TRUE)
         FALSE
-    }
-    test <- suppressWarnings(try(regTermTest(model, "predictor")))
-    if(.errorInTest(test))
+}
+
+#' politeWeightedFTest
+#'
+#' Computes \link{regTermTest}, but fails savely when an error occurs.
+#' @param fit A FitRegression object.
+#' @importFrom flipU OutcomeName
+#' @importFrom survey regTermTest
+politeWeightedFTest <- function(fit)
+{
+    test <- suppressWarnings(try(regTermTest(fit$original, "predictor"), silent = TRUE))
+    if(tryError(test))
     {
-        warning("Unable to compute weighted F-test; probably due to a problem with the data (e.g., too small sample size in a group).")
+        warning("Unable to compute weighted F-test due to a technical problem with the underlying computations. This error may disappear if you remove the weight.")
         return(list(Ftest = NA, df = NA, ddf = NA, p = NA))
     }
     test
 }
 
+#' \code{FTest}
+#'
+#' An F-Test from a \code{lm} or linear \code{svyglm} object.
+#' @param fit An object created by \link{FitRegression}.
+#' @importFrom stats aov
+#' @export
+FTest <- function(fit)
+{
+    if (!is.null(fit$weights))
+        return(politeWeightedFTest(fit))
+    aovFTest(fit$original)
+}
+
+aovFTest <- function(model)
+{
+    f.test <- summary(aov(model))[[1]]
+    list(Ftest = f.test[1, 4],
+         df = f.test[1, 1],
+         ddf = f.test[2, 1],
+         p = f.test[1, 5])
+}
+
 #' @export
 print.OneWayANOVA <- function(x, ...)
 {
-    is.t <- x$original$df > 0
-    estimate.name <- if (x$compare == "To mean") "Estimate" else "Difference"
-    p.name <- if(x$correction == "NONE")
-        "<span style='font-style:italic;'>p</span>"
-    else
-        "Corrected <span style='font-style:italic;'>p</span>"
+    print(x$table)
+}
 
-    dt <- RegressionTable(x$coefs,
-                          title = x$title,
-                          subtitle = x$subtitle,
-                          footer = x$footer,
-                          estimate.name = estimate.name,
-                          p.name = p.name, p.cutoff = x$p.cutoff)
-    print(dt)
-    invisible(x)
+
+
+#' FixVarianceCovarianceMatrix
+#'
+#' Makes some adjustments to permit a covariance-marix to be inverted, if required.
+#' @param x A variance-covariance matrix of parameter estimates.
+#' @param min.eigenvalue Minimm acceptable eigenvalue.
+#' @details Sandwich and sandwich-like standard errors can result uninvertable
+#' covariance matrices (e.g., if a parameter represents a sub-group, and the sub-group has no
+#' residual variance). This function checks to see if there are any eigenvalues less than \code{min.eigenvalue},
+#' which defaults to 1e-12. If there are, an attempt is made to guess the  offending variances, and they are multiplied by 1.01.
+#' @export
+FixVarianceCovarianceMatrix <- function(x, min.eigenvalue = 1e-12)
+{
+    if (min(eigen(x)$values) >= min.eigenvalue)
+        return(x)
+    warning("There is a technical problem with the parameter variance-matrix. This is most likely due to either a problem or the appropriateness of the statistical model (e.g., using weights or robust standard errors where a sub-group in the analysis has no variation in its residuals.")
+    x.diag <- diag(x)
+    n.similar.to.diag <- abs(sweep(x, 1, x.diag, "/"))
+    high.r <- apply(n.similar.to.diag > 0.99, 1, sum) > 1
+    diag(x)[high.r] <- x.diag[high.r] * 1.01
+    x
 }
 

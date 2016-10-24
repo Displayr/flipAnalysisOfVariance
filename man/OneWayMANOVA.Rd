@@ -5,9 +5,9 @@
 \title{\code{OneWayMANOVA}}
 \usage{
 OneWayMANOVA(outcomes, predictor, subset = NULL, weights = NULL,
-  correction = "Tukey Range", robust.se = FALSE,
-  missing = "Exclude cases with missing data", show.labels = FALSE,
-  seed = 1223, p.cutoff = 0.05, binary = FALSE, ...)
+  robust.se = FALSE, missing = "Exclude cases with missing data",
+  show.labels = FALSE, seed = 1223, p.cutoff = 0.05, binary = FALSE,
+  pillai = FALSE, fdr = TRUE, return.all = FALSE, ...)
 }
 \arguments{
 \item{outcomes}{The outcome variables.}
@@ -20,11 +20,6 @@ may not be an expression. \code{subset} may not}
 
 \item{weights}{An optional vector of sampling weights, or, the name or, the
 name of a variable in \code{data}. It may not be an expression.}
-
-\item{correction}{The multiple comparison adjustment method: \code{"Tukey Range", "None",
-"False Discovery Rate", "Benjamini & Yekutieli", "Bonferroni",
-"Free Combinations"}, \code{"Hochberg", "Holm",
-"Hommel", "Single-step"} \code{"Shaffer"}, and \code{"Westfall"}.}
 
 \item{robust.se}{Computes standard errors that are robust to violations of
 the assumption of constant variance. This parameter is ignored
@@ -43,16 +38,25 @@ variables label is an attribute (e.g., attr(foo, "label")).}
 
 \item{binary}{Automatically converts non-ordered factors to dummy-coded (binary indicator) variables.}
 
+\item{pillai}{If \code{TRUE}, Pillai's Trace is computed as the overall MANOVA statistic.}
+
+\item{fdr}{If \code{TRUE}, the False Discovery Rate correction is applied. This is the default.}
+
+\item{return.all}{If \code{TRUE}, returns all the internal computations in the output object. If \code{FALSE},
+returns just the information required to print the output.}
+
 \item{...}{Other parameters to be passed to \code{OneWayANOVA}.}
 }
 \description{
 Computes a one-way analysis of variance with post hoc tests.
 }
 \details{
-Where sampling weights are provided, a sample is constructed via bootstrapping, and this
-sample is used in the testing for the MANOVA (but no for the individual ANOVAs or post hoc tests). See \code{OneWayANOVA} for more about the other parameters.
+By default, the overall p-value is computed as the smallest p-value in any cell following application of the
+False Discovery Rate correction to the p-values. If the\code{fdr} is set to \code{FALSE}, the correction is not applied, which means
+that the overall p-value is the smallest of the uncorrected p-values, and, additionally, the p-values for each row
+are from the \link{OneWayANOVA} F-tests.
 
-Tests are two-sided, comparing to the Grand Mean (i.e., "To mean").
+Tests are two-sided, comparing to the Grand Mean (i.e., "To mean" in \link{OneWayANOVA}).
 
 Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 }

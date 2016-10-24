@@ -4,15 +4,15 @@
 \alias{MultipleANOVAs}
 \title{\code{MultipleANOVAs}}
 \usage{
-MultipleANOVAs(outcomes, predictor, subset = NULL, weights = NULL,
+MultipleANOVAs(dependents, independent, subset = NULL, weights = NULL,
   compare = "To mean", correction = "Tukey Range", robust.se = FALSE,
   alternative = "Two-sided", missing = "Exclude cases with missing data",
   show.labels = FALSE, seed = 1223, p.cutoff = 0.05, ...)
 }
 \arguments{
-\item{outcomes}{The outcome variables.}
+\item{dependents}{The outcome variables.}
 
-\item{predictor}{The factor representing the groups.}
+\item{independent}{The factor representing the groups.}
 
 \item{subset}{An optional vector specifying a subset of observations to be
 used in the fitting process, or, the name of a variable in \code{data}. It
