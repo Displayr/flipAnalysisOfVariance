@@ -36,7 +36,7 @@
 #' @importFrom flipTransformations AsNumeric Factor
 #' @importFrom flipData CheckForLinearDependence
 #' @importFrom multcomp glht mcp adjusted
-#' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName
+#' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName ExtractCommonPrefix
 #' @importFrom survey regTermTest
 #' @importFrom flipData SampleDescription CalibrateWeight
 #' @importFrom flipTransformations AdjustDataToReflectWeights
@@ -132,7 +132,16 @@ OneWayMANOVA <- function(outcomes,
     # Tidying up outputs
     if (show.labels)
         names(result$anovas) <- labels
-    result$title <- paste0("MANOVA: ", predictor.label)
+
+    # Extract common prefix from outcomes
+    extracted <- ExtractCommonPrefix(names(result$anovas))
+    if (!is.na(extracted$common.prefix))
+    {
+        result$title <- paste0("MANOVA: ", extracted$common.prefix, " by ", predictor.label)
+        names(result$anovas) <- extracted$shortened.labels
+    }
+    else
+        result$title <- paste0("MANOVA: ", predictor.label)
 
     result$p <- p <- if (pillai) result$manova$stats[1,6] else min(ps)
     if (pillai)
