@@ -57,78 +57,32 @@ OneWayMANOVA <- function(outcomes,
                         return.all = FALSE,
                         ...)
 {
-    # Removing missing values and filtering weights.
     predictor.label <- if(show.labels) Labels(predictor) else OriginalName(predictor)
-    n.total <- length(predictor)
-    weighted <- !is.null(weights)
-    if (!weighted)
-        weights <- rep(1, n.total)
-    else
-        weight.label <- Labels(weights)
-    if (is.null(subset) | length(subset) == 1)
-        subset <- rep(TRUE, n.total)
-    else
-        subset.label <- Labels(subset)
-    n.subset <- sum(subset)
-    outcomes <- AsNumeric(data.frame(outcomes), binary = binary, remove.first = TRUE)
-    labels <- Labels(outcomes)
-    df <- cbind(outcomes, predictor, weights)
-    df <- subset(df, subset = subset & complete.cases(df))
-    n.estimation <- nrow(df)
-    if (n.estimation < n.total & missing == "Error if missing data")
-        stop("Data contains missing values.")
-    n.variables <- ncol(outcomes)
+    # Removing missing values and filtering weights.
+    df <- prepareData(outcomes, predictor, NULL, subset, weights, binary, missing)
+    footer <- attr(df, "footer")
+    n.variables <- ncol(df) - 3
     predictor <- df[, n.variables + 1]
-    outcomes <- df[, 1:n.variables]
-
-    footer <- SampleDescription(n.total, n.subset, n.estimation, subset.label, weighted, weight.label, missing = "", imputation.label = NULL, NULL)
+    outcomes <- df[, 1:n.variables, drop= FALSE]
+    weights <- if (weighted <- !is.null(weights)) df[, n.variables + 3] else NULL
+    labels <- attr(df, "labels")[1:ncol(outcomes)]
     footer <- paste0(footer, "two-sided comparisons against the row means", if (fdr) " (p-values corrected using False Discovery Rate)")
-    if (weighted)
-    {
-        wgt <- CalibrateWeight(df[, n.variables + 2])
-        df <- AdjustDataToReflectWeights(df[, 1:(n.variables + 1)], wgt)
-        o.matrix <- as.matrix(df[, 1:n.variables])
-        CheckForLinearDependence(o.matrix)
-        g <- df[, n.variables + 1]
-        g <- removeMissingLevels(g)
-        if (pillai)
-            stop("Pillai's trace cannot be correctly computed with weighted data.")
-        model <- lm(o.matrix ~ g)
-    }
-    else
-    {
-        o.matrix <- as.matrix(outcomes)
-        CheckForLinearDependence(o.matrix)
-        predictor <- removeMissingLevels(predictor)
-        model <- lm(o.matrix ~ predictor)
-    }
     result <- list()
-    if (pillai) result$manova <- summary(manova(model))
+    if (pillai)
+        result$manova <- computePillai(outcomes, predictor,  weighted, df, n.variables, weights)
     result$anovas <- MultipleANOVAs(data.frame(outcomes),
                         predictor,
                         subset = NULL,
-                        weights = NULL,
+                        weights = weights,
                         compare = "To mean",
-                        correction = "None",
+                        correction = if(pillai) "Tukey Range" else "Table FDR",
                         alernative = "Two-sided",
                         show.labels = show.labels,
                         p.cutoff = p.cutoff,
                         seed = seed,
                         return.all = TRUE,
                         ...)
-    # Performing FDR correction.
-    ps <- unlist(lapply(result$anovas, function(x) x$coefs[, 4]))
-    if (fdr)
-    {
-        ps <- p.adjust(ps, method = "fdr")
-        n.pars <- length(ps) / n.variables
-        for (a in 1:n.variables)
-        {
-            var.ps <- ps[(a - 1)*n.pars + 1:n.pars]
-            result$anovas[[a]]$coefs[, 4] <- var.ps
-            result$anovas[[a]]$p <- min(var.ps)
-        }
-    }
+    ps <- attr(result$anovas, "ps")
     # Tidying up outputs
     if (show.labels)
         names(result$anovas) <- labels
@@ -154,6 +108,54 @@ OneWayMANOVA <- function(outcomes,
     result
 }
 
+computePillai <- function(outcomes, predictor, weighted, df, n.variables, weights)
+{
+    if (weighted)
+    {
+        wgt <- CalibrateWeight(df[, n.variables + 3])
+        df <- AdjustDataToReflectWeights(df[, 1:(n.variables + 1)], weights)
+        o.matrix <- as.matrix(df[, 1:n.variables])
+        CheckForLinearDependence(o.matrix)
+        g <- df[, n.variables + 1]
+        g <- removeMissingLevels(g)
+        warning("Pillai's trace cannot be correctly computed with weighted data.")
+        model <- lm(o.matrix ~ g)
+    }
+    else
+    {
+        o.matrix <- as.matrix(outcomes)
+        CheckForLinearDependence(o.matrix)
+        predictor <- removeMissingLevels(predictor)
+        model <- lm(o.matrix ~ predictor)
+    }
+    return(summary(manova(model)))
+}
+
+prepareData <- function(outcomes, predictor, covariate, subset, weights, binary, missing)
+{
+    n.total <- length(predictor)
+    weighted <- !is.null(weights)
+    if (!weighted)
+        weights <- rep(1, n.total)
+    else
+        weight.label <- Labels(weights)
+    if (is.null(subset) | length(subset) == 1)
+        subset <- rep(TRUE, n.total)
+    else
+        subset.label <- Labels(subset)
+    n.subset <- sum(subset)
+    outcomes <- AsNumeric(data.frame(outcomes), binary = binary, remove.first = TRUE)
+    if (is.null(covariate))
+        covariate <- rep(-1, n.total) # A fudge to ensure complete.cases does not fail
+    df <- cbind(outcomes, predictor, covariate, weights)
+    df <- subset(df, subset = subset & complete.cases(df) & weights > 0)
+    n.estimation <- nrow(df)
+    if (n.estimation < n.total & missing == "Error if missing data")
+        stop("Data contains missing values.")
+    attr(df, "footer") <- SampleDescription(n.total, n.subset, n.estimation, subset.label, weighted, weight.label, missing = "", imputation.label = NULL, NULL)
+    attr(df, "labels") <- Labels(outcomes)
+    df
+}
 
 #' removeMissingLevels
 #' @param x A factor
