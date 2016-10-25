@@ -4,7 +4,7 @@ Title: What the Package Does (Title Case)
 Version: 0.1.0
 Author: Tim Bock
 Maintainer: Tim Bock <tim.bock@numbers.net.au>
-Description: Analysis of Variance, MANOVA, post-hoc corrections. All One-Way.
+Description: Analysis of Variance, MANOVA, post-hoc corrections. All One-Way. Table of Means.
 License: GPL-3
 Imports:
     car,
