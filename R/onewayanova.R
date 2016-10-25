@@ -107,7 +107,6 @@ OneWayANOVA <- function(outcome,
             return(summary(comparisons))
         return(summary(comparisons, test = adjusted(type = correction)))
     }
-
     if (is.null(outcome.name))
         outcome.name <- OriginalName(outcome)
     if (is.null(predictor.name))
@@ -121,12 +120,10 @@ OneWayANOVA <- function(outcome,
         "Benjamini & Yekutieli" = "BY","False Discovery Rate" = "fdr", "None" = "none", "Single-step" = "single-step",
         "Shaffer" = "Shaffer", "Westfall" = "Westfall", "Free Combinations" = "free",
         "Tukey Range" = "none", "Dunnett" = "none")
-
     predictor.label <- if (show.labels) Labels(predictor) else predictor.name
     predictor <- tidyFactor(predictor)
     #outcome.label = if (show.labels & !is.null(attr(outcome, "label"))) attr(outcome, "label") else outcome.name
     outcome.label = if (show.labels) Labels(outcome) else outcome.name
-    n.groups <- nlevels(predictor)
     # Should be removed when hooking up GLM
     outcome <- if (is.factor(outcome)) AsNumeric(outcome, binary = FALSE) else outcome
     regression <- Regression(outcome ~ predictor,
@@ -176,7 +173,7 @@ OneWayANOVA <- function(outcome,
              ": F: ", FormatAsReal(f.test$Ftest, 4),
              " on ", f.test$df, " and ", f.test$ddf, " degrees-of-freedom; p: ", FormatAsPValue(f.test$p),
              "; R-squared: ", FormatAsReal(result$r.squared, 4))
-    result$title <-paste0("One-way ANOVA: ", outcome.label, " by ", predictor.label)
+    result$title <- paste0("One-way ANOVA: ", outcome.label, " by ", predictor.label)
     mc.correction <- paste0("; multiple comparisons correction: ", correct)
     alpha <- paste0("null hypothesis: ", tolower(alt))
     result$footer <- paste0(regression$sample.description,
@@ -197,11 +194,14 @@ OneWayANOVA <- function(outcome,
         r$pvalues <- rcoefs[, 4]
     }
     coefs <- r$coefficients + if (compare == "To mean") result$grand.mean else 0
+    #coef.names <- gsub("predictor", "", names(model$coef)[-1])
     coefs <- cbind(coefs, r$sigma, r$tstat, r$pvalues)
     colnames(coefs) <- c("Estimate", "Std. Error", "t value", "Pr(>|t|))")
     if (compare == "To mean")
     {
-        rownames(coefs) <- result$column.names
+        tbl <- table(predictor[regression$subset])
+        nms <- names(tbl)[tbl > 0]
+        rownames(coefs) <- nms
         colnames(coefs)[1] <- "Mean"
     }
     else
@@ -216,7 +216,6 @@ OneWayANOVA <- function(outcome,
         "<span style='font-style:italic;'>p</span>"
     else
         "Corrected <span style='font-style:italic;'>p</span>"
-
     result$table <- RegressionTable(result$coefs,
                           title = result$title,
                           subtitle = result$subtitle,
@@ -225,7 +224,6 @@ OneWayANOVA <- function(outcome,
                           se.name = if (result$robust.se) "Robust SE" else "Standard Error",
                           p.name = p.name,
                           p.cutoff = result$p.cutoff)
-
     if (!return.all)
         result <- list(table = result$table)
     class(result) <- "OneWayANOVA"
