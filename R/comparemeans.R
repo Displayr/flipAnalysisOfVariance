@@ -21,15 +21,6 @@ CompareMultipleMeans <- function(outcomes,
                          show.labels = TRUE,
                           ...)
 {
-    # for (i in seq_along(outcomes))
-    # {
-    #     if (is.null(attr(outcomes[[i]], "name")))
-    #         attr(outcomes[[i]], "name") <- Names(outcomes[[i]])
-    #     if (is.null(attr(outcomes[[i]], "label")))
-    #         attr(outcomes[[i]], "label") <- Labels(outcomes[[i]])
-    #
-    # }
-    # print(Labels(outcomes))
     manova <- OneWayMANOVA(outcomes,
                         predictor,
                         subset = NULL,
@@ -40,28 +31,6 @@ CompareMultipleMeans <- function(outcomes,
                     title = title,
                     subtitle = subtitle,
                     footer = footer)
-  #
-    # if (!is.list(outcomes))
-    #     stop("'outcomes' must be a list or data.frame.")
-    # # n.outcome.outcomes <- length(outcomes)
-    # # result <- list(anovas = MultipleANOVAs(outcomes, predictor, weights = weights, ...),
-    # #                title = title,
-    # #                subtitle = subtitle,
-    # #                footer = footer,
-    # #                return.all = TRUE)
-    #
-    #
-    #
-    #     n.outcome.outcomes <- length(outcomes)
-    # result <- list(anovas = MultipleANOVAs(outcomes, predictor, weights = weights, ...),
-    #                title = title,
-    #                subtitle = subtitle,
-    #                footer = footer,
-    #                return.all = TRUE)
-    #
-    #
-
-#    class(result) <- "CompareMultipleMeans"
     result
 }
 #'
