@@ -4,8 +4,8 @@
 \alias{TableOfMeans}
 \title{\code{TableOfMeans}}
 \usage{
-TableOfMeans(outcome, row, column, correction = "Table FDR",
-  robust.se = FALSE, weights = NULL, show.labels = TRUE, ...)
+TableOfMeans(outcome, row, column, subset = NULL, weights = NULL,
+  correction = "Table FDR", robust.se = FALSE, show.labels = TRUE, ...)
 }
 \arguments{
 \item{outcome}{The outcome variable.}
@@ -13,6 +13,15 @@ TableOfMeans(outcome, row, column, correction = "Table FDR",
 \item{row}{The predictor to show in the rows. Used to filter the data.}
 
 \item{column}{The predictor to show in the columns.}
+
+\item{subset}{An optional vector specifying a subset of observations to be
+used in the fitting process, or, the name of a variable in \code{data}. It
+may not be an expression. \code{subset} may not}
+
+\item{weights}{An optional vector of sampling weights, or, the name or, the
+name of a variable in \code{data}. It may not be an expression.}
+
+\item{correction}{See \code{\link{OneWayANOVA}}.}
 
 \item{robust.se}{Computes standard errors that are robust to violations of
 the assumption of constant variance. This parameter is ignored

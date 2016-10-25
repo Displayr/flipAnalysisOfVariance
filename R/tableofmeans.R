@@ -5,6 +5,12 @@
 #' @param outcome The outcome variable.
 #' @param row The predictor to show in the rows. Used to filter the data.
 #' @param column The predictor to show in the columns.
+#' @param subset An optional vector specifying a subset of observations to be
+#'   used in the fitting process, or, the name of a variable in \code{data}. It
+#'   may not be an expression. \code{subset} may not
+#' @param weights An optional vector of sampling weights, or, the name or, the
+#'   name of a variable in \code{data}. It may not be an expression.
+#' @param correction See \code{\link{OneWayANOVA}}.
 #' @param robust.se Computes standard errors that are robust to violations of
 #'   the assumption of constant variance. This parameter is ignored
 #'   if weights are applied (as weights already employ a sandwich estimator).
@@ -16,9 +22,10 @@
 TableOfMeans <- function(outcome,
                          row,
                          column,
+                         subset = NULL,
+                         weights = NULL,
                          correction = "Table FDR",
                          robust.se = FALSE,
-                         weights = NULL,
                          show.labels = TRUE,
                          ...)
 {
@@ -38,6 +45,8 @@ TableOfMeans <- function(outcome,
         attr(outcomes.by.rows[, i], "label") <- paste0(levels(row)[i], " n: ", counts[i])
         attr(outcomes.by.rows[, i], "name") <- paste0(Names(row), i)
     }
+    columns.with.data <- apply(!is.na(outcomes.by.rows), 2, sum) > 0
+    outcomes.by.rows <- outcomes.by.rows[, columns.with.data, drop = FALSE]
     anovas <- MultipleANOVAs(outcomes.by.rows,
                         df[, 3],
                         subset = NULL,

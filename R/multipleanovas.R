@@ -54,11 +54,13 @@ MultipleANOVAs <- function(dependents,
                                                        subset = subset,
                                                        weights = weights,
                                                        correction = if(correction == "Table FDR") "None" else correction,
+                                                       robust.se = robust.se,
                                                        #alternative = alternative,
                                                        #p.cutoff = p.cutoff,
                                                        #seed = seed,
                                                        #return.all = TRUE,
-                                                       ...)))
+                                                       ...
+                                                       )))
     # Performing FDR correction.
     ps <- unlist(lapply(anovas, function(x) x$coefs[, 4]))
     if (correction == "Table FDR")

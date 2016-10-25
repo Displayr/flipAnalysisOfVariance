@@ -312,13 +312,21 @@ print.OneWayANOVA <- function(x, ...)
 #' @export
 FixVarianceCovarianceMatrix <- function(x, min.eigenvalue = 1e-12)
 {
-    if (min(eigen(x)$values) >= min.eigenvalue)
-        return(x)
-    warning("There is a technical problem with the parameter variance-matrix. This is most likely due to either a problem or the appropriateness of the statistical model (e.g., using weights or robust standard errors where a sub-group in the analysis has no variation in its residuals.")
-    x.diag <- diag(x)
-    n.similar.to.diag <- abs(sweep(x, 1, x.diag, "/"))
-    high.r <- apply(n.similar.to.diag > 0.99, 1, sum) > 1
-    diag(x)[high.r] <- x.diag[high.r] * 1.01
+    wng <- "There is a technical problem with the parameter variance-covariance matrix. This is most likely due to either a problem or the appropriateness of the statistical model (e.g., using weights or robust standard errors where a sub-group in the analysis has no variation in its residuals, or lack of variation in one or more predictors."
+    x <- try(
+        {
+            if (min(eigen(x)$values) >= min.eigenvalue)
+                return(x)
+            warning(wng)
+            x.diag <- diag(x)
+            n.similar.to.diag <- abs(sweep(x, 1, x.diag, "/"))
+            high.r <- apply(n.similar.to.diag > 0.99, 1, sum) > 1
+            diag(x)[high.r] <- x.diag[high.r] * 1.01
+            x
+        }, silent = FALSE
+    )
+    if (tryError(x))
+        stop(wng)
     x
 }
 
