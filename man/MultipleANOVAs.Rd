@@ -5,7 +5,7 @@
 \title{\code{MultipleANOVAs}}
 \usage{
 MultipleANOVAs(dependents, independent, subset = NULL, weights = NULL,
-  compare = "To mean", correction = "Tukey Range", robust.se = FALSE,
+  compare = "To mean", correction = "Table FDR", robust.se = FALSE,
   alternative = "Two-sided", missing = "Exclude cases with missing data",
   show.labels = FALSE, seed = 1223, p.cutoff = 0.05, ...)
 }
@@ -24,7 +24,7 @@ name of a variable in \code{data}. It may not be an expression.}
 \item{compare}{One of \code{"To mean", "Pairwise", "To first"} (which implement's Dunnett's C, when
 combined with 'correction' == 'Tukey Range'), or \code{"All"}}
 
-\item{correction}{The multiple comparison adjustment method: \code{"Tukey Range", "None",
+\item{correction}{The multiple comparison adjustment method: \code{"Table FDR", "Tukey Range", "None",
 "False Discovery Rate", "Benjamini & Yekutieli", "Bonferroni",
 "Free Combinations"}, \code{"Hochberg", "Holm",
 "Hommel", "Single-step"} \code{"Shaffer"}, and \code{"Westfall"}.}
@@ -55,7 +55,8 @@ variables label is an attribute (e.g., attr(foo, "label")).}
 Computes multiple ANOVAs.
 }
 \details{
-Conducts multiple \code{OneWayANOVA}s, and puts them in a list.
-Additional detail about the other parameters can be found in \code{OneWayANOVA}.
+Conducts multiple \code{OneWayANOVA}s, and puts them in a list. If \code{correction} is
+ \code{"Table FDR"}, the false discovery rate correction is applied across the entire table. All
+other corrections are performed within rows. Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 }
 

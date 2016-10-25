@@ -45,7 +45,7 @@ test_that("MANOVA",{
         npk2.aov <- manova(cbind(yield, foo) ~ block, npk2)
         dog <- npk2$yield
         attr(dog, "question") <- "Soloman"
-        z <- OneWayMANOVA(data.frame(dog, npk2$foo), npk2$block, show.labels = TRUE, pillai = TRUE, return.all = TRUE)
+        z <- suppressWarnings(OneWayMANOVA(data.frame(dog, npk2$foo), npk2$block, show.labels = TRUE, pillai = TRUE, return.all = TRUE))
         expect_equal(summary(npk2.aov)$stats[1,6], z$manova$stats[1,6])
         # binary.
         z <- suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke, return.all = TRUE), colas$d1, binary = FALSE, show.labels = TRUE))
@@ -58,13 +58,15 @@ test_that("MANOVA",{
         z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = FALSE, return.all = TRUE)
         expect_equal(names(z$anovas)[4], "colas.q4b.5")
         # F P-Value
-        z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = FALSE, return.all = TRUE)
+        z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = FALSE, return.all = TRUE, pillai = TRUE)
         z1 <- suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1, return.all = TRUE))
         expect_equal(z$anovas[[6]]$p, z1$p)
-        # t p-value - no correction
-        z <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = FALSE, return.all = TRUE)
-        z1 = OneWayANOVA(colas$like.coke, colas$d1, compare = "To mean", correction = "None", return.all = TRUE)
-        expect_equal(z$anovas[[6]]$coefs[2,4], z1$coefs[2, 4])
+        # Pillai with weights
+        set.seed(123)
+        wgt <- runif(327)
+        wgt[runif(327) < .25] <- 0
+        wgt[runif(327) < .1] <- NA
+        expect_error(suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = FALSE, return.all = TRUE, pillai = TRUE, weights = wgt)), NA)
         # Correction - FDR
         z <- OneWayMANOVA(data.frame(colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = TRUE, return.all = TRUE)
         z1 <- OneWayANOVA(colas$like.coke, colas$d1, correction = "False Discovery Rate", compare = "To mean", return.all = TRUE)
@@ -91,6 +93,6 @@ test_that("MANOVA",{
         attr(x, "question") <- "D1. Age"
         attr(x, "label") <- "D1. Age"
         wgt <- as.numeric(x != "25 to 29")
-        expect_error(suppressWarnings(OneWayMANOVA(data.frame(y, colas$d3, colas$like.coke), colas$d1, weights = wgt, show.labels = TRUE, return.all = TRUE)))
+        expect_error(suppressWarnings(OneWayMANOVA(data.frame(y, colas$d3, colas$like.coke), colas$d1, weights = wgt, show.labels = TRUE, return.all = TRUE)), NA)
         expect_error(suppressWarnings(OneWayMANOVA(data.frame(colas$d3, colas$like.coke), colas$d1, weights = wgt, show.labels = TRUE, return.all = TRUE)), NA)
 })
