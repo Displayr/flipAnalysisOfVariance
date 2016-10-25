@@ -130,9 +130,7 @@ ANOVAsAsTable <- function(x)
     rownames(means) <- names(x)
     group.names <- x[[1]]$column.names
     n <- x[[1]]$n
-    column.names <- paste0(group.names, "<br>", "n: ", n)
-    colnames(means) <- LETTERS[1:(k <- ncol(means))]
-    colnames(ps) <- paste0(LETTERS[1:k], "1")
+    column.names <- paste0(group.names, "<br>","n: ", n)
     return(list(means = means,
                 zs = zs,
                 ps = ps,
