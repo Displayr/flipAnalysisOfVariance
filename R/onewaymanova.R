@@ -80,7 +80,8 @@ OneWayMANOVA <- function(outcomes,
                         show.labels = show.labels,
                         p.cutoff = p.cutoff,
                         seed = seed,
-                        return.all = TRUE,
+                        return.all = return.all,
+                        robust.se = robust.se,
                         ...)
     ps <- attr(result$anovas, "ps")
     # Tidying up outputs
@@ -140,6 +141,7 @@ computePillai <- function(outcomes, predictor, weighted, df, n.variables, weight
     return(summary(manova(model)))
 }
 
+#' @importFrom flipTransformations Factor
 prepareData <- function(outcomes, predictor, covariate, subset, weights, binary, missing)
 {
     n.total <- length(predictor)
@@ -156,7 +158,7 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
     outcomes <- AsNumeric(data.frame(outcomes), binary = binary, remove.first = TRUE)
     if (is.null(covariate))
         covariate <- rep(-1, n.total) # A fudge to ensure complete.cases does not fail
-    df <- cbind(outcomes, predictor, covariate, weights)
+    df <- cbind(outcomes, Factor(predictor), Factor(covariate), weights)
     df <- subset(df, subset = subset & complete.cases(df) & weights > 0)
     n.estimation <- nrow(df)
     if (n.estimation < n.total & missing == "Error if missing data")

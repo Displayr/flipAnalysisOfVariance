@@ -21,4 +21,11 @@ test_that("TableOfMeans", {
 
     # Variable names
     suppressWarnings(TableOfMeans(colas$q2c, colas$d1, colas$d2, show.labels = FALSE))
+
+    # Numeric variables
+    library(bank, package = "flipExampleData")
+    attach(bank)
+
+    TableOfMeans(Overall, Interest, Phone, show.labels = TRUE)
+    detach(bank)
     })

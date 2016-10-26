@@ -48,21 +48,31 @@ MultipleANOVAs <- function(dependents,
                            p.cutoff = 0.05,
                            ...)
 {
-    anovas <- suppressWarnings(lapply(dependents, function(x) OneWayANOVA(x,
-                                                       independent,
-                                                       compare = "To mean",
-                                                       subset = subset,
-                                                       weights = weights,
-                                                       correction = if(correction == "Table FDR") "None" else correction,
-                                                       robust.se = robust.se,
-                                                       #alternative = alternative,
-                                                       #p.cutoff = p.cutoff,
-                                                       #seed = seed,
-                                                       #return.all = TRUE,
-                                                       ...
-                                                       )))
+    anovas <- suppressWarnings(lapply(dependents, function(x)
+        {
+            aov <- try(OneWayANOVA(x,
+                           independent,
+                           compare = "To mean",
+                           subset = subset,
+                           weights = weights,
+                           correction = if(correction == "Table FDR") "None" else correction,
+                           robust.se = robust.se,
+                           #alternative = alternative,
+                           #p.cutoff = p.cutoff,
+                           #seed = seed,
+                           return.all = TRUE#,
+                           #..
+                           )
+            , silent = TRUE)
+            if(tryError(aov))
+                return(NULL)
+            aov
+
+        }
+        ))
     # Performing FDR correction.
     ps <- unlist(lapply(anovas, function(x) x$coefs[, 4]))
+   # print(ps)
     if (correction == "Table FDR")
     {
         n.anovas <- length(anovas)
@@ -70,11 +80,16 @@ MultipleANOVAs <- function(dependents,
         counter <- 1
         for (a in 1:n.anovas)
         {
-            k <- nrow(anovas[[a]]$coefs)
-            var.ps <- ps[counter:(counter + k - 1)]
-            anovas[[a]]$coefs[, 4] <- var.ps
-            anovas[[a]]$p <- min(var.ps)
-            counter <- counter + k
+            aov <- anovas[[a]]
+            if (!is.null(aov))
+            {
+                k <- nrow(aov$coefs)
+                var.ps <- ps[counter:(counter + k - 1)]
+                anovas[[a]]$coefs[, 4] <- var.ps
+                anovas[[a]]$p <- min(var.ps)
+                counter <- counter + k
+            }
+
         }
     }
     attr(anovas, "ps") <- ps
@@ -115,6 +130,12 @@ FormattableANOVAs <- function(anovas, title, subtitle, footer)
 #' @export
 ANOVAsAsTable <- function(x)
 {
+    # Removing nulls from list.
+    n.x <- length(x)
+    for (i in n.x:1)
+        if (is.null(x[[i]]))
+            x[[i]] <- NULL
+    # Creating the outputs.
     means <- NULL
     zs <- NULL
     ps <- NULL

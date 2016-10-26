@@ -10,7 +10,9 @@
 #'   may not be an expression. \code{subset} may not
 #' @param weights An optional vector of sampling weights, or, the name or, the
 #'   name of a variable in \code{data}. It may not be an expression.
-#' @param correction See \code{\link{OneWayANOVA}}.
+#' @param correction The false discovery rate correction to be applied when computing the corrected p-values.
+#' Defaults to applying the False Discovery Rate correction to all the cells in the table (\code{"Table FDR"}). See \code{\link{OneWayANOVA}}
+#' for other options.
 #' @param robust.se Computes standard errors that are robust to violations of
 #'   the assumption of constant variance. This parameter is ignored
 #'   if weights are applied (as weights already employ a sandwich estimator).
@@ -29,7 +31,6 @@ TableOfMeans <- function(outcome,
                          show.labels = TRUE,
                          ...)
 {
-#    predictor.label <- if(show.labels) Labels(predictor) else OriginalName(predictor)
     # Removing missing values and filtering weights.
     df <- prepareData(outcome, row, column, subset, weights, FALSE, "Exclude cases with missing data")
     weights <- if (is.null(weights)) NULL else df[, 4]

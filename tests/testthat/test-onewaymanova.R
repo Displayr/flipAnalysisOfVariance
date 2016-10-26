@@ -11,33 +11,6 @@ set.seed(123)
 colas$d1MISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 colas$like.cokeMISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 
-# test_that("RS-1957", {
-#         manova <- OneWayMANOVA(data.frame(colas$q4a, colas$q4c, colas$q4b, colas$q4d, colas$q4e, colas$q4f),
-#             colas$d1)
-#         data(colas, package = "flipExampleData")
-#         attach(colas)
-#         manova.6 <- OneWayMANOVA(data.frame(q4a, q4b, q4c, q4d, q4e, q4f),
-#             d1,
-#             subset = NULL,
-#             weights = NULL,
-#             robust.se = FALSE,
-#             #missing = formMissing,
-#             show.labels = FALSE,
-#             binary = TRUE,
-#             pillai = FALSE,
-#             fdr = TRUE)
-#         detach(colas)
-#         object.size(manova.6)
-#         #install.packages("RProtoBuf")
-#         serialized <- RProtoBuf::serialize_pb(object=(manova.6), connection=NULL);
-#         object.size(serialized)
-#         object.size(serialized) /         object.size(manova.6)
-#         deserialized <- RProtoBuf::unserialize_pb(serialized)
-#         deserialized
-# })
-#
-
-
 test_that("MANOVA",{
         # Pillai's trace.
         op <- options(contrasts = c("contr.helmert", "contr.poly"))
@@ -70,8 +43,11 @@ test_that("MANOVA",{
         # Correction - FDR
         z <- OneWayMANOVA(data.frame(colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = TRUE, return.all = TRUE)
         z1 <- OneWayANOVA(colas$like.coke, colas$d1, correction = "False Discovery Rate", compare = "To mean", return.all = TRUE)
-        #cbind(z$anovas$[[1]]$coefs[, 4], z1$coefs[, 4])
         expect_equal(z$anovas[[1]]$coefs[2,4], z1$coefs[2, 4])
+        # Robust.se
+        z <- OneWayMANOVA(data.frame(colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = TRUE, return.all = TRUE, robust.se = FALSE)
+        z1 <- OneWayMANOVA(data.frame(colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = TRUE, return.all = TRUE, robust.se = TRUE)
+        expect_true(z$anovas[[1]]$coefs[2,4] != z1$anovas[[1]]$coefs[2,4])
         # Missing
         m <- "Error if missing data"
         expect_error(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, missing = m, binary = TRUE, return.all = TRUE, show.labels = TRUE), NA)
