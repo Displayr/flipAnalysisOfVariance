@@ -12,6 +12,7 @@ Imports:
     flipFormat,
     flipRegression,
     flipStatistics,
+    flipTables,
     flipTransformations,
     flipU,
     multcomp,

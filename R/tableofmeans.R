@@ -57,8 +57,6 @@ TableOfMeans <- function(outcome,
                         correction = correction,
                         #alernative = "Two-sided",
                         show.labels = show.labels,
-                        p.cutoff = p.cutoff,
-                        seed = seed,
                         return.all = TRUE)
     #ps <- attr(result$anovas, "ps")
     outcome.title <- if(show.labels) Labels(outcome) else Names(outcome)

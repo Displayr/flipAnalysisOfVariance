@@ -35,10 +35,11 @@ combined with 'correction' == 'Tukey Range'), or \code{"All"}}
 Compare us set 'To first' (e.g., if testing a new product, where the purpose is to work out of the new product is superior
 to an existing product, "Greater" would be chosen).}
 
-\item{robust.se}{Computes standard errors that are robust to violations of
-the assumption of constant variance, using the HC1 (degrees of freedom)
-modification of White's (1980) estimator (Long and Ervin, 2000). This parameter is ignored
-if weights are applied (as weights already employ a sandwich estimator).}
+\item{robust.se}{If \code{TRUE}, computes standard errors that are robust to violations of
+the assumption of constant variance for linear and Poisson models, using the HC3 modification of White's (1980) estimator
+(Long and Ervin, 2000). This parameter is ignored if weights are applied (as weights already
+employ a sandwich estimator). Other options are \code{FALSE} and \code{"FALSE"No}, which do the same
+thing, and \code{"hc0"}, \code{"hc1"}, \code{"hc2"}, \code{"hc4"}.}
 
 \item{missing}{How missing data is to be treated in the ANOVA. Options:
 \code{"Error if missing data"}.

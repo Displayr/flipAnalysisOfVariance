@@ -17,10 +17,11 @@
 #' @param alternative The alternative hypothesis: "Two sided", "Greater", or "Less". The main application of this is when
 #' Compare us set 'To first' (e.g., if testing a new product, where the purpose is to work out of the new product is superior
 #' to an existing product, "Greater" would be chosen).
-#' @param robust.se Computes standard errors that are robust to violations of
-#'   the assumption of constant variance, using the HC1 (degrees of freedom)
-#'   modification of White's (1980) estimator (Long and Ervin, 2000). This parameter is ignored
-#'   if weights are applied (as weights already employ a sandwich estimator).
+#' @param robust.se If \code{TRUE}, computes standard errors that are robust to violations of
+#'   the assumption of constant variance for linear and Poisson models, using the HC3 modification of White's (1980) estimator
+#'   (Long and Ervin, 2000). This parameter is ignored if weights are applied (as weights already
+#'   employ a sandwich estimator). Other options are \code{FALSE} and \code{"FALSE"No}, which do the same
+#'   thing, and \code{"hc0"}, \code{"hc1"}, \code{"hc2"}, \code{"hc4"}.
 #' @param missing How missing data is to be treated in the ANOVA. Options:
 #'   \code{"Error if missing data"}.
 #'   \code{"Exclude cases with missing data"}, and
@@ -76,13 +77,13 @@
 #' Econometrica, 48, 817-838.
 #' @importFrom flipData Observed
 #' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName
-#' @importFrom flipRegression Regression GrandMean
+#' @import flipRegression
+# #Regression GrandMean vcov.Regression
 #' @importFrom flipStatistics Frequency
 #' @importFrom flipTransformations AsNumeric Factor
 #' @importFrom multcomp glht mcp adjusted
 #' @importFrom survey regTermTest
-#' @importFrom car hccm
-#' @importFrom stats aov pf
+#' @importFrom stats aov pf vcov
 #' @export
 OneWayANOVA <- function(outcome,
                         predictor,
@@ -101,6 +102,8 @@ OneWayANOVA <- function(outcome,
                         return.all = FALSE,
                         ...)
 {
+    if (robust.se == "No")
+        robust.se <- FALSE
     .multcompSummary <- function(comparisons, correct)
     {
         if (correct == "Tukey Range")
@@ -136,14 +139,13 @@ OneWayANOVA <- function(outcome,
     model <- regression$original
     robust.se.text <- if (robust.se <- regression$robust.se) "; robust standard errors" else "" # Taking from regression, as regression checks for weight.
     contrasts <- mcp(predictor = switch(compare, "Pairwise" = "Tukey", "To mean" = "GrandMean", "To first" = "Dunnett"))
-    vcov <- if (robust.se) hccm(model, type = "hc1") else vcov(model)
-    vcov <- FixVarianceCovarianceMatrix(vcov)
+    vcov <- vcov(regression, robust.se)
     comparisons <- glht(model, linfct = contrasts, alternative = alternative, vcov = vcov)
     set.seed(seed)
     mcomp <- try(.multcompSummary(comparisons, correct), silent = TRUE)
     if (tryError(mcomp))
     {
-        if(robust.se)
+        if(robust.se != FALSE)
         {
             warning("Due to a technical problem, it was not possible to compute robust standard errors.")
             mcomp <- .multcompSummary(glht(model, linfct = contrasts, alternative = alternative), correct)
@@ -300,33 +302,4 @@ print.OneWayANOVA <- function(x, ...)
 
 
 
-#' FixVarianceCovarianceMatrix
-#'
-#' Makes some adjustments to permit a covariance-marix to be inverted, if required.
-#' @param x A variance-covariance matrix of parameter estimates.
-#' @param min.eigenvalue Minimm acceptable eigenvalue.
-#' @details Sandwich and sandwich-like standard errors can result uninvertable
-#' covariance matrices (e.g., if a parameter represents a sub-group, and the sub-group has no
-#' residual variance). This function checks to see if there are any eigenvalues less than \code{min.eigenvalue},
-#' which defaults to 1e-12. If there are, an attempt is made to guess the  offending variances, and they are multiplied by 1.01.
-#' @export
-FixVarianceCovarianceMatrix <- function(x, min.eigenvalue = 1e-12)
-{
-    wng <- "There is a technical problem with the parameter variance-covariance matrix. This is most likely due to either a problem or the appropriateness of the statistical model (e.g., using weights or robust standard errors where a sub-group in the analysis has no variation in its residuals, or lack of variation in one or more predictors."
-    x <- try(
-        {
-            if (min(eigen(x)$values) >= min.eigenvalue)
-                return(x)
-            warning(wng)
-            x.diag <- diag(x)
-            n.similar.to.diag <- abs(sweep(x, 1, x.diag, "/"))
-            high.r <- apply(n.similar.to.diag > 0.99, 1, sum) > 1
-            diag(x)[high.r] <- x.diag[high.r] * 1.01
-            x
-        }, silent = FALSE
-    )
-    if (tryError(x))
-        stop(wng)
-    x
-}
 

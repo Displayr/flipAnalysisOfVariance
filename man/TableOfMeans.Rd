@@ -21,7 +21,9 @@ may not be an expression. \code{subset} may not}
 \item{weights}{An optional vector of sampling weights, or, the name or, the
 name of a variable in \code{data}. It may not be an expression.}
 
-\item{correction}{See \code{\link{OneWayANOVA}}.}
+\item{correction}{The false discovery rate correction to be applied when computing the corrected p-values.
+Defaults to applying the False Discovery Rate correction to all the cells in the table (\code{"Table FDR"}). See \code{\link{OneWayANOVA}}
+for other options.}
 
 \item{robust.se}{Computes standard errors that are robust to violations of
 the assumption of constant variance. This parameter is ignored

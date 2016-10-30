@@ -1,4 +1,4 @@
-    #' \code{MultipleANOVAs}
+#' \code{MultipleANOVAs}
 #'
 #' Computes multiple ANOVAs.
 #' @param dependents The outcome variables.
@@ -149,6 +149,15 @@ ANOVAsAsTable <- function(x)
         ps <- Rbind(ps, coefs[, 4])
         r.squared <- c(r.squared, i$r.squared)
         overall.p <- c(overall.p, i$p)
+    }
+    if (!is.matrix(means))
+    {
+        if (is.null(means))
+            stop("Unable to estimate anova. Possibly due to insufficient sample sizes.")
+        means <- t(as.matrix(means))
+        zs <- t(as.matrix(zs))
+        ps <- t(as.matrix(ps))
+
     }
     rownames(means) <- names(x)
     group.names <- x[[1]]$column.names
