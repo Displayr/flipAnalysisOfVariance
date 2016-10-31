@@ -109,6 +109,10 @@ MultipleANOVAs <- function(dependents,
 FormattableANOVAs <- function(anovas, title, subtitle, footer)
 {
     mt <- ANOVAsAsTable(anovas)
+#for(m in mt)
+#print(m)
+    #mt$means[, 7] <- mt$zs[, 7] <- mt$ps[, 7] <- 1
+
     mct <- MeanComparisonsTable(
         means = mt$means,
         zs = mt$zs,
@@ -130,12 +134,13 @@ FormattableANOVAs <- function(anovas, title, subtitle, footer)
 #' @export
 ANOVAsAsTable <- function(x)
 {
-    # Removing nulls from list.
-    n.x <- length(x)
-    for (i in n.x:1)
-        if (is.null(x[[i]]))
-            x[[i]] <- NULL
-    # Creating the outputs.
+    for (i in x)
+        if (!is.null(i))
+        {
+            n <- x[[1]]$n
+            group.names <- i$column.names
+
+        }
     means <- NULL
     zs <- NULL
     ps <- NULL
@@ -143,12 +148,12 @@ ANOVAsAsTable <- function(x)
     overall.p <- NULL
     for (i in x)
     {
-        coefs <- i$coefs
+        coefs <- if (is.null(i)) matrix(NA, nrow = length(x), ncol = 4, dimnames = list(group.names, 1:4)) else i$coefs
         means <- Rbind(means, coefs[, 1])
         zs <- Rbind(zs, coefs[, 3])
         ps <- Rbind(ps, coefs[, 4])
-        r.squared <- c(r.squared, i$r.squared)
-        overall.p <- c(overall.p, i$p)
+        r.squared <- c(r.squared, if (is.null(i$r.squared)) NA else i$r.squared)
+        overall.p <- c(overall.p, if (is.null(i$p)) NA else i$p)
     }
     if (!is.matrix(means))
     {
@@ -160,8 +165,6 @@ ANOVAsAsTable <- function(x)
 
     }
     rownames(means) <- names(x)
-    group.names <- x[[1]]$column.names
-    n <- x[[1]]$n
     column.names <- paste0(group.names, "<br>","n: ", n)
     return(list(means = means,
                 zs = zs,
