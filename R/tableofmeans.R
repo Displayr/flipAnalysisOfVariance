@@ -37,7 +37,7 @@ TableOfMeans <- function(outcome,
 
     footer <- attr(df, "footer")
     if (robust.se != FALSE)
-        footer <- paste0(footer, "; ", "heteroscedastic robust standard errors (", if(robust.se == TRUE) "hc3" else robust.se)
+        footer <- paste0(footer, "heteroscedastic robust standard errors (", if(robust.se == TRUE) "hc3" else robust.se, ")")
     row.variable <- df[, 2]
     outcomes.by.rows <- FactorToIndicators(row.variable)
     outcomes.by.rows[outcomes.by.rows == 0] <- NA
