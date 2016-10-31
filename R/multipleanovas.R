@@ -109,10 +109,6 @@ MultipleANOVAs <- function(dependents,
 FormattableANOVAs <- function(anovas, title, subtitle, footer)
 {
     mt <- ANOVAsAsTable(anovas)
-#for(m in mt)
-#print(m)
-    #mt$means[, 7] <- mt$zs[, 7] <- mt$ps[, 7] <- 1
-
     mct <- MeanComparisonsTable(
         means = mt$means,
         zs = mt$zs,
@@ -123,7 +119,7 @@ FormattableANOVAs <- function(anovas, title, subtitle, footer)
         title = title,
         subtitle = subtitle,
         footer = footer,
-        p.cutoff = anovas[[1]]$p.cutoff)
+        p.cutoff = mt$p.cutoff)
     return(mct)
 }
 
@@ -139,6 +135,7 @@ ANOVAsAsTable <- function(x)
         {
             n <- x[[1]]$n
             group.names <- i$column.names
+            p.cutoff <- i$p.cutoff
 
         }
     means <- NULL
@@ -148,7 +145,7 @@ ANOVAsAsTable <- function(x)
     overall.p <- NULL
     for (i in x)
     {
-        coefs <- if (is.null(i)) matrix(NA, nrow = length(x), ncol = 4, dimnames = list(group.names, 1:4)) else i$coefs
+        coefs <- if (is.null(i)) matrix(NA, nrow = length(group.names), ncol = 4, dimnames = list(group.names, 1:4)) else i$coefs
         means <- Rbind(means, coefs[, 1])
         zs <- Rbind(zs, coefs[, 3])
         ps <- Rbind(ps, coefs[, 4])
@@ -171,6 +168,7 @@ ANOVAsAsTable <- function(x)
                 ps = ps,
                 r.squared = r.squared,
                 overall.p = overall.p,
-                column.names = column.names))
+                column.names = column.names,
+                p.cutoff = p.cutoff))
 }
 

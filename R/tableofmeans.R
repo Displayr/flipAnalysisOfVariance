@@ -45,7 +45,7 @@ TableOfMeans <- function(outcome,
     counts <- table(row.variable)
     for (i in seq_along(outcomes.by.rows))
     {
-        attr(outcomes.by.rows[, i], "label") <- paste0(levels(row)[i], " n: ", counts[i])
+        attr(outcomes.by.rows[, i], "label") <- paste0(levels(row.variable)[i], " n: ", counts[i])
         attr(outcomes.by.rows[, i], "name") <- paste0(Names(row), i)
     }
     columns.with.data <- apply(!is.na(outcomes.by.rows), 2, sum) > 0

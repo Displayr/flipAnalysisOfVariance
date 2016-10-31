@@ -16,7 +16,7 @@ test_that("TableOfMeans", {
     suppressWarnings(OneWayANOVA(colas$q2c, colas$d2, subset = colas$d1 == "18 to 24", compare = "To mean", correction = "None"))
 
     # Robust
-    expect_error(suppressWarnings(TableOfMeans(colas$q2c, colas$d1, colas$d2, correction = "None", robust.se = TRUE)))
+    expect_error(suppressWarnings(TableOfMeans(colas$q2c, colas$d1, colas$d2, correction = "None", robust.se = TRUE)), NA)
     suppressWarnings(OneWayANOVA(colas$q2c, colas$d2, compare = "To mean", correction = "None", robust.se = TRUE))
 
     # Variable names
@@ -25,7 +25,6 @@ test_that("TableOfMeans", {
     # Numeric variables
     library(bank, package = "flipExampleData")
     attach(bank)
-
-    TableOfMeans(Overall, Interest, Phone, show.labels = TRUE)
+    expect_error(TableOfMeans(Overall, Interest, Phone, show.labels = TRUE), NA)
     detach(bank)
     })

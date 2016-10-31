@@ -81,8 +81,7 @@ OneWayMANOVA <- function(outcomes,
                         p.cutoff = p.cutoff,
                         seed = seed,
                         return.all = return.all,
-                        robust.se = robust.se,
-                        ...)
+                        robust.se = robust.se)
     ps <- attr(result$anovas, "ps")
     # Tidying up outputs
     if (show.labels)
