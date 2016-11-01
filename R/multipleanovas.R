@@ -83,6 +83,7 @@ MultipleANOVAs <- function(dependents,
             aov <- anovas[[a]]
             if (!is.null(aov))
             {
+                anovas[[a]]$posthoc <- gsub("None", "False Discovery Rate correction applied simultaneously to the entire table", aov$posthoc)
                 k <- nrow(aov$coefs)
                 var.ps <- ps[counter:(counter + k - 1)]
                 anovas[[a]]$coefs[, 4] <- var.ps
