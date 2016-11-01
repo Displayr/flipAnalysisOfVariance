@@ -172,7 +172,7 @@ OneWayANOVA <- function(outcome,
                 n = predictor.n))
     # Headers, subtitles, footers
     mc.correction <- paste0("; multiple comparisons correction: ", correct)
-    alpha <- paste0("null hypothesis: ", tolower(alt))
+    alpha <- paste0("null hypotheses: ", tolower(alt))
     robust.se.text <- if (robust.se == FALSE) "" else
         paste0("; heteroscedasticity-robust standard errors (", if(robust.se == TRUE) "hc3" else robust.se, ");")
     result$posthoc <- paste0(alpha, mc.correction, robust.se.text)
