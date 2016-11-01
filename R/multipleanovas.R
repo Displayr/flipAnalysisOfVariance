@@ -133,7 +133,7 @@ ANOVAsAsTable <- function(x)
     for (i in x)
         if (!is.null(i))
         {
-            n <- x[[1]]$n
+            n <- i$n
             group.names <- i$column.names
             p.cutoff <- i$p.cutoff
 
