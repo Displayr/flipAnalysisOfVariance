@@ -66,7 +66,7 @@ OneWayMANOVA <- function(outcomes,
     outcomes <- df[, 1:n.variables, drop= FALSE]
     weights <- if (weighted <- !is.null(weights)) df[, n.variables + 3] else NULL
     labels <- attr(df, "labels")[1:ncol(outcomes)]
-    footer <- paste0(footer, "two-sided comparisons against the row means", if (fdr) " (p-values corrected using False Discovery Rate)")
+    #footer <- paste0(footer, "two-sided comparisons against the row means", if (fdr) " (p-values corrected using False Discovery Rate)")
     result <- list()
     if (pillai)
         result$manova <- computePillai(outcomes, predictor,  weighted, df, n.variables, weights)
