@@ -103,7 +103,7 @@ MultipleANOVAs <- function(dependents,
 #' @param anovas List of OneWayANOVA objects.
 #' @param title String showing the title of the table.
 #' @param subtitle String showing the subtitle of the table.
-#' @param footer String showing the title of the table.
+#' @param footer The footer, other than the posthoc testing information, which is added in this function.
 #' @importFrom flipFormat MeanComparisonsTable
 #' @export
 FormattableANOVAs <- function(anovas, title, subtitle, footer)
@@ -118,7 +118,7 @@ FormattableANOVAs <- function(anovas, title, subtitle, footer)
         column.names = mt$column.names,
         title = title,
         subtitle = subtitle,
-        footer = footer,
+        footer = paste0(footer, mt$posthoc),
         p.cutoff = mt$p.cutoff)
     return(mct)
 }
@@ -136,6 +136,7 @@ ANOVAsAsTable <- function(x)
             n <- i$n
             group.names <- i$column.names
             p.cutoff <- i$p.cutoff
+            posthoc <- i$posthoc
 
         }
     means <- NULL
@@ -169,6 +170,7 @@ ANOVAsAsTable <- function(x)
                 r.squared = r.squared,
                 overall.p = overall.p,
                 column.names = column.names,
-                p.cutoff = p.cutoff))
+                p.cutoff = p.cutoff,
+                posthoc = posthoc))
 }
 

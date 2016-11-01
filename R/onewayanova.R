@@ -137,7 +137,7 @@ OneWayANOVA <- function(outcome,
                              robust.se = robust.se,
                              internal = TRUE)
     model <- regression$original
-    robust.se.text <- if (robust.se <- regression$robust.se) "; robust standard errors" else "" # Taking from regression, as regression checks for weight.
+    robust.se <- regression$robust.se
     contrasts <- mcp(predictor = switch(compare, "Pairwise" = "Tukey", "To mean" = "GrandMean", "To first" = "Dunnett"))
     vcov <- vcov(regression, robust.se)
     comparisons <- glht(model, linfct = contrasts, alternative = alternative, vcov = vcov)
@@ -171,18 +171,20 @@ OneWayANOVA <- function(outcome,
                 column.names = names(predictor.n),
                 n = predictor.n))
     # Headers, subtitles, footers
+    mc.correction <- paste0("; multiple comparisons correction: ", correct)
+    alpha <- paste0("null hypothesis: ", tolower(alt))
+    robust.se.text <- if (robust.se == FALSE) "" else
+        paste0("heteroscedastic robust standard errors (", if(robust.se == TRUE) "hc3" else robust.se, ");")
+    result$posthoc <- paste0(alpha, mc.correction, robust.se.text)
     result$subtitle <- if (is.na(f.test$p)) "Error computing p-value" else paste0(if (f.test$p <= p.cutoff) "Significant" else "Not significant",
              ": F: ", FormatAsReal(f.test$Ftest, 4),
              " on ", f.test$df, " and ", f.test$ddf, " degrees-of-freedom; p: ", FormatAsPValue(f.test$p),
              "; R-squared: ", FormatAsReal(result$r.squared, 4))
     result$title <- paste0("One-way ANOVA: ", outcome.label, " by ", predictor.label)
-    mc.correction <- paste0("; multiple comparisons correction: ", correct)
-    alpha <- paste0("null hypothesis: ", tolower(alt))
-    result$footer <- paste0(regression$sample.description,
-                            alpha, mc.correction, robust.se.text)
+    result$footer <- paste0(regression$sample.description, result$posthoc)
     r <- result$original$test
     if (no.correction & compare == "To first")
-    {# Using more precise results from Regression rather than glht
+    {   # Using more precise results from Regression rather than glht
         rcoefs <- summary(model)$coef[-1, , drop = FALSE]
         k <- nrow(rcoefs)
         r$coefficients[1:k] <- rcoefs[1:k, 1] # Retaining the labels.
