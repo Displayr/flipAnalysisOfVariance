@@ -174,7 +174,7 @@ OneWayANOVA <- function(outcome,
     mc.correction <- paste0("; multiple comparisons correction: ", correct)
     alpha <- paste0("null hypothesis: ", tolower(alt))
     robust.se.text <- if (robust.se == FALSE) "" else
-        paste0("heteroscedastic robust standard errors (", if(robust.se == TRUE) "hc3" else robust.se, ");")
+        paste0("; heteroscedasticity-robust standard errors (", if(robust.se == TRUE) "hc3" else robust.se, ");")
     result$posthoc <- paste0(alpha, mc.correction, robust.se.text)
     result$subtitle <- if (is.na(f.test$p)) "Error computing p-value" else paste0(if (f.test$p <= p.cutoff) "Significant" else "Not significant",
              ": F: ", FormatAsReal(f.test$Ftest, 4),
