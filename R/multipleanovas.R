@@ -119,7 +119,7 @@ FormattableANOVAs <- function(anovas, title, subtitle, footer)
         column.names = mt$column.names,
         title = title,
         subtitle = subtitle,
-        footer = paste0(footer, mt$posthoc),
+        footer = paste(footer, mt$posthoc),
         p.cutoff = mt$p.cutoff)
     return(mct)
 }
