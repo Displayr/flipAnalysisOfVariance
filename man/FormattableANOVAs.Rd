@@ -13,7 +13,7 @@ FormattableANOVAs(anovas, title, subtitle, footer)
 
 \item{subtitle}{String showing the subtitle of the table.}
 
-\item{footer}{String showing the title of the table.}
+\item{footer}{The footer, other than the posthoc testing information, which is added in this function.}
 }
 \description{
 FormattableANOVAs
