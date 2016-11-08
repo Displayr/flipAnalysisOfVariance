@@ -17,6 +17,7 @@
 #'   the assumption of constant variance. This parameter is ignored
 #'   if weights are applied (as weights already employ a sandwich estimator).
 #' @param show.labels Show labels instead of variable names
+#' @param p.cutoff The alpha level to be used in testing.
 #' @param ... Parameters to pass to \code{\link{OneWayANOVA}}.
 #' @importFrom flipFormat Labels Names
 #' @importFrom flipTransformations FactorToIndicators AsNumeric
@@ -29,13 +30,13 @@ TableOfMeans <- function(outcome,
                          correction = "Table FDR",
                          robust.se = FALSE,
                          show.labels = TRUE,
+                         p.cutoff = 0.05,
                          ...)
 {
     # Removing missing values and filtering weights.
     df <- prepareData(outcome, row, column, subset, weights, FALSE, "Exclude cases with missing data")
     weights <- if (is.null(weights)) NULL else df[, 4]
 
-    footer <- attr(df, "footer")
     # if (robust.se != FALSE)
     #     footer <- paste0(footer, "heteroscedastic robust standard errors (", if(robust.se == TRUE) "hc3" else robust.se, ");")
     row.variable <- df[, 2]
@@ -50,22 +51,37 @@ TableOfMeans <- function(outcome,
     }
     columns.with.data <- apply(!is.na(outcomes.by.rows), 2, sum) > 0
     outcomes.by.rows <- outcomes.by.rows[, columns.with.data, drop = FALSE]
-    anovas <- MultipleANOVAs(outcomes.by.rows,
-                        df[, 3],
-                        subset = NULL,
-                        weights = weights,
-                        #compare = "To mean",
-                        robust.se = robust.se,
-                        correction = correction,
-                        #alernative = "Two-sided",
-                        show.labels = show.labels,
-                        return.all = TRUE)
-    #ps <- attr(result$anovas, "ps")
+    # anovas <- MultipleANOVAs(outcomes.by.rows,
+    #                     df[, 3],
+    #                     subset = NULL,
+    #                     weights = weights,
+    #                     #compare = "To mean",
+    #                     robust.se = robust.se,
+    #                     correction = correction,
+    #                     #alernative = "Two-sided",
+    #                     show.labels = show.labels,
+    #                     return.all = TRUE)
+    # #ps <- attr(result$anovas, "ps")
+    # outcome.title <- if(show.labels) Labels(outcome) else Names(outcome)
+    # row.title <- if(show.labels) Labels(row) else Names(row)
+    # column.title <- if(show.labels) Labels(column) else Names(column)
+    # FormattableANOVAs(anovas,
+    #                 title = paste0("Mean of ", outcome.title, " by ", row.title, " and ", column.title),
+    #                 subtitle = paste0("Rows: ", row.title, "; Columns:", column.title),
+    #                 footer = footer)
     outcome.title <- if(show.labels) Labels(outcome) else Names(outcome)
     row.title <- if(show.labels) Labels(row) else Names(row)
     column.title <- if(show.labels) Labels(column) else Names(column)
-    FormattableANOVAs(anovas,
-                    title = paste0("Mean of ", outcome.title, " by ", row.title, " and ", column.title),
-                    subtitle = paste0("Rows: ", row.title, "; Columns:", column.title),
-                    footer = footer)
+
+    MultipleMeans(outcomes.by.rows,
+                           df[, 3],
+                           subset = NULL,
+                           weights = weights,
+                           correction = correction,
+                           robust.se = robust.se ,
+                           show.labels = show.labels,
+                           p.cutoff = p.cutoff,
+                           title =  paste0("Mean of ", outcome.title, " by ", row.title, " and ", column.title),
+                           subtitle = paste0("Rows: ", row.title, "; Columns:", column.title),
+                           footer <- attr(df, "footer"))
 }

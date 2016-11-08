@@ -19,5 +19,6 @@ Imports:
     survey
 LazyData: NA
 Suggests:
-    testthat
+    testthat,
+    flipMultivariates
 RoxygenNote: 5.0.1

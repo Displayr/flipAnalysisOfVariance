@@ -5,7 +5,8 @@
 \title{\code{TableOfMeans}}
 \usage{
 TableOfMeans(outcome, row, column, subset = NULL, weights = NULL,
-  correction = "Table FDR", robust.se = FALSE, show.labels = TRUE, ...)
+  correction = "Table FDR", robust.se = FALSE, show.labels = TRUE,
+  p.cutoff = 0.05, ...)
 }
 \arguments{
 \item{outcome}{The outcome variable.}
@@ -30,6 +31,8 @@ the assumption of constant variance. This parameter is ignored
 if weights are applied (as weights already employ a sandwich estimator).}
 
 \item{show.labels}{Show labels instead of variable names}
+
+\item{p.cutoff}{The alpha level to be used in testing.}
 
 \item{...}{Parameters to pass to \code{\link{OneWayANOVA}}.}
 }
