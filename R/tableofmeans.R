@@ -82,6 +82,6 @@ TableOfMeans <- function(outcome,
                            show.labels = show.labels,
                            p.cutoff = p.cutoff,
                            title =  paste0("Mean of ", outcome.title, " by ", row.title, " and ", column.title),
-                           subtitle = paste0("Rows: ", row.title, "; Columns:", column.title),
+                           subtitle = paste0("Rows: ", row.title, "; Columns: ", column.title),
                            footer = attr(df, "footer"))
 }
