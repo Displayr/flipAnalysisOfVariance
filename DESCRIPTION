@@ -21,4 +21,12 @@ LazyData: NA
 Suggests:
     testthat,
     flipMultivariates
+Remotes:
+    NumbersInternational/flipData,
+    NumbersInternational/flipFormat,
+    NumbersInternational/flipRegression,
+    NumbersInternational/flipStatistics,
+    NumbersInternational/flipTables,
+    NumbersInternational/flipTransformations,
+    NumbersInternational/flipU
 RoxygenNote: 5.0.1
