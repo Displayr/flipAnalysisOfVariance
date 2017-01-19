@@ -19,6 +19,11 @@ notifications:
       - "Build <%{build_url}|#%{build_number}> %{result} in %{repository_name}@%{branch} by %{author}: <%{compare_url}|%{commit_message}>"
     on_success: change
     on_failure: always
+    
+script:
+   - R CMD build .
+   - Rscript -e 'require(devtools); install_github("NumbersInternational/flipMultivariates")'
+   - R CMD check --as-cran *.tar.gz
 
 after_success: >-
   if [ $TRAVIS_EVENT_TYPE == "push" ] ; then
