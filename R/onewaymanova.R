@@ -34,11 +34,10 @@
 #' Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 #' @importFrom flipRegression Regression GrandMean
 #' @importFrom flipTransformations AsNumeric Factor
-#' @importFrom flipData CheckForLinearDependence
+#' @importFrom flipData CheckForLinearDependence CalibrateWeight
 #' @importFrom multcomp glht mcp adjusted
-#' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName ExtractCommonPrefix
+#' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName ExtractCommonPrefix SampleDescription
 #' @importFrom survey regTermTest
-#' @importFrom flipData SampleDescription CalibrateWeight
 #' @importFrom flipTransformations AdjustDataToReflectWeights
 #' @importFrom stats complete.cases lm manova p.adjust
 #' @export
