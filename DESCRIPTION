@@ -20,6 +20,7 @@ Imports:
 LazyData: NA
 Suggests:
     testthat,
+    flipExampleData,
     flipMultivariates
 Remotes:
     Displayr/flipData,
