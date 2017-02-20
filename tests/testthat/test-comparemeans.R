@@ -32,22 +32,3 @@ test_that("Print", {
     expect_error(suppressWarnings(suppressWarnings(CompareMultipleMeans(list(bank$Fees, bank$Branch, bank$ATM), bank$Overall))), NA)
 })
 
-
-
-
-# In SPSS, the priors are always the oberved priors when fitting the model. In MASS:lda, the priors are used when fitting.
-test_that("LDA",
-          {
-
-                data(hbatwithsplits, package = "flipExampleData")
-                hair <- hbatwithsplits
-
-                hair1  <- flipTransformations::AsNumeric(hair[, paste0("x",6:18)], binary = FALSE, remove.first = TRUE)
-                hair1$x1 <- hair$x1
-                hair1$split60 <- hair$split60
-                hair1$id <- hair$id
-                library(flipMultivariates)
-                zLDA <- suppressWarnings(LDA(x1 ~ x6 + x7 + x8 + x9 + x10 + x11 + x12 + x13 + x14 + x15 + x16 + x17 + x18, method = "moment", data = hair1, subset = split60 == "Estimation Sample", show.labels = TRUE))
-                expect_error(print(zLDA), NA)
-
-})

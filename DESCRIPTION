@@ -21,7 +21,6 @@ LazyData: NA
 Suggests:
     testthat,
     flipExampleData,
-    flipMultivariates
 Remotes:
     Displayr/flipData,
     Displayr/flipFormat,
