@@ -12,13 +12,9 @@ warnings_are_errors: false
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libgdal-dev libproj-dev python-protobuf libprotoc-dev libprotobuf-dev libv8-dev librsvg2-dev
-
 script:
-  - sudo Rscript -e 'devtools::install_version("devtools", "1.11.0")'
-  - sudo Rscript -e 'devtools::install_version("Rcpp", "0.12.9.2")'
   - R CMD build --no-manual --no-build-vignettes --no-resave-data .
   - sudo Rscript -e 'require(devtools); install_github("Displayr/flipExampleData")'
-  - sudo Rscript -e 'require(devtools); install_github("Displayr/flipMultivariates", dependencies=FALSE)'
   - R CMD check --as-cran --no-manual --no-build-vignettes --no-tests *.tar.gz
   - sudo Rscript -e 'install.packages("roxygen2")'
   - if [ -d tests/testthat ]; then Rscript --default-packages='datasets,utils,grDevices,graphics,stats,methods' -e 'res<-devtools::test(); df <- as.data.frame(res); pass <- sum(df$failed)==0 && all(!df$error); quit(status=1-pass, save="no")'; fi
