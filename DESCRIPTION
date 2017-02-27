@@ -1,10 +1,10 @@
 Package: flipAnalysisOfVariance
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Functions for computing ANOVA, MANOVA, and related methods
 Version: 0.1.0
-Author: Tim Bock
-Maintainer: Tim Bock <tim.bock@numbers.net.au>
-Description: Analysis of Variance, MANOVA, post-hoc corrections. All One-Way. Table of Means.
+Author: Displayr <opensource@displayr.com>
+Maintainer: Displayr <opensource@displayr.com>
+Description: Function for computing ANOVA, MANOVA, Table of Means and related methods, according to the flip Project conventions.
 License: GPL-3
 Imports:
     car,
