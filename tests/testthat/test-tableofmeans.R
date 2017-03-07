@@ -27,4 +27,11 @@ test_that("TableOfMeans", {
     attach(bank)
     expect_error(TableOfMeans(Overall, Interest, Phone, show.labels = TRUE), NA)
     detach(bank)
+
+    data("bank", package = "flipExampleData")
+    bank <- bank[bank$Interest < 3  & bank$Phone > 2  & bank$Phone < 5 , ]
+    attach(bank)
+    expect_error(TableOfMeans(Overall, Interest, Phone, robust.se = TRUE), NA)
+    detach(bank)
+
     })

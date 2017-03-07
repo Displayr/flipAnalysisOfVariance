@@ -19,16 +19,19 @@ test_that("Bug: System is computationally singular.CE-626 ",
 
 
 test_that("Print", {
-     data(cola, package = "flipExampleData")
+    data(cola, package = "flipExampleData")
     z <- list(cola$Q4_A, cola$Q4_B, cola$Q4_C)
     zz <- suppressWarnings(CompareMultipleMeans(z, cola$Q3, title = "Title", subtitle = "Sub title", footer = "footer"))
     expect_error(print(zz), NA)
 
     expect_error((print(suppressWarnings(CompareMultipleMeans(list(A = cola$Q4_A, B = cola$Q4_B, C = cola$Q4_C), cola$Q3)))), NA)
     # Weights.
-     expect_error((print(suppressWarnings(CompareMultipleMeans(list(A = cola$Q4_A, B = cola$Q4_B, C = cola$Q4_C), cola$Q3, weights = 10 * runif(length(cola$Q3)))))), NA)
+    expect_error((print(suppressWarnings(CompareMultipleMeans(list(A = cola$Q4_A, B = cola$Q4_B, C = cola$Q4_C), cola$Q3, weights = 10 * runif(length(cola$Q3)))))), NA)
+
+    expect_error(print(suppressWarnings(CompareMultipleMeans(list(cola$Q4_A, cola$Q4_B, cola$Q4_C), cola$Q3, compare = "Columns"))), NA)
+    # Weights.
+    expect_error(print(suppressWarnings(CompareMultipleMeans(list(cola$Q4_A, cola$Q4_B, cola$Q4_C), cola$Q3, weights = runif(length(cola$Q3)), compare = "Columns"))), NA)
 
     data(bank, package = "flipExampleData")
     expect_error(suppressWarnings(suppressWarnings(CompareMultipleMeans(list(bank$Fees, bank$Branch, bank$ATM), bank$Overall))), NA)
 })
-
