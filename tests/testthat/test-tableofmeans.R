@@ -23,12 +23,11 @@ test_that("TableOfMeans", {
     suppressWarnings(TableOfMeans(colas$q2c, colas$d1, colas$d2, show.labels = FALSE))
 
     # Numeric variables
-    library(bank, package = "flipExampleData")
+    data("bank", package = "flipExampleData")
     attach(bank)
     expect_error(TableOfMeans(Overall, Interest, Phone, show.labels = TRUE), NA)
     detach(bank)
 
-    data("bank", package = "flipExampleData")
     bank <- bank[bank$Interest < 3  & bank$Phone > 2  & bank$Phone < 5 , ]
     attach(bank)
     expect_error(TableOfMeans(Overall, Interest, Phone, robust.se = TRUE), NA)
