@@ -23,7 +23,7 @@ test_that("TableOfMeans", {
     suppressWarnings(TableOfMeans(colas$q2c, colas$d1, colas$d2, show.labels = FALSE))
 
     # Numeric variables
-    data("bank", package = "flipExampleData")
+    data(bank, package = "flipExampleData")
     attach(bank)
     expect_error(TableOfMeans(Overall, Interest, Phone, show.labels = TRUE), NA)
     detach(bank)
