@@ -75,7 +75,7 @@
 #' Wright, S. P. (1992). Adjusted P-values for simultaneous inference. Biometrics 48, 1005-1013.
 #' White, H. (1980), A heteroskedastic-consistent covariance matrix estimator and a direct test of heteroskedasticity.
 #' Econometrica, 48, 817-838.
-#' @importFrom flipData Observed
+#' @importFrom flipData Observed ProcessQVariables
 #' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName
 #' @import flipRegression
 # #Regression GrandMean vcov.Regression
@@ -102,6 +102,9 @@ OneWayANOVA <- function(outcome,
                         return.all = FALSE,
                         ...)
 {
+    outcome <- ProcessQVariables(outcome)
+    predictor <- ProcessQVariables(predictor)
+
     if (robust.se == "No")
         robust.se <- FALSE
     .multcompSummary <- function(comparisons, correct)

@@ -18,4 +18,3 @@ FormattableANOVAs(anovas, title, subtitle, footer)
 \description{
 FormattableANOVAs
 }
-

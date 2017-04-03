@@ -39,4 +39,3 @@ if weights are applied (as weights already employ a sandwich estimator).}
 \description{
 Compares mean of one variable by two factors.
 }
-

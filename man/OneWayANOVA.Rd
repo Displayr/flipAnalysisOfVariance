@@ -107,4 +107,3 @@ Wright, S. P. (1992). Adjusted P-values for simultaneous inference. Biometrics 4
 White, H. (1980), A heteroskedastic-consistent covariance matrix estimator and a direct test of heteroskedasticity.
 Econometrica, 48, 817-838.
 }
-

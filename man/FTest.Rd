@@ -12,4 +12,3 @@ FTest(fit)
 \description{
 An F-Test from a \code{lm} or linear \code{svyglm} object.
 }
-

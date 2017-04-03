@@ -21,6 +21,9 @@ CompareMultipleMeans <- function(outcomes,
                          show.labels = TRUE,
                           ...)
 {
+    outcomes <- ProcessQVariables(outcomes)
+    predictor <- ProcessQVariables(predictor)
+
     manova <- OneWayMANOVA(outcomes,
                         predictor,
                         subset = NULL,

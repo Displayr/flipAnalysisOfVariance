@@ -60,4 +60,3 @@ Tests are two-sided, comparing to the Grand Mean (i.e., "To mean" in \link{OneWa
 
 Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 }
-

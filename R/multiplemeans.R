@@ -48,6 +48,9 @@ MultipleMeans <- function(outcomes,
                           subtitle = "",
                           footer = "")
 {
+    outcomes <- ProcessQVariables(outcomes)
+    predictor <- ProcessQVariables(predictor)
+
     anovas <- MultipleANOVAs(outcomes,
                         predictor,
                         subset = subset,

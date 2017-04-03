@@ -27,4 +27,3 @@ CompareMultipleMeans(outcomes, predictor, title = "", subtitle = "",
 \description{
 Compares means of multiple variables.
 }
-

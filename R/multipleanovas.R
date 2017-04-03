@@ -48,6 +48,9 @@ MultipleANOVAs <- function(dependents,
                            p.cutoff = 0.05,
                            ...)
 {
+    dependents <- ProcessQVariables(dependents)
+    independent <- ProcessQVariables(independent)
+
     anovas <- suppressWarnings(lapply(dependents, function(x)
         {
             aov <- try(OneWayANOVA(x,

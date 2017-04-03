@@ -14,4 +14,3 @@ ANOVAsAsTable(x)
 \code{ANOVAsAsTable}
 Converts a list of ANOVAs into a format that can be prettily formatted.
 }
-

@@ -61,4 +61,3 @@ Conducts multiple \code{OneWayANOVA}s, and puts them in a list. If \code{correct
  \code{"Table FDR"}, the false discovery rate correction is applied across the entire table. All
 other corrections are performed within rows. Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 }
-

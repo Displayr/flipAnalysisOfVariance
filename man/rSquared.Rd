@@ -12,4 +12,3 @@ rSquared(object)
 \description{
 rSquared
 }
-

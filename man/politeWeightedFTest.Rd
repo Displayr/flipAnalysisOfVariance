@@ -12,4 +12,3 @@ politeWeightedFTest(fit)
 \description{
 Computes \link{regTermTest}, but fails savely when an error occurs.
 }
-
