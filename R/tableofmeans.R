@@ -20,8 +20,7 @@
 #' @param p.cutoff The alpha level to be used in testing.
 #' @param ... Parameters to pass to \code{\link{OneWayANOVA}}.
 #' @importFrom flipFormat Labels Names
-#' @importFrom flipTransformations FactorToIndicators AsNumeric
-#' @importFrom flipData ProcessQVariables
+#' @importFrom flipTransformations FactorToIndicators AsNumeric ProcessQVariables
 #' @export
 TableOfMeans <- function(outcome,
                          row,

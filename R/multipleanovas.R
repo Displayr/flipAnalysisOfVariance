@@ -33,7 +33,7 @@
 #'  \code{"Table FDR"}, the false discovery rate correction is applied across the entire table. All
 #' other corrections are performed within rows. Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 #' @importFrom flipFormat Labels
-#' @importFrom flipData ProcessQVariables
+#' @importFrom flipTransformations ProcessQVariables
 #' @export
 MultipleANOVAs <- function(dependents,
                            independent,

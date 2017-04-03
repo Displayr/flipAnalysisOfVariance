@@ -75,12 +75,12 @@
 #' Wright, S. P. (1992). Adjusted P-values for simultaneous inference. Biometrics 48, 1005-1013.
 #' White, H. (1980), A heteroskedastic-consistent covariance matrix estimator and a direct test of heteroskedasticity.
 #' Econometrica, 48, 817-838.
-#' @importFrom flipData Observed ProcessQVariables
+#' @importFrom flipData Observed
 #' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName
 #' @import flipRegression
 # #Regression GrandMean vcov.Regression
 #' @importFrom flipStatistics Frequency
-#' @importFrom flipTransformations AsNumeric Factor
+#' @importFrom flipTransformations AsNumeric Factor ProcessQVariables
 #' @importFrom multcomp glht mcp adjusted
 #' @importFrom survey regTermTest
 #' @importFrom stats aov pf vcov

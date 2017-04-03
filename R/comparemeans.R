@@ -11,7 +11,7 @@
 #' @param show.labels Show labels instead of variable names
 #' @param ... Parameters to pass to \code{\link{OneWayANOVA}}.
 #' @importFrom flipFormat Labels Names
-#' @importFrom flipData ProcessQVariables
+#' @importFrom flipTransformations ProcessQVariables
 #' @export
 CompareMultipleMeans <- function(outcomes,
                          predictor,
