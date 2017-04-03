@@ -34,7 +34,7 @@
 #' Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 #' @importFrom flipRegression Regression GrandMean
 #' @importFrom flipTransformations AsNumeric Factor
-#' @importFrom flipData CheckForLinearDependence CalibrateWeight
+#' @importFrom flipData CheckForLinearDependence CalibrateWeight ProcessQVariables
 #' @importFrom multcomp glht mcp adjusted
 #' @importFrom flipFormat Labels FormatAsReal FormatAsPValue RegressionTable OriginalName ExtractCommonPrefix SampleDescription
 #' @importFrom survey regTermTest

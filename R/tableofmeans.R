@@ -21,6 +21,7 @@
 #' @param ... Parameters to pass to \code{\link{OneWayANOVA}}.
 #' @importFrom flipFormat Labels Names
 #' @importFrom flipTransformations FactorToIndicators AsNumeric
+#' @importFrom flipData ProcessQVariables
 #' @export
 TableOfMeans <- function(outcome,
                          row,
