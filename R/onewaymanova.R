@@ -56,10 +56,11 @@ OneWayMANOVA <- function(outcomes,
                         return.all = FALSE,
                         ...)
 {
+    predictor.label <- if(show.labels) Labels(predictor) else OriginalName(predictor)
+
     outcomes <- ProcessQVariables(outcomes)
     predictor <- ProcessQVariables(predictor)
 
-    predictor.label <- if(show.labels) Labels(predictor) else OriginalName(predictor)
     # Removing missing values and filtering weights.
     df <- prepareData(outcomes, predictor, NULL, subset, weights, binary, missing)
     footer <- attr(df, "footer")
