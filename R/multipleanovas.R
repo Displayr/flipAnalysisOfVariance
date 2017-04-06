@@ -34,6 +34,7 @@
 #' other corrections are performed within rows. Additional detail about the other parameters can be found in \code{OneWayANOVA}.
 #' @importFrom flipFormat Labels
 #' @importFrom flipTransformations ProcessQVariables
+#' @importFrom flipRegression PValueAdjustFDR
 #' @export
 MultipleANOVAs <- function(dependents,
                            independent,
@@ -80,7 +81,7 @@ MultipleANOVAs <- function(dependents,
     if (correction == "Table FDR")
     {
         n.anovas <- length(anovas)
-        ps <- p.adjust(ps, method = "fdr")
+        ps <- PValueAdjustFDR(ps)
         counter <- 1
         for (a in 1:n.anovas)
         {

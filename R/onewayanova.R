@@ -81,6 +81,7 @@
 # #Regression GrandMean vcov.Regression
 #' @importFrom flipStatistics Frequency
 #' @importFrom flipTransformations AsNumeric Factor ProcessQVariables
+#' @importFrom flipRegression PValueAdjustFDR
 #' @importFrom multcomp glht mcp adjusted
 #' @importFrom survey regTermTest
 #' @importFrom stats aov pf vcov
@@ -111,6 +112,14 @@ OneWayANOVA <- function(outcome,
     {
         if (correct == "Tukey Range")
             return(summary(comparisons))
+        if (correct == "False Discovery Rate" || correct == "fdr")
+        {
+            res <- summary(comparisons, test = adjusted(type = "none"))
+            p.raw <- res$test$pvalues
+            p.adj <- PValueAdjustFDR(p.raw)
+            res$test$pvalues <- p.adj
+            return(res)
+        }
         return(summary(comparisons, test = adjusted(type = correction)))
     }
     if (is.null(outcome.name))

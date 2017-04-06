@@ -47,7 +47,7 @@ test_that("MANOVA",{
         # Robust.se
         z <- OneWayMANOVA(data.frame(colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = TRUE, return.all = TRUE, robust.se = FALSE)
         z1 <- OneWayMANOVA(data.frame(colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = TRUE, return.all = TRUE, robust.se = TRUE)
-        expect_true(z$anovas[[1]]$coefs[2,4] != z1$anovas[[1]]$coefs[2,4])
+        expect_true(z$anovas[[1]]$coefs[2,3] != z1$anovas[[1]]$coefs[2,3])
         # Missing
         m <- "Error if missing data"
         expect_error(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, missing = m, binary = TRUE, return.all = TRUE, show.labels = TRUE), NA)
