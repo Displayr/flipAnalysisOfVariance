@@ -8,7 +8,6 @@ Description: Function for computing ANOVA, MANOVA, Table of Means and related
     methods, according to the flip Project conventions.
 License: GPL-3
 Imports:
-    car,
     flipData,
     flipFormat,
     flipRegression,
@@ -22,6 +21,7 @@ LazyData: NA
 Suggests:
     testthat,
     flipExampleData,
+    car
 Remotes:
     Displayr/flipData,
     Displayr/flipFormat,
