@@ -84,7 +84,7 @@
 #' @importFrom flipRegression PValueAdjustFDR
 #' @importFrom multcomp glht mcp adjusted
 #' @importFrom survey regTermTest
-#' @importFrom stats aov pf vcov weighted.mean ptukey
+#' @importFrom stats aov pf vcov ptukey
 #' @export
 OneWayANOVA <- function(outcome,
                         predictor,
