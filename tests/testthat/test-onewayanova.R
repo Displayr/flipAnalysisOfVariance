@@ -65,8 +65,11 @@ test_that("One Way ANOVA - Comparing options", {
     # Imputation
     expect_error(OneWayANOVA(colas$like.coke, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean"), NA)
     expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean"), NA)
-    expect_warning(OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Imputation (replace missing values with estimates)", compare = "To mean"),
-                   "Imputation has been selected, but the data has no missing values.")
+    tryCatch(OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Imputation (replace missing values with estimates)", compare = "To mean"),
+             warning = function(w){
+                 if (!grepl("Imputation has been selected, but the data has no missing values.", w$message))
+                     stop("OneWayAnova(...) did not throw a warning.")
+             })
     # Show Labels
     z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", return.all = TRUE)
     expect_equal(z$title,  "One-way ANOVA: Like Coca-Cola by Age")
