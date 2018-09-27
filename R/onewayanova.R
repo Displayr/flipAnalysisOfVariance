@@ -182,11 +182,11 @@ OneWayANOVA <- function(outcome,
     {
         if(robust.se)
         {
-            warning("Due to a technical problem, it was not possible to compute robust standard errors.")
+            warning("Robust standard errors have not been implemented for this model.")
             mcomp <- .multcompSummary(glht(model, linfct = contrasts, alternative = alternative), correct, FALSE)
         }
         else if (!is.null(weights))
-            stop("Due to a technical problem, it is not possible to estimate the weighted model. Consider instead using an unweighted model.")
+            stop("Weights cannot be used with this model. Remove weights to compute the unweighted model.")
     }
     f.test <- FTest(regression)
     sub <- if (is.null(subset)) rep(TRUE, length(predictor)) else subset
