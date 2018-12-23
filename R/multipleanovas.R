@@ -132,7 +132,7 @@ FormattableANOVAs <- function(anovas, title, subtitle, footer)
 #' \code{ANOVAsAsTable}
 #' Converts a list of ANOVAs into a format that can be prettily formatted.
 #' @param x The list of ANOVAs.
-#' @importFrom flipTables Rbind
+#' @importFrom flipU Rbind
 #' @export
 ANOVAsAsTable <- function(x)
 {
