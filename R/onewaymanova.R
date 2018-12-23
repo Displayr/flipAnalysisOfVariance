@@ -164,7 +164,7 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
     df <- subset(df, subset = subset & complete.cases(df) & weights > 0)
     n.estimation <- nrow(df)
     if (n.estimation < n.total & missing == "Error if missing data")
-        stop("Data contains missing values.")
+        stop("The data contains missing values. Change the 'missing' option to run the analysis.")
     attr(df, "footer") <- SampleDescription(n.total, n.subset, n.estimation, subset.label, weighted, weight.label, missing = "", imputation.label = NULL, NULL)
     attr(df, "labels") <- Labels(outcomes)
     df

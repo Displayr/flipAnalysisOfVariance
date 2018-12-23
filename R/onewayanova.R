@@ -84,7 +84,7 @@
 #' @importFrom flipRegression PValueAdjustFDR
 #' @importFrom multcomp glht mcp adjusted
 #' @importFrom survey regTermTest
-#' @importFrom stats aov pf vcov
+#' @importFrom stats aov pf vcov ptukey
 #' @export
 OneWayANOVA <- function(outcome,
                         predictor,
@@ -108,16 +108,39 @@ OneWayANOVA <- function(outcome,
 
     if (robust.se == "No")
         robust.se <- FALSE
-    .multcompSummary <- function(comparisons, correct)
+    .multcompSummary <- function(comparisons, correct, robust.se)
     {
         if (correct == "Tukey Range")
-            return(summary(comparisons))
+        {
+            if (compare == "Pairwise" && comparisons$alternative == "two.sided" && !robust.se)
+            {
+                res <- summary(comparisons, test = adjusted(type = "none"))
+
+                # Overwrite pvalues with adjusted
+                compare <- attr(comparisons$linfct, "type")
+                MSE <- sum(comparisons$model$residuals^2) / comparisons$model$df.residual
+                means <- comparisons$model$coefficients
+                means[-1] <- means[-1] + means[1]
+                counts <- table(comparisons$model$model$predictor)
+
+                center <- outer(means, means, "-")
+                keep <- lower.tri(center)
+                center <- center[keep]
+                est <- center / (sqrt((MSE/2) * outer(1/counts, 1/counts, "+"))[keep])
+                pvals <- ptukey(abs(est), length(means), comparisons$model$df.residual, lower.tail = FALSE)
+                res$test$pvalues <- pvals
+                return(res)
+            }
+            res <- tryCatch({summary(comparisons)},
+                            warning = function(w) {warning("Numerical precision of p-value calcuations exceeds threshold. ",
+                                                           "Treat p-values with caution.")
+                                suppressWarnings(summary(comparisons))})
+            return(res)
+        }
         if (correct == "False Discovery Rate" || correct == "fdr")
         {
             res <- summary(comparisons, test = adjusted(type = "none"))
-            p.raw <- res$test$pvalues
-            p.adj <- PValueAdjustFDR(p.raw)
-            res$test$pvalues <- p.adj
+            res$test$pvalues <- PValueAdjustFDR(res$test$pvalues)
             return(res)
         }
         return(summary(comparisons, test = adjusted(type = correction)))
@@ -132,9 +155,9 @@ OneWayANOVA <- function(outcome,
     alt <- alternative
     alternative <- switch(alternative, "Two-sided" = "two.sided", "Greater" = "greater", "Less" = "less")
     correction <- switch(correction, "Holm" = "holm", "Hochberg" = "hochberg", "Hommel" = "hommel", "Bonferroni" = "bonferroni",
-        "Benjamini & Yekutieli" = "BY","False Discovery Rate" = "fdr", "None" = "none", "Single-step" = "single-step",
-        "Shaffer" = "Shaffer", "Westfall" = "Westfall", "Free Combinations" = "free",
-        "Tukey Range" = "none", "Dunnett" = "none")
+                         "Benjamini & Yekutieli" = "BY","False Discovery Rate" = "fdr", "None" = "none", "Single-step" = "single-step",
+                         "Shaffer" = "Shaffer", "Westfall" = "Westfall", "Free Combinations" = "free",
+                         "Tukey Range" = "none", "Dunnett" = "none")
     predictor.label <- if (show.labels) Labels(predictor) else predictor.name
     predictor <- tidyFactor(predictor)
     #outcome.label = if (show.labels & !is.null(attr(outcome, "label"))) attr(outcome, "label") else outcome.name
@@ -154,16 +177,16 @@ OneWayANOVA <- function(outcome,
     vcov <- vcov(regression, robust.se)
     comparisons <- glht(model, linfct = contrasts, alternative = alternative, vcov = vcov)
     set.seed(seed)
-    mcomp <- try(.multcompSummary(comparisons, correct), silent = TRUE)
+    mcomp <- try(.multcompSummary(comparisons, correct, robust.se), silent = TRUE)
     if (tryError(mcomp))
     {
-        if(robust.se != FALSE)
+        if(robust.se)
         {
-            warning("Due to a technical problem, it was not possible to compute robust standard errors.")
-            mcomp <- .multcompSummary(glht(model, linfct = contrasts, alternative = alternative), correct)
+            warning("Robust standard errors have not been implemented for this model.")
+            mcomp <- .multcompSummary(glht(model, linfct = contrasts, alternative = alternative), correct, FALSE)
         }
         else if (!is.null(weights))
-            stop("Due to a technical problem, it is not possible to estimate the weighted model. Consider instead using an unweighted model.")
+            stop("Weights cannot be used with this model. Remove weights to compute the unweighted model.")
     }
     f.test <- FTest(regression)
     sub <- if (is.null(subset)) rep(TRUE, length(predictor)) else subset
@@ -173,15 +196,15 @@ OneWayANOVA <- function(outcome,
     predictor.n <- predictor.n[predictor.n > 0]
     result <- c(f.test,
                 list(original = mcomp,
-                robust.se = robust.se,
-                grand.mean = GrandMean(regression),
-                correction = correct,
-                outcome.label = outcome.label,
-                r.squared = rSquared(regression),
-                p.cutoff = p.cutoff,
-                compare = compare,
-                column.names = names(predictor.n),
-                n = predictor.n))
+                     robust.se = robust.se,
+                     grand.mean = GrandMean(regression),
+                     correction = correct,
+                     outcome.label = outcome.label,
+                     r.squared = rSquared(regression),
+                     p.cutoff = p.cutoff,
+                     compare = compare,
+                     column.names = names(predictor.n),
+                     n = predictor.n))
     # Headers, subtitles, footers
     mc.correction <- paste0("; multiple comparisons correction: ", correct)
     alpha <- paste0("null hypotheses: ", tolower(alt))
@@ -189,9 +212,9 @@ OneWayANOVA <- function(outcome,
         paste0("; heteroscedasticity-robust standard errors (", if(robust.se == TRUE) "hc3" else robust.se, ");")
     result$posthoc <- paste0(alpha, mc.correction, robust.se.text)
     result$subtitle <- if (is.na(f.test$p)) "Error computing p-value" else paste0(if (f.test$p <= p.cutoff) "Significant" else "Not significant",
-             ": F: ", FormatAsReal(f.test$Ftest, 4),
-             " on ", f.test$df, " and ", f.test$ddf, " degrees-of-freedom; p: ", FormatAsPValue(f.test$p),
-             "; R-squared: ", FormatAsReal(result$r.squared, 4))
+                                                                                  ": F: ", FormatAsReal(f.test$Ftest, 4),
+                                                                                  " on ", f.test$df, " and ", f.test$ddf, " degrees-of-freedom; p: ", FormatAsPValue(f.test$p),
+                                                                                  "; R-squared: ", FormatAsReal(result$r.squared, 4))
     result$title <- paste0("One-way ANOVA: ", outcome.label, " by ", predictor.label)
     result$footer <- paste0(regression$sample.description, result$posthoc)
     r <- result$original$test
@@ -233,13 +256,13 @@ OneWayANOVA <- function(outcome,
     else
         "Corrected <span style='font-style:italic;'>p</span>"
     result$table <- RegressionTable(result$coefs,
-                          title = result$title,
-                          subtitle = result$subtitle,
-                          footer = result$footer,
-                          estimate.name = estimate.name,
-                          se.name = if (result$robust.se) "Robust SE" else "Standard Error",
-                          p.name = p.name,
-                          p.cutoff = result$p.cutoff)
+                                    title = result$title,
+                                    subtitle = result$subtitle,
+                                    footer = result$footer,
+                                    estimate.name = estimate.name,
+                                    se.name = if (result$robust.se) "Robust SE" else "Standard Error",
+                                    p.name = p.name,
+                                    p.cutoff = result$p.cutoff)
     if (!return.all)
         result <- list(table = result$table)
     class(result) <- "OneWayANOVA"
@@ -264,9 +287,9 @@ rSquared <- function(object)
 
 tryError <- function(x)
 {
-        if (any("try-error" %in% class(x)))
-            return(TRUE)
-        FALSE
+    if (any("try-error" %in% class(x)))
+        return(TRUE)
+    FALSE
 }
 
 #' politeWeightedFTest
@@ -313,7 +336,4 @@ print.OneWayANOVA <- function(x, ...)
 {
     print(x$table)
 }
-
-
-
 

@@ -7,7 +7,7 @@ z <- unclass(colas$q4a)
 flipFormat::Labels(z) <- "Like Coca-Cola"
 colas$like.coke <- z - 3
 colas$balanced <- c(rep(1:3, rep(100,3)), rep(NA, 27))
-colas$agenumeric <- car::recode(colas$d1, as.factor.result = FALSE, recodes = "'18 to 24' = 21; '25 to 29' = 27; '30 to 34' = 32; '35 to 39' = 37; '40 to 44' = 42; '45 to 49' = 47; '50 to 54' = 52; '55 to 64' = 60; '65 or more' = 77")
+colas$agenumeric <- car::recode(colas$d1, as.factor = FALSE, recodes = "'18 to 24' = 21; '25 to 29' = 27; '30 to 34' = 32; '35 to 39' = 37; '40 to 44' = 42; '45 to 49' = 47; '50 to 54' = 52; '55 to 64' = 60; '65 or more' = 77")
 colas$d1MISSING <- colas$d1
 colas$like.cokeMISSING <-  colas$like.coke
 set.seed(123)
@@ -65,7 +65,11 @@ test_that("One Way ANOVA - Comparing options", {
     # Imputation
     expect_error(OneWayANOVA(colas$like.coke, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean"), NA)
     expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean"), NA)
-    expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Imputation (replace missing values with estimates)", compare = "To mean"))
+    tryCatch(OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Imputation (replace missing values with estimates)", compare = "To mean"),
+             warning = function(w){
+                 if (!grepl("Imputation has been selected, but the data has no missing values.", w$message))
+                     stop("OneWayAnova(...) did not throw a warning.")
+             })
     # Show Labels
     z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", return.all = TRUE)
     expect_equal(z$title,  "One-way ANOVA: Like Coca-Cola by Age")
@@ -148,4 +152,10 @@ test_that("One Way ANOVA - vs Stata",
 
 })
 
-#
+test_that("DS-1914 compare p-values analytical vs numeric integration",
+          {
+              set.seed(1234)
+              z <- OneWayANOVA(runif(327), colas$like.coke, compare = "Pairwise", correction = "Tukey Range", return.all = TRUE)
+              expect_equal(z$coef[9, 4], 0.8944926, tolerance = 0.01)
+          })
+
