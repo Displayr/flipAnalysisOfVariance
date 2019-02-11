@@ -88,17 +88,28 @@ MultipleANOVAs <- function(dependents,
         names(anovas) <- flipFormat::Labels(dependents)
     }else
     {
-        if (!all(c("dependent.name", "dependent", "independent", "weights") %in% colnames(data)))
+        if (!all(c("dependent.name", "dependent", "independent") %in% colnames(data)))
             stop(sQuote("data"), " must contain columns named \"dependent\", ",
-                 "\"independent\", \"weights\", and \"dependent.name\".")
+                 "\"independent\", and \"dependent.name\".")
+        weighted <- "weights" %in% colnames(data)
         dep.names <- data[, "dependent.name"]
         dep.names.unique <- unique(dep.names)
         anovas <- vector("list", length(dep.names.unique))
         for (i in seq_along(dep.names.unique))
         {
-            aov <- try(suppressWarnings(OneWayANOVA(data[, "dependent"], data[, "independent"],
-                               compare = "To mean", weights = data[, "weights"],
-                               subset = dep.names == dep.names.unique[i],
+            ## aov <- try(suppressWarnings(OneWayANOVA(data[, "dependent"], data[, "independent"],
+            ##                    compare = "To mean", weights = data[, "weights"],
+            ##                    subset = dep.names == dep.names.unique[i],
+            ##                    correction = if(correction == "Table FDR") "None" else correction,
+            ##                    robust.se = robust.se,
+            ##                    return.all = TRUE)),
+            ##            TRUE)
+            idx <- dep.names == dep.names.unique[i]
+            weights <- if (weighted)
+                           data[idx, "weights"]
+
+            aov <- try(suppressWarnings(OneWayANOVA(data[idx, "dependent"], data[idx, "independent"],
+                               compare = "To mean", weights = weights, subset = NULL,
                                correction = if(correction == "Table FDR") "None" else correction,
                                robust.se = robust.se,
                                return.all = TRUE)),

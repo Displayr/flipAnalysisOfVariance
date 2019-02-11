@@ -82,7 +82,10 @@ OneWayMANOVA <- function(outcomes,
         df <- cbind(df, unlist(mapply(rep, colnames(outcomes), lens,
                                       SIMPLIFY = FALSE, USE.NAMES = FALSE)))
         df <- df[, -3]  # drop useless covariate column
-        names(df) <- c("dependent", "independent", "weights", "dependent.name")
+        if (!weighted)
+            df <- df[, - 3]
+        names(df) <- c("dependent", "independent", if (weighted) "weights",
+                       "dependent.name")
         args$data <- df
         n.outcomes <- ncol(outcomes)
   }else
@@ -106,7 +109,14 @@ OneWayMANOVA <- function(outcomes,
     ## if (fdr) " (p-values corrected using False Discovery Rate)")
 
     if (pillai)
-        result$manova <- computePillai(outcomes, predictor,  weighted, dat, n.outcomes, weights)
+    {
+        if (!is.data.frame(dat))  # partial data, can't compute Pillai Trace
+            stop("Pillai's Trace cannot be computed with partial data. ",
+                 "Please set 'pillai' to 'FALSE' to run the analysis.")
+        result$manova <- computePillai(outcomes, predictor,  weighted, dat, n.outcomes,
+                                       weights)
+    }
+
     ps <- attr(result$anovas, "ps")
     # Tidying up outputs
     if (show.labels)
@@ -125,6 +135,7 @@ OneWayMANOVA <- function(outcomes,
     result$p <- p <- if (pillai) result$manova$stats[1,6] else min(ps)
     if (pillai)
         result$pillai <- result$manova$stats[1,2]
+
     subtitle <- if (p <= p.cutoff) "Significant" else "Not significant"
     result$subtitle <- paste0(subtitle, " - ", if (pillai)
                     paste0("Pillai's Trace: ", FormatAsReal(result$pillai, 3), ", approximate p-value: ")
@@ -144,9 +155,6 @@ OneWayMANOVA <- function(outcomes,
 
 computePillai <- function(outcomes, predictor, weighted, df, n.variables, weights)
 {
-    if (!is.data.frame(outcomes))  # partial data, can't compute Pillai Trace
-        stop("Pillai's Trace cannot be computed with partial data. ",
-             "Please set 'pillai' to 'FALSE' to run the analysis.")
     if (weighted)
     {
         wgt <- CalibrateWeight(df[, n.variables + 3])
