@@ -60,6 +60,7 @@ OneWayMANOVA <- function(outcomes,
 
     outcomes <- ProcessQVariables(outcomes)
     predictor <- ProcessQVariables(predictor)
+    weighted <- !is.null(weights)
 
     # Removing missing values and filtering weights.
     dat <- prepareData(outcomes, predictor, NULL, subset, weights, binary, missing)
@@ -88,8 +89,8 @@ OneWayMANOVA <- function(outcomes,
   {
       n.outcomes <- length(dat) - 3
       predictor <- dat[[n.outcomes + 1]]
-      outcomes <- dat[, 1:n.outcomes, drop= FALSE]
-      weights <- if (weighted <- !is.null(weights))
+      outcomes <- dat[, 1:n.outcomes, drop = FALSE]
+      weights <- if (weighted)
                      dat[[n.outcomes + 3]]
                  else NULL
       args$dependents  <- data.frame(outcomes)
