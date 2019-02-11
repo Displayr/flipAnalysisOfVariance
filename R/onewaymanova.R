@@ -62,35 +62,56 @@ OneWayMANOVA <- function(outcomes,
     predictor <- ProcessQVariables(predictor)
 
     # Removing missing values and filtering weights.
-    df <- prepareData(outcomes, predictor, NULL, subset, weights, binary, missing)
-    footer <- attr(df, "footer")
-    n.variables <- ncol(df) - 3
-    predictor <- df[, n.variables + 1]
-    outcomes <- df[, 1:n.variables, drop= FALSE]
-    weights <- if (weighted <- !is.null(weights)) df[, n.variables + 3] else NULL
-    labels <- attr(df, "labels")[1:ncol(outcomes)]
-    #footer <- paste0(footer, "two-sided comparisons against the row means", if (fdr) " (p-values corrected using False Discovery Rate)")
+    dat <- prepareData(outcomes, predictor, NULL, subset, weights, binary, missing)
     result <- list()
+    args <- list(subset = NULL, weights = weights, compare = "To mean",
+                 correction = if(pillai) "Tukey Range" else "Table FDR",
+                 alernative = "Two-sided", show.labels = show.labels,
+                 p.cutoff = p.cutoff, seed = seed, return.all = return.all,
+                 robust.se = robust.se)
+
+    ## Setup data for calling MultipleANOVAS
+    if (!is.data.frame(dat))
+    {
+        df <- do.call(rbind, dat)
+        df <- as.data.frame(df)
+        if (is.null(colnames(outcomes)))
+            colnames(outcomes) <- paste0("X", ncol(outcomes))
+        lens <- vapply(dat, nrow, 0L)
+        df <- cbind(df, unlist(mapply(rep, colnames(outcomes), lens,
+                                      SIMPLIFY = FALSE, USE.NAMES = FALSE)))
+        df <- df[, -3]  # drop useless covariate column
+        names(df) <- c("dependent", "independent", "weights", "dependent.name")
+        args$data <- df
+        n.outcomes <- ncol(outcomes)
+  }else
+  {
+      n.outcomes <- length(dat) - 3
+      predictor <- dat[[n.outcomes + 1]]
+      outcomes <- dat[, 1:n.outcomes, drop= FALSE]
+      weights <- if (weighted <- !is.null(weights))
+                     dat[[n.outcomes + 3]]
+                 else NULL
+      args$dependents  <- data.frame(outcomes)
+      args$independent <- predictor
+      args$weight <- weights
+    }
+    result$anovas <- do.call(MultipleANOVAs, args)
+
+    footer <- attr(dat, "footer")
+
+    labels <- attr(dat, "labels")[1:ncol(outcomes)]
+    ## footer <- paste0(footer, "two-sided comparisons against the row means",
+    ## if (fdr) " (p-values corrected using False Discovery Rate)")
+
     if (pillai)
-        result$manova <- computePillai(outcomes, predictor,  weighted, df, n.variables, weights)
-    result$anovas <- MultipleANOVAs(data.frame(outcomes),
-                        predictor,
-                        subset = NULL,
-                        weights = weights,
-                        compare = "To mean",
-                        correction = if(pillai) "Tukey Range" else "Table FDR",
-                        alernative = "Two-sided",
-                        show.labels = show.labels,
-                        p.cutoff = p.cutoff,
-                        seed = seed,
-                        return.all = return.all,
-                        robust.se = robust.se)
+        result$manova <- computePillai(outcomes, predictor,  weighted, dat, n.outcomes, weights)
     ps <- attr(result$anovas, "ps")
     # Tidying up outputs
     if (show.labels)
         names(result$anovas) <- labels
 
-    # Extract common prefix from outcomes
+                                        # Extract common prefix from outcomes
     extracted <- ExtractCommonPrefix(names(result$anovas))
     if (!is.na(extracted$common.prefix))
     {
@@ -122,6 +143,9 @@ OneWayMANOVA <- function(outcomes,
 
 computePillai <- function(outcomes, predictor, weighted, df, n.variables, weights)
 {
+    if (!is.data.frame(outcomes))  # partial data, can't compute Pillai Trace
+        stop("Pillai's Trace cannot be computed with partial data. ",
+             "Please set 'pillai' to 'FALSE' to run the analysis.")
     if (weighted)
     {
         wgt <- CalibrateWeight(df[, n.variables + 3])
@@ -144,6 +168,8 @@ computePillai <- function(outcomes, predictor, weighted, df, n.variables, weight
 }
 
 #' @importFrom flipTransformations Factor
+#' @return A data.frame containing the outcomes
+#' @noRd
 prepareData <- function(outcomes, predictor, covariate, subset, weights, binary, missing)
 {
     n.total <- length(predictor)
@@ -160,14 +186,36 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
     outcomes <- AsNumeric(data.frame(outcomes), binary = binary, remove.first = TRUE)
     if (is.null(covariate))
         covariate <- rep(-1, n.total) # A fudge to ensure complete.cases does not fail
-    df <- cbind(outcomes, Factor(predictor), Factor(covariate), weights)
-    df <- subset(df, subset = subset & complete.cases(df) & weights > 0)
-    n.estimation <- nrow(df)
-    if (n.estimation < n.total & missing == "Error if missing data")
-        stop("The data contains missing values. Change the 'missing' option to run the analysis.")
-    attr(df, "footer") <- SampleDescription(n.total, n.subset, n.estimation, subset.label, weighted, weight.label, missing = "", imputation.label = NULL, NULL)
-    attr(df, "labels") <- Labels(outcomes)
-    df
+    makeDF <- function(outcomes, predictor, covariate, weights)
+    {
+        out <- cbind(outcomes, Factor(predictor), Factor(covariate), weights)
+        out <- out[subset & complete.cases(out) & weights > 0, ]
+        out
+    }
+    if (missing == "Error if missing data")
+    {
+        if (anyNA(predictor) || anyNA(subset) || anyNA(outcomes))
+            stop("By default, MANOVA only operates on complete data, but the supplied data ",
+             "contains missing values. Change 'Missing data' to 'Exclude cases with missing data' ",
+             "to run the analysis.")
+        out <- makeDF(outcomes, predictor, covariate, weights)
+        n.estimation <- nrow(out)
+    }else
+    {  # use partial data
+        out <- lapply(outcomes, makeDF, predictor, covariate, weights)
+        n.estimation <- min(vapply(out, length, 0L))
+        if (n.estimation == 0)
+            stop("After removing observations with missing data, there are no ",
+                 "observations to use in the ANOVA for at least one outcome variable.")
+        if (length(out) == 1L)
+            out <- out[[1L]]
+    }
+
+    attr(out, "footer") <- SampleDescription(n.total, n.subset, n.estimation,
+                                             subset.label, weighted, weight.label, missing = "",
+                                             imputation.label = NULL, NULL)
+    attr(out, "labels") <- Labels(outcomes)
+    out
 }
 
 #' removeMissingLevels

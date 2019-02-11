@@ -72,3 +72,31 @@ test_that("MANOVA",{
         expect_error(suppressWarnings(OneWayMANOVA(data.frame(y, colas$d3, colas$like.coke), colas$d1, weights = wgt, show.labels = TRUE, return.all = TRUE)), NA)
         expect_error(suppressWarnings(OneWayMANOVA(data.frame(colas$d3, colas$like.coke), colas$d1, weights = wgt, show.labels = TRUE, return.all = TRUE)), NA)
 })
+
+
+test_that("DS-2345 MANOVA with missing data",
+{
+    f1 <- system.file("tests", "testthat", "manovaSegments.rda",
+                      package = "flipAnalysisOfVariance")
+    f2 <- system.file("tests", "testthat", "manovaDat.rda",
+                      package = "flipAnalysisOfVariance")
+    load(f1)
+    load(f2)
+    QFilter <- TRUE
+    QPopulationWeight <- NULL
+    formRobust <- FALSE
+    formMissing <- "Exclude cases with missing data"
+    formNames <- formBinary <- FALSE
+
+    manova <- OneWayMANOVA(dat,
+        segmentsQMXJK,
+        subset = QFilter,
+        weights = QPopulationWeight,
+        robust.se = formRobust,
+        missing = formMissing,
+        show.labels = !formNames,
+        binary = formBinary,
+        pillai = FALSE,
+      fdr = TRUE)
+    expect_is(manova, "OneWayMANOVA")
+})

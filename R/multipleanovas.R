@@ -28,6 +28,13 @@
 #' variables label is an attribute (e.g., attr(foo, "label")).
 #' @param p.cutoff The alpha level to be used in testing.
 #' @param seed The random number seed used when evaluating the multivariate t-distribution.
+#' @param data An optional \code{data.frame} that can be used as alternative to specifying
+#' \code{dependent}, \code{independent}, and \code{weights} for the case when the independent
+#' variables are deferring lengths. Must have columns
+#' \code{"dependent", "independent", "weights", and "dependent.names"}. The \code{"dependent.names"}
+#' column contains the character name of the dependent variable for each observation. The \code{dependent},
+#' \code{independent}, \code{weights}, and \code{subset} arguments are all ignored if \code{data}
+#' is supplied.
 #' @param ... Other parameters to be passed to \code{OneWayANOVA}.
 #' @details Conducts multiple \code{OneWayANOVA}s, and puts them in a list. If \code{correction} is
 #'  \code{"Table FDR"}, the false discovery rate correction is applied across the entire table. All
@@ -48,33 +55,59 @@ MultipleANOVAs <- function(dependents,
                            show.labels = FALSE,
                            seed = 1223,
                            p.cutoff = 0.05,
+                           data = NULL,
                            ...)
 {
-    dependents <- ProcessQVariables(dependents)
-    independent <- ProcessQVariables(independent)
+    if (is.null(data))
+    {
+        dependents <- ProcessQVariables(dependents)
+        independent <- ProcessQVariables(independent)
 
-    anovas <- suppressWarnings(lapply(dependents, function(x)
+        anovas <- suppressWarnings(lapply(dependents, function(x)
+            {
+                aov <- try(OneWayANOVA(x,
+                               independent,
+                               compare = "To mean",
+                                 subset = subset,
+                               weights = weights,
+                               correction = if(correction == "Table FDR") "None" else correction,
+                               robust.se = robust.se,
+                               #alternative = alternative,
+                               #p.cutoff = p.cutoff,
+                               #seed = seed,
+                               return.all = TRUE#,
+                               #..
+                               )
+                , silent = TRUE)
+                if(tryError(aov))
+                    return(NULL)
+                aov
+
+            }
+            ))
+        names(anovas) <- flipFormat::Labels(dependents)
+    }else
+    {
+        if (!all(c("dependent.name", "dependent", "independent", "weights") %in% colnames(data)))
+            stop(sQuote("data"), " must contain columns named \"dependent\", ",
+                 "\"independent\", \"weights\", and \"dependent.name\".")
+        dep.names <- data[, "dependent.name"]
+        dep.names.unique <- unique(dep.names)
+        anovas <- vector("list", length(dep.names.unique))
+        for (i in seq_along(dep.names.unique))
         {
-            aov <- try(OneWayANOVA(x,
-                           independent,
-                           compare = "To mean",
-                           subset = subset,
-                           weights = weights,
-                           correction = if(correction == "Table FDR") "None" else correction,
-                           robust.se = robust.se,
-                           #alternative = alternative,
-                           #p.cutoff = p.cutoff,
-                           #seed = seed,
-                           return.all = TRUE#,
-                           #..
-                           )
-            , silent = TRUE)
-            if(tryError(aov))
-                return(NULL)
-            aov
-
+            aov <- try(suppressWarnings(OneWayANOVA(data[, "dependent"], data[, "independent"],
+                               compare = "To mean", weights = data[, "weights"],
+                               subset = dep.names == dep.names.unique[i],
+                               correction = if(correction == "Table FDR") "None" else correction,
+                               robust.se = robust.se,
+                               return.all = TRUE)),
+                       TRUE)
+            if (!inherits(aov, "try-error"))
+                anovas[[i]] <- aov
         }
-        ))
+        names(anovas) <- dep.names.unique
+    }
     # Performing FDR correction.
     ps <- unlist(lapply(anovas, function(x) x$coefs[, 4]))
    # print(ps)
@@ -99,7 +132,6 @@ MultipleANOVAs <- function(dependents,
         }
     }
     attr(anovas, "ps") <- ps
-    names(anovas) <- flipFormat::Labels(dependents)
     anovas
 }
 
@@ -132,7 +164,7 @@ FormattableANOVAs <- function(anovas, title, subtitle, footer)
 #' \code{ANOVAsAsTable}
 #' Converts a list of ANOVAs into a format that can be prettily formatted.
 #' @param x The list of ANOVAs.
-#' @importFrom flipU Rbind
+#' @importFrom flipTables Rbind
 #' @export
 ANOVAsAsTable <- function(x)
 {

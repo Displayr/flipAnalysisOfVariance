@@ -8,7 +8,7 @@ MultipleANOVAs(dependents, independent, subset = NULL, weights = NULL,
   compare = "To mean", correction = "Table FDR", robust.se = FALSE,
   alternative = "Two-sided",
   missing = "Exclude cases with missing data", show.labels = FALSE,
-  seed = 1223, p.cutoff = 0.05, ...)
+  seed = 1223, p.cutoff = 0.05, data = NULL, ...)
 }
 \arguments{
 \item{dependents}{The outcome variables.}
@@ -49,6 +49,14 @@ variables label is an attribute (e.g., attr(foo, "label")).}
 \item{seed}{The random number seed used when evaluating the multivariate t-distribution.}
 
 \item{p.cutoff}{The alpha level to be used in testing.}
+
+\item{data}{An optional \code{data.frame} that can be used as alternative to specifying
+\code{dependent}, \code{independent}, and \code{weights} for the case when the independent
+variables are deferring lengths. Must have columns
+\code{"dependent", "independent", "weights", and "dependent.names"}. The \code{"dependent.names"}
+column contains the character name of the dependent variable for each observation. The \code{dependent},
+\code{independent}, \code{weights}, and \code{subset} arguments are all ignored if \code{data}
+is supplied.}
 
 \item{...}{Other parameters to be passed to \code{OneWayANOVA}.}
 }
