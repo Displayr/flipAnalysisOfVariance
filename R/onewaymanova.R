@@ -204,7 +204,7 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
     }else
     {  # use partial data
         out <- lapply(outcomes, makeDF, predictor, covariate, weights)
-        n.estimation <- min(vapply(out, length, 0L))
+        n.estimation <- min(vapply(out, nrow, 0L))
         if (n.estimation == 0)
             stop("After removing observations with missing data, there are no ",
                  "observations to use in the ANOVA for at least one outcome variable.")
