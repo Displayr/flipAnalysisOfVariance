@@ -201,9 +201,10 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
         out <- out[subset & complete.cases(out) & weights > 0, ]
         out
     }
-    if (missing == "Error if missing data")
+    any.na <- anyNA(predictor) || anyNA(subset) || anyNA(outcomes)
+    if (missing == "Error if missing data" || !any.na)
     {
-        if (anyNA(predictor) || anyNA(subset) || anyNA(outcomes))
+        if (any.na)
             stop("By default, MANOVA only operates on complete data, but the supplied data ",
              "contains missing values. Change 'Missing data' to 'Exclude cases with missing data' ",
              "to run the analysis.")
