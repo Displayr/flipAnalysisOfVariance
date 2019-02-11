@@ -145,6 +145,9 @@ OneWayMANOVA <- function(outcomes,
                     paste0("Smallest p-value", (if (fdr) " (after applying False Discovery Rate correction)"),  ": "),
                               FormatAsPValue(p))
     result$footer <- footer
+    if (!is.data.frame(dat))  # partial data so modify row labels to include sample sizes
+        names(result$anovas) <- paste0(names(result$anovas), " (n: ", attr(dat, "n.estimations"), ")")
+
     result$table <- FormattableANOVAs(result$anovas,
                     title = result$title,
                     subtitle = result$subtitle,
@@ -223,7 +226,8 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
     }else
     {  # use partial data
         out <- lapply(outcomes, makeDF, predictor, covariate, weights)
-        n.estimation <- min(vapply(out, nrow, 0L))
+        n.estimations <- vapply(out, nrow, 0L)
+        n.estimation <- min(n.estimations)
         if (n.estimation == 0)
             stop("After removing observations with missing data, there are no ",
                  "observations to use in the ANOVA for at least one outcome variable.")
@@ -234,6 +238,13 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
     attr(out, "footer") <- SampleDescription(n.total, n.subset, n.estimation,
                                              subset.label, weighted, weight.label, missing = "",
                                              imputation.label = NULL, NULL)
+    if (use.partial && any.na)
+    {
+        attr(out, "footer") <- sub("^n = [0-9,]*",
+                                   paste0("n = from ", n.estimation, " to ", max(n.estimations)),
+                                   attr(out, "footer"))
+        attr(out, "n.estimations") <- n.estimations
+    }
     attr(out, "labels") <- Labels(outcomes)
     out
 }
