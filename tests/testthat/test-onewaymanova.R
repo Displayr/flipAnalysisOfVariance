@@ -38,8 +38,10 @@ test_that("MANOVA",{
         set.seed(123)
         wgt <- runif(327)
         wgt[runif(327) < .25] <- 0
-        wgt[runif(327) < .1] <- NA
-        expect_error(suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = FALSE, return.all = TRUE, pillai = TRUE, weights = wgt)), NA)
+        ## wgt[runif(327) < .1] <- NA
+        expect_error(suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE,
+                                                   show.labels = TRUE, fdr = FALSE, return.all = TRUE, pillai = TRUE,
+                                                   weights = wgt)), NA)
         # Correction - FDR
         z <- OneWayMANOVA(data.frame(colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, fdr = TRUE, return.all = TRUE)
         z1 <- OneWayANOVA(colas$like.coke, colas$d1, correction = "False Discovery Rate", compare = "To mean", return.all = TRUE)
@@ -50,7 +52,9 @@ test_that("MANOVA",{
         expect_true(z$anovas[[1]]$coefs[2,3] != z1$anovas[[1]]$coefs[2,3])
         # Missing
         m <- "Error if missing data"
-        expect_error(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, missing = m, binary = TRUE, return.all = TRUE, show.labels = TRUE), NA)
+        expect_error(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke),
+                                  colas$d1, missing = m, binary = TRUE, return.all = TRUE,
+                                  show.labels = TRUE), NA)
         expect_error(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1MISSING, missing = m, binary = TRUE, return.all = TRUE, show.labels = TRUE))
         expect_error(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.cokeMISSING), colas$d1, missing = m, binary = TRUE, return.all = TRUE, show.labels = TRUE))
         expect_error(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.cokeMISSING), colas$d1MISSING, missing = m, binary = TRUE, return.all = TRUE, show.labels = TRUE))
