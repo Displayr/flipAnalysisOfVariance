@@ -69,8 +69,12 @@ test_that("MANOVA",{
         attr(x, "question") <- "D1. Age"
         attr(x, "label") <- "D1. Age"
         wgt <- as.numeric(x != "25 to 29")
-        expect_error(suppressWarnings(OneWayMANOVA(data.frame(y, colas$d3, colas$like.coke), colas$d1, weights = wgt, show.labels = TRUE, return.all = TRUE)), NA)
-        expect_error(suppressWarnings(OneWayMANOVA(data.frame(colas$d3, colas$like.coke), colas$d1, weights = wgt, show.labels = TRUE, return.all = TRUE)), NA)
+        expect_error(suppressWarnings(OneWayMANOVA(data.frame(y, colas$d3, colas$like.coke),
+                                                   colas$d1, weights = wgt, show.labels = TRUE,
+                                                   return.all = TRUE)), NA)
+        expect_error(suppressWarnings(OneWayMANOVA(data.frame(colas$d3, colas$like.coke),
+                                                   colas$d1, weights = wgt, show.labels = TRUE,
+                                                   return.all = TRUE)), NA)
 })
 
 

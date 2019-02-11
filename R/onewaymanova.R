@@ -98,7 +98,7 @@ OneWayMANOVA <- function(outcomes,
                  else NULL
       args$dependents  <- data.frame(outcomes)
       args$independent <- predictor
-      args$weight <- weights
+      args$weights <- weights
     }
     result$anovas <- do.call(MultipleANOVAs, args)
 
@@ -201,7 +201,7 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
         out <- out[subset & complete.cases(out) & weights > 0, ]
         out
     }
-    any.na <- anyNA(predictor) || anyNA(subset) || anyNA(outcomes)
+    any.na <- anyNA(predictor) || anyNA(subset) || anyNA(outcomes) || anyNA(weights)
     if (missing == "Error if missing data" || !any.na)
     {
         if (any.na)
