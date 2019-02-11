@@ -88,7 +88,7 @@ test_that("DS-2345 MANOVA with missing data",
     formMissing <- "Exclude cases with missing data"
     formNames <- formBinary <- FALSE
 
-    manova <- OneWayMANOVA(dat,
+    expect_warning(manova <- OneWayMANOVA(dat,
         segmentsQMXJK,
         subset = QFilter,
         weights = QPopulationWeight,
@@ -97,6 +97,6 @@ test_that("DS-2345 MANOVA with missing data",
         show.labels = !formNames,
         binary = formBinary,
         pillai = FALSE,
-      fdr = TRUE)
+      fdr = TRUE), "Data has been automatically")
     expect_is(manova, "OneWayMANOVA")
 })

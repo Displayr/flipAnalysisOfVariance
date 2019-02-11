@@ -188,7 +188,7 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
         covariate <- rep(-1, n.total) # A fudge to ensure complete.cases does not fail
     makeDF <- function(outcomes, predictor, covariate, weights)
     {
-        out <- cbind(outcomes, Factor(predictor), Factor(covariate), weights)
+        out <- cbind(as.data.frame(outcomes), Factor(predictor), Factor(covariate), weights)
         out <- out[subset & complete.cases(out) & weights > 0, ]
         out
     }
