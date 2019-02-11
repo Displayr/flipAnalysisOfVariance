@@ -12,8 +12,10 @@
 #'   the assumption of constant variance. This parameter is ignored
 #'   if weights are applied (as weights already employ a sandwich estimator).
 #' @param missing How missing data is to be treated in the ANOVA. Options:
-#'   \code{"Error if missing data"}, and
-#'   \code{"Exclude cases with missing data"}.
+#'   \code{"Error if missing data"}, \code{"Use partial data"}, and
+#'   \code{"Exclude cases with missing data"}. Option \code{"Use partial data"} will
+#' run separate one way ANOVAs with missing data filtered out for each outcome variable
+#' separately.
 #' @param show.labels Shows the variable labels, as opposed to the labels, in the outputs, where a
 #' variables label is an attribute (e.g., attr(foo, "label")).
 #' @param p.cutoff The alpha level to be used in testing.
@@ -182,6 +184,7 @@ computePillai <- function(outcomes, predictor, weighted, df, n.variables, weight
 prepareData <- function(outcomes, predictor, covariate, subset, weights, binary, missing)
 {
     n.total <- length(predictor)
+    use.partial <- missing == "Use partial data"
     weighted <- !is.null(weights)
     if (!weighted)
         weights <- rep(1, n.total)
@@ -195,21 +198,28 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
     outcomes <- AsNumeric(data.frame(outcomes), binary = binary, remove.first = TRUE)
     if (is.null(covariate))
         covariate <- rep(-1, n.total) # A fudge to ensure complete.cases does not fail
+
     makeDF <- function(outcomes, predictor, covariate, weights)
     {
         out <- cbind(as.data.frame(outcomes), Factor(predictor), Factor(covariate), weights)
         out <- out[subset & complete.cases(out) & weights > 0, ]
         out
     }
+
     any.na <- anyNA(predictor) || anyNA(subset) || anyNA(outcomes) || anyNA(weights)
-    if (missing == "Error if missing data" || !any.na)
+    if (!use.partial || !any.na)
     {
-        if (any.na)
+        if (missing == "Error if missing data" && any.na)
             stop("By default, MANOVA only operates on complete data, but the supplied data ",
              "contains missing values. Change 'Missing data' to 'Exclude cases with missing data' ",
-             "to run the analysis.")
+             "or 'Use partial data' to run the analysis.")
+
         out <- makeDF(outcomes, predictor, covariate, weights)
         n.estimation <- nrow(out)
+        if (n.estimation == 0)
+            stop("After removing cases with missing data, there are no ",
+                 "observations to use in the ANOVA. Switch 'Missing Data' to ",
+                 "'Use partial data' to run the analysis.")
     }else
     {  # use partial data
         out <- lapply(outcomes, makeDF, predictor, covariate, weights)

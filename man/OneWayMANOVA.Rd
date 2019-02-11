@@ -27,8 +27,10 @@ the assumption of constant variance. This parameter is ignored
 if weights are applied (as weights already employ a sandwich estimator).}
 
 \item{missing}{How missing data is to be treated in the ANOVA. Options:
-\code{"Error if missing data"}, and
-\code{"Exclude cases with missing data"}.}
+  \code{"Error if missing data"}, \code{"Use partial data"}, and
+  \code{"Exclude cases with missing data"}. Option \code{"Use partial data"} will
+run separate one way ANOVAs with missing data filtered out for each outcome variable
+separately.}
 
 \item{show.labels}{Shows the variable labels, as opposed to the labels, in the outputs, where a
 variables label is an attribute (e.g., attr(foo, "label")).}
