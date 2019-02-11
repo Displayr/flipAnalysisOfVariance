@@ -84,12 +84,8 @@ test_that("MANOVA",{
 
 test_that("DS-2345 MANOVA with missing data",
 {
-    f1 <- system.file("tests", "testthat", "manovaSegments.rda",
-                      package = "flipAnalysisOfVariance")
-    f2 <- system.file("tests", "testthat", "manovaDat.rda",
-                      package = "flipAnalysisOfVariance")
-    load(f1)
-    load(f2)
+    load("manovaSegments.rda")
+    load("manovaDat.rda")
     QFilter <- TRUE
     QPopulationWeight <- NULL
     formRobust <- FALSE
