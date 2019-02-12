@@ -16,7 +16,8 @@ colas$like.cokeMISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 
 test_that("Fallback due to problems with underlying sandwich variance estimates",
           {
-              suppressWarnings(flipU::ExpectWarning(OneWayANOVA(colas$Q5_7_1, colas$d1, weights = rep(1, 327)),"technical problem"))
+              ## test removed due to DS-2353, which converts unit-vector of weights to NULL
+              ## suppressWarnings(flipU::ExpectWarning(OneWayANOVA(colas$Q5_7_1, colas$d1, weights = rep(1, 327)),"technical problem"))
               suppressWarnings(flipU::ExpectWarning(OneWayANOVA(colas$Q5_7_1, colas$d1, robust.se = TRUE), "technical problem"))
           })
 
