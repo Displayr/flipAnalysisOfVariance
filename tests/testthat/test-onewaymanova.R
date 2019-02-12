@@ -126,3 +126,19 @@ test_that("DS-2345 MANOVA with missing data",
       fdr = TRUE), "Data has been automatically")
     expect_is(manova, "OneWayMANOVA")
 })
+
+
+test_that("DS-2353: unity weights and NULL weights handled the same",
+{
+    weights <- rep.int(1L, length(colas$d1))
+    data(colas, package = "flipExampleData")
+    z <- unclass(colas$q4a)
+    flipFormat::Labels(z) <- "Like Coca-Cola"
+    colas$like.coke <- z - 3
+
+    z <- suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1,
+                                                 p.cutoff = 0.5, return.all = TRUE, weights = NULL))
+    z2 <- suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1,
+                                                  p.cutoff = 0.5, return.all = TRUE, weights = weights))
+    expect_equal(z$p, z2$p)
+})

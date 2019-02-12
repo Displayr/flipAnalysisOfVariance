@@ -105,6 +105,9 @@ OneWayANOVA <- function(outcome,
 {
     outcome <- ProcessQVariables(outcome)
     predictor <- ProcessQVariables(predictor)
+    ## DS-2353 Ensure vector of unity weights treated same as NULL weights
+    if (!is.null(weights) && all(weights == 1))
+        weights <- NULL
 
     if (robust.se == "No")
         robust.se <- FALSE
@@ -286,11 +289,7 @@ rSquared <- function(object)
 
 
 tryError <- function(x)
-{
-    if (any("try-error" %in% class(x)))
-        return(TRUE)
-    FALSE
-}
+    inherits(x, "try-error")
 
 #' politeWeightedFTest
 #'
