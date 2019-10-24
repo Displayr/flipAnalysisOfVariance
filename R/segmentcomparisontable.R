@@ -2,6 +2,8 @@
 #' @importFrom flipFormat CreateCustomTable
 #' @importFrom flipU ConvertCommaSeparatedStringToVector
 #' @importFrom flipStatistics WeightedTable Table StatisticsByGroup
+#' @importFrom flipRegression PValueAdjustFDR
+#' @importFrom flipTransformations AsDataFrame
 #' @importFrom stats sd
 SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    format.numeric.decimals = 1,
@@ -69,6 +71,19 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     result.formatted <- gsub(" ", "&nbsp;", result.formatted)
     colnames(result.formatted) <- colnames(result)
 
+    # Font color is determined by p-values
+    pvals <- matrix(NA, nrow(result), ncol(result))
+    for (i in 2:nrow(result))
+    {
+        if (row.format[i] != "percentage")
+        {
+            tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
+                       else                  v.list[[row.vvi[i]]][,row.vcol[i]]
+            pvals[i,] <- PValsByGroup(tmp.var, group, weights)
+        }
+    }
+
+    # Fill color is determined by cell values
     cell.fill <- "#FFFFFF"
     if (format.conditional.fill)
     {
@@ -88,9 +103,6 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                            else                  v.list[[row.vvi[i]]][,row.vcol[i]]
                 tmp.mean <- mean(tmp.var)
                 tmp.sd <- sd(tmp.var)
-                tmp.se <- ComputeSE(tmp.var)
-                cat("sd:", tmp.sd, "se:", tmp.se, "\n")
-
                 tmp.gmean <- StatisticsByGroup((tmp.var - tmp.mean)/(2*tmp.sd), group = group)
 
                 cell.fill[i,which(tmp.gmean <  0.2)] <- format.percentage.fill.colors[4]
@@ -134,7 +146,39 @@ crosstabOneVariable <- function(x, group, weights = NULL, subset = TRUE,
     return(out)
 }
 
-ComputeSE <- function(x, w = NULL, is.binary = FALSE)
+PValsByGroup <- function(x, group, weights)
+{
+    if (!is.factor(group))
+        group <- factor(group)
+    n.levels <- nlevels(group)
+    levs <- levels(group)
+
+    pval <- rep(NA, n.levels)
+    names(pval) <- levels(pval)
+    if (n.levels < 2)
+        return(pval)
+
+    for (i in 1:n.levels)
+    {
+        ind.in <- which(group == levs[i])
+        ind.out <- which(group != levs[i]) 
+
+        stats.in <- ComputeStats(x[ind.in], weights[ind.in])
+        stats.out <- ComputeStats(x[ind.out], weights[ind.out])
+
+        deg.freedom <- (stats.in$sesq + stats.in$sesq)^2 /
+                       ((stats.in$sesq^2)/(stats.in$n - 1) + (stats.out$sesq^2)/(stats.out$n - 1))
+        t.statistic <- (stats.in$mean - stats.out$mean)/sqrt(stats.in$sesq + stats.out$sesq)
+        pval[i] <- 2 * pt(abs(t.statistic), deg.freedom, lower.tail = FALSE)
+        cat(levs[i], ": mean =", stats.in$mean, "se =", sqrt(stats.in$sesq), "n =", stats.in$n, "p =", pval[i], "\n")
+    }
+    print(PValueAdjustFDR(pval))
+    return(pval)
+}
+ 
+
+# returns mean, std.err and n for computing p-values
+ComputeStats <- function(x, w = NULL, is.binary = FALSE)
 {
     # Filtering happens here
     n.observations <- length(x)
@@ -167,9 +211,8 @@ ComputeSE <- function(x, w = NULL, is.binary = FALSE)
     sum_of_squares = sum.xxw - 2 * mean * sum.xw + mean2 * sum.w
     sum_of_squares.w = sum.xxww - 2 * mean * sum.xww + mean2 * sum.ww
 
-    taylor = sum_of_squares.w / (sum.w * sum.w) * bessel.correction
-    return(sqrt(taylor))
+    taylor = sum_of_squares.w / (sum.w * sum.w) #* bessel.correction
+    #return(sqrt(taylor)) # standard error but we mainly use se^2
+    return (list(mean = mean, sesq = taylor, n = n.observations)) # n is used for degrees of freedom - not weighted?
+
 }
-
-
-
