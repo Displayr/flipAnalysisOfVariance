@@ -81,7 +81,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         cat(row.labels[i], ":", "i =", i, "vvi =", row.vvi[i], "vcol =", row.vcol[i], "\n")
         tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
                    else                  v.list[[row.vvi[i]]][,row.vcol[i]]
-        pvals[i,] <- PValsByGroup(tmp.var, group, weights)
+        pvals[i,] <- PValsByGroup(tmp.var, group, weights, is.binary = row.format[i] != "numeric")
     }
     print(pvals)
 
@@ -148,7 +148,7 @@ crosstabOneVariable <- function(x, group, weights = NULL, subset = TRUE,
     return(out)
 }
 
-PValsByGroup <- function(x, group, weights)
+PValsByGroup <- function(x, group, weights, is.binary = FALSE)
 {
     if (!is.factor(group))
         group <- factor(group)
@@ -162,25 +162,31 @@ PValsByGroup <- function(x, group, weights)
 
     for (i in 1:n.levels)
     {
-        ind.in <- which(group == levs[i])
-        ind.out <- which(group != levs[i]) 
+        if (!is.binary)
+        {
+            ind.in <- which(group == levs[i])
+            ind.out <- which(group != levs[i]) 
 
-        stats.in <- ComputeStats(x[ind.in], weights[ind.in])
-        stats.out <- ComputeStats(x[ind.out], weights[ind.out])
-
-        # P-value is not right for Pick-Any question
-        deg.freedom <- (stats.in$sesq + stats.in$sesq)^2 /
-                       ((stats.in$sesq^2)/(stats.in$n - 1) + (stats.out$sesq^2)/(stats.out$n - 1))
-        t.statistic <- (stats.in$mean - stats.out$mean)/sqrt(stats.in$sesq + stats.out$sesq)
-        pval[i] <- 2 * pt(abs(t.statistic), deg.freedom, lower.tail = FALSE)
-        cat(levs[i], ": mean =", stats.in$mean, "se =", sqrt(stats.in$sesq), "n =", stats.in$n, "p =", pval[i], "\n")
+            stats.in <- ComputeStats(x[ind.in], weights[ind.in])
+            stats.out <- ComputeStats(x[ind.out], weights[ind.out])
+            deg.freedom <- (stats.in$sesq + stats.in$sesq)^2 /
+                           ((stats.in$sesq^2)/(stats.in$n - 1) + (stats.out$sesq^2)/(stats.out$n - 1))
+            t.statistic <- (stats.in$mean - stats.out$mean)/sqrt(stats.in$sesq + stats.out$sesq)
+            pval[i] <- 2 * pt(abs(t.statistic), deg.freedom, lower.tail = FALSE)
+            cat(levs[i], ": mean =", stats.in$mean, "se =", sqrt(stats.in$sesq), "n =", stats.in$n, "p =", pval[i], "\n")
+        } else
+        { 
+            tmp <- CellStatistic(x, y = group == levs[i])
+            pval[i] <- tmp["p"]
+            cat(levs[i], ": se =", tmp["Standard Error"], "\n")
+        }
     }
     return(pval)
 }
  
 
 # returns mean, std.err and n for computing p-values
-ComputeStats <- function(x, w = NULL, is.binary = TRUE)
+ComputeStats <- function(x, w = NULL, is.binary = FALSE)
 {
     # Filtering happens here
     n.observations <- length(x)
