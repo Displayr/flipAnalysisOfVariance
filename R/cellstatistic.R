@@ -1,3 +1,4 @@
+#' @importFrom stats pt qnorm
 CellStatistic = function(x, # A binary 1/0 variable representing a category (e.g., 18-24 | 25 to 29) or a numeric variable
                          x.is.binary = TRUE, # TRUE if x is a binary variable
                          y, # an optional binary or numeric varaible (same length as x)

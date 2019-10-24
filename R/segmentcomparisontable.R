@@ -1,23 +1,33 @@
 
 #' @importFrom flipFormat CreateCustomTable
 #' @importFrom flipU ConvertCommaSeparatedStringToVector
-#' @importFrom flipStatistics WeightedTable Table StatisticsByGroup
+#' @importFrom flipStatistics WeightedTable Table StatisticsByGroup Mean StandardDeviation
 #' @importFrom flipRegression PValueAdjustFDR
 #' @importFrom flipTransformations AsDataFrame
-#' @importFrom stats sd
 SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    format.numeric.decimals = 1,
                                    format.percentage.decimals = 0,
                                    format.conditional.fill = TRUE,
                                    format.numeric.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
                                    format.percentage.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
-                                   show.index.values = FALSE,
+                                   show.index.values = FALSE, 
+                                   cell.fill = "#FFFFFF",
+                                   font.color = "#2C2C2C", font.size = 10,
+                                   font.color.set.if.nonsignificant = TRUE,
+                                   font.color.nonsignificant = "#CCCCCC", font.color.confidence = 0.95,
+                                   font.color.FDRcorrection = FALSE,
                                    ...) # extra parameters to pass to CreateCustomTable
 {
 
     format.percentage.fill.colors <- ConvertCommaSeparatedStringToVector(format.percentage.fill.colors)
+    if (length(subset) > 1)
+    {
+        group <- group[subset]
+        if (length(weights) > 1)
+            weights <- weights[subset]
+    }
 
-    counts <-t(WeightedTable(group))
+    counts <-t(WeightedTable(group, weights = weights))
     result <- rbind(counts, counts/sum(counts))
     row.labels <- c(" ", " ")
     row.span <- list(list(label = " ", height = 2))
@@ -29,11 +39,15 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     for (vvi in 1:length(v.list))
     {
         vv <- v.list[[vvi]]
+        if (length(dim(vv)) < 2)
+            vv <- vv[subset]
+        else
+            vv <- vv[,subset]
         if (isTRUE(attr(vv, "questiontype") %in% c("NumberMulti")))
         {
-            tmp <- t(StatisticsByGroup(vv, group = group))
+            tmp <- t(StatisticsByGroup(vv, group = group, weights = weights))
         } else
-            tmp <- crosstabOneVariable(vv, group = group)
+            tmp <- crosstabOneVariable(vv, group = group, weights = weights)
 
         tmp.nrow <- 1
         if (length(dim(tmp)) < 2 || NROW(tmp) == 1)
@@ -58,7 +72,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         {
             tmp <- sweep(tmp, 2, colSums(tmp), "/")
             v.list[[vvi]] <- AsDataFrame(vv, categorical.as.binary = TRUE)
-        }
+        } else
+            v.list[vvi] <- vv # save subsetted variable
         result <- rbind(result, tmp)
     }
 
@@ -73,24 +88,32 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     colnames(result.formatted) <- colnames(result)
 
     # Font color is determined by p-values
-    pvals <- matrix(NA, nrow(result), ncol(result))
-    rownames(pvals) <- row.labels
-    colnames(pvals) <- colnames(result)
-    for (i in 3:nrow(result))
+    results.font.color = font.color
+    if (font.color.set.if.nonsignificant)
     {
-        cat(row.labels[i], ":", "i =", i, "vvi =", row.vvi[i], "vcol =", row.vcol[i], "\n")
-        tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
-                   else                  v.list[[row.vvi[i]]][,row.vcol[i]]
-        pvals[i,] <- PValsByGroup(tmp.var, group, weights, is.binary = row.format[i] != "numeric")
+        results.font.color <- matrix(font.color, nrow(result), ncol(result))
+        results.font.color[3:nrow(result),] <- font.color.nonsignificant # include p = NA 
+        pvals <- matrix(NA, nrow(result), ncol(result))
+        rownames(pvals) <- row.labels
+        colnames(pvals) <- colnames(result)
+        for (i in 3:nrow(result))
+        {
+            cat(row.labels[i], ":", "i =", i, "vvi =", row.vvi[i], "vcol =", row.vcol[i], "\n")
+            tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
+                       else                  v.list[[row.vvi[i]]][,row.vcol[i]]
+            pvals[i,] <- PValsByGroup(tmp.var, group, weights, is.binary = row.format[i] != "numeric")
+        }
+        if (font.color.FDRcorrection)
+            pvals <- PValueAdjustFDR(pvals, alpha = 1 - font.color.confidence) 
+        print(pvals)
+        results.font.color[which(pvals < 1 - font.color.confidence)] <- font.color
     }
-    print(pvals)
 
     # Fill color is determined by cell values
-    cell.fill <- "#FFFFFF"
     if (format.conditional.fill)
     {
         cell.fill <- matrix(cell.fill, nrow(result), ncol(result))
-        for (i in 2:nrow(result))
+        for (i in 3:nrow(result))
         {
             if (row.format[i] == "percentage") # and if show index values is used
             {
@@ -103,10 +126,13 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                 # What about filters and weights?
                 tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
                            else                  v.list[[row.vvi[i]]][,row.vcol[i]]
-                tmp.mean <- mean(tmp.var)
-                tmp.sd <- sd(tmp.var)
-                tmp.gmean <- StatisticsByGroup((tmp.var - tmp.mean)/(2*tmp.sd), group = group)
+                tmp.mean <- Mean(tmp.var, weights = weights)
+                tmp.sd <- StandardDeviation(tmp.var, weights = weights)
+                tmp.gmean <- StatisticsByGroup((tmp.var - tmp.mean)/(2*tmp.sd), group = group, weights = weights)
+                cat("Standardizing numeric variables\n")
+                print(tmp.gmean)
 
+                # These values seem strance 
                 cell.fill[i,which(tmp.gmean <  0.2)] <- format.percentage.fill.colors[4]
                 cell.fill[i,which(tmp.gmean <  0.1)] <- format.percentage.fill.colors[3]
                 cell.fill[i,which(tmp.gmean < -0.1)] <- format.percentage.fill.colors[2]
@@ -118,8 +144,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     CreateCustomTable(result.formatted, row.header.labels = row.labels, row.spans = row.span,
                      row.span.fill = "#EFEFEF", row.header.fill = "#EFEFEF", corner.fill = "#EFEFEF",
                      col.header.fill = "#EFEFEF", cell.fill = cell.fill,
-                     font.unit = "px", cell.font.size = 10, row.header.font.size = 10,
-                     row.span.font.size = 10, col.header.font.size = 10)
+                     font.unit = "px", font.size = font.size, cell.font.color = results.font.color)
 }
 
 
