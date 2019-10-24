@@ -61,10 +61,6 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
 
     rownames(result) <- NULL # result is preserved in numeric form for exporting
     result.formatted <- matrix("", nrow(result), ncol(result))
-    max.width <- max(3, ceiling(log10(max(result))), na.rm = TRUE) +
-                 max(format.numeric.decimals, format.percentage.decimals) + 1
-    patt.numeric <- paste0("%", max.width, ".", format.numeric.decimals, "f ")
-    patt.percentage <- paste0("%", max.width, ".", format.percentage.decimals, "f%%")
     for (i in 1:nrow(result))
         result.formatted[i,] <- if (row.format[i] == "numeric") formatC(result[i,], format.numeric.decimals, format = "f")
                                 else                            paste0(formatC(result[i,] * 100, format.percentage.decimals, format = "f"), "%")
