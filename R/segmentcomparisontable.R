@@ -53,11 +53,12 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         row.format <- c(row.format, rep(if (tmp.numeric) "numeric" else "percentage", tmp.nrow))
         row.vvi <- c(row.vvi, rep(vvi, tmp.nrow))
 
-
         # Compute column percentages for Pick One questions
         if (isTRUE(attr(vv, "questiontype") == "PickOne"))
+        {
             tmp <- sweep(tmp, 2, colSums(tmp), "/")
-
+            v.list[[vvi]] <- AsDataFrame(vv, categorical.as.binary = TRUE)
+        }
         result <- rbind(result, tmp)
     }
 
@@ -73,15 +74,16 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
 
     # Font color is determined by p-values
     pvals <- matrix(NA, nrow(result), ncol(result))
-    for (i in 2:nrow(result))
+    rownames(pvals) <- row.labels
+    colnames(pvals) <- colnames(result)
+    for (i in 3:nrow(result))
     {
-        if (row.format[i] != "percentage")
-        {
-            tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
-                       else                  v.list[[row.vvi[i]]][,row.vcol[i]]
-            pvals[i,] <- PValsByGroup(tmp.var, group, weights)
-        }
+        cat(row.labels[i], ":", "i =", i, "vvi =", row.vvi[i], "vcol =", row.vcol[i], "\n")
+        tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
+                   else                  v.list[[row.vvi[i]]][,row.vcol[i]]
+        pvals[i,] <- PValsByGroup(tmp.var, group, weights)
     }
+    print(pvals)
 
     # Fill color is determined by cell values
     cell.fill <- "#FFFFFF"
@@ -166,19 +168,19 @@ PValsByGroup <- function(x, group, weights)
         stats.in <- ComputeStats(x[ind.in], weights[ind.in])
         stats.out <- ComputeStats(x[ind.out], weights[ind.out])
 
+        # P-value is not right for Pick-Any question
         deg.freedom <- (stats.in$sesq + stats.in$sesq)^2 /
                        ((stats.in$sesq^2)/(stats.in$n - 1) + (stats.out$sesq^2)/(stats.out$n - 1))
         t.statistic <- (stats.in$mean - stats.out$mean)/sqrt(stats.in$sesq + stats.out$sesq)
         pval[i] <- 2 * pt(abs(t.statistic), deg.freedom, lower.tail = FALSE)
         cat(levs[i], ": mean =", stats.in$mean, "se =", sqrt(stats.in$sesq), "n =", stats.in$n, "p =", pval[i], "\n")
     }
-    print(PValueAdjustFDR(pval))
     return(pval)
 }
  
 
 # returns mean, std.err and n for computing p-values
-ComputeStats <- function(x, w = NULL, is.binary = FALSE)
+ComputeStats <- function(x, w = NULL, is.binary = TRUE)
 {
     # Filtering happens here
     n.observations <- length(x)
@@ -211,7 +213,7 @@ ComputeStats <- function(x, w = NULL, is.binary = FALSE)
     sum_of_squares = sum.xxw - 2 * mean * sum.xw + mean2 * sum.w
     sum_of_squares.w = sum.xxww - 2 * mean * sum.xww + mean2 * sum.ww
 
-    taylor = sum_of_squares.w / (sum.w * sum.w) #* bessel.correction
+    taylor = sum_of_squares.w / (sum.w * sum.w) * bessel.correction
     #return(sqrt(taylor)) # standard error but we mainly use se^2
     return (list(mean = mean, sesq = taylor, n = n.observations)) # n is used for degrees of freedom - not weighted?
 
