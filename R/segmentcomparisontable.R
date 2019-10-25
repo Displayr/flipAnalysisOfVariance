@@ -1,6 +1,6 @@
 
 #' @importFrom flipFormat CreateCustomTable
-#' @importFrom flipU ConvertCommaSeparatedStringToVector
+#' @importFrom flipU ConvertCommaSeparatedStringToVector CopyAttributes
 #' @importFrom flipStatistics WeightedTable Table StatisticsByGroup Mean StandardDeviation
 #' @importFrom flipRegression PValueAdjustFDR
 #' @importFrom flipTransformations AsDataFrame
@@ -40,9 +40,10 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     {
         vv <- v.list[[vvi]]
         if (length(dim(vv)) < 2)
-            vv <- vv[subset]
+            vv <- CopyAttributes(vv[subset], vv)
         else
-            vv <- vv[,subset]
+            vv <- CopyAttributes(vv[,subset], vv)
+        
         if (isTRUE(attr(vv, "questiontype") %in% c("NumberMulti")))
         {
             tmp <- t(StatisticsByGroup(vv, group = group, weights = weights))
@@ -73,7 +74,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             tmp <- sweep(tmp, 2, colSums(tmp), "/")
             v.list[[vvi]] <- AsDataFrame(vv, categorical.as.binary = TRUE)
         } else
-            v.list[vvi] <- vv # save subsetted variable
+            v.list[[vvi]] <- vv # save subsetted variable
+
         result <- rbind(result, tmp)
     }
 

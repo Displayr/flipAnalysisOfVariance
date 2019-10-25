@@ -278,6 +278,13 @@ CellStatistic = function(x, # A binary 1/0 variable representing a category (e.g
              se = sqrt(taylor))
     }
 
+ComputeVariance <- function(ww_sums_of_squares,
+                            total_w,
+                            n)
+{
+    ww_sums_of_squares / (total_w * total_w) * (n / (n - 1))
+}
+
 # A simplification of RaoScottSecondOrder2b2 from Q's C#
 RaoScottSecondOrder2b2 <- function(proportions,
                        counts,
