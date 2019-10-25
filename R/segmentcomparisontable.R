@@ -203,7 +203,7 @@ PValsByGroup <- function(x, group, weights, is.binary = FALSE)
             cat(levs[i], ": mean =", stats.in$mean, "se =", sqrt(stats.in$sesq), "n =", stats.in$n, "p =", pval[i], "\n")
         } else
         { 
-            tmp <- CellStatistic(x, y = group == levs[i])
+            tmp <- CellStatistic(x, y = group == levs[i], w = weights)
             pval[i] <- tmp["p"]
             cat(levs[i], ": se =", tmp["Standard Error"], "\n")
         }
