@@ -9,6 +9,8 @@ CellStatistic = function(x, # A binary 1/0 variable representing a category (e.g
                         not.duplicate = TRUE,
                         reproduce.error.in.bessel.correction = FALSE) # Property of the data reduction
 {
+    if (length(w) <= 1)
+        w <- rep(1, length(x))
     
     Filter = function(x, f)
     {
@@ -203,7 +205,6 @@ CellStatistic = function(x, # A binary 1/0 variable representing a category (e.g
 
         if (x.is.binary & y.is.binary) # Crosstab of categoricals
         {
-
             total.prop = sum.xyw / sum.w
             var = ComputeVariances(total.prop, TRUE, sum.w, sum.ww, sum.xyw, sum.xyww, sum.xyw, sum.xyww, n.observations)
             column.prop = sum.xyw / sum.yw
