@@ -16,6 +16,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    font.color.set.if.nonsignificant = TRUE,
                                    font.color.nonsignificant = "#CCCCCC", font.color.confidence = 0.95,
                                    font.color.FDRcorrection = FALSE,
+                                   show.question.name = TRUE,
                                    ...) # extra parameters to pass to CreateCustomTable
 {
 
@@ -75,7 +76,16 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             v.list[[vvi]] <- AsDataFrame(vv, categorical.as.binary = TRUE)
         } else
             v.list[[vvi]] <- vv # save subsetted variable
-
+        
+        # Compute Index - does not affect font color or cell fill
+        if (show.index.values && !tmp.numeric)
+        {
+            tot.mean <- Mean(v.list[[vvi]], weights = weights)
+            if (NROW(tmp) > 1)
+                tmp <- sweep(tmp, 1, tot.mean, "/")
+            else
+                tmp <- tmp/tot.mean
+        }
         result <- rbind(result, tmp)
     }
 
@@ -100,7 +110,6 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         colnames(pvals) <- colnames(result)
         for (i in 3:nrow(result))
         {
-            cat(row.labels[i], ":", "i =", i, "vvi =", row.vvi[i], "vcol =", row.vcol[i], "\n")
             tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
                        else                  v.list[[row.vvi[i]]][,row.vcol[i]]
             pvals[i,] <- PValsByGroup(tmp.var, group, weights, is.binary = row.format[i] != "numeric")
@@ -128,11 +137,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                 # What about filters and weights?
                 tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
                            else                  v.list[[row.vvi[i]]][,row.vcol[i]]
-                tmp.mean <- Mean(tmp.var, weights = weights)
                 tmp.sd <- StandardDeviation(tmp.var, weights = weights)
-                tmp.gmean <- StatisticsByGroup((tmp.var - tmp.mean)/(2*tmp.sd), group = group, weights = weights)
-                cat("Standardizing numeric variables\n")
-                print(tmp.gmean)
+                tmp.gmean <- StatisticsByGroup(tmp.var/(2*tmp.sd), group = group, weights = weights)
 
                 # These values seem strance 
                 cell.fill[i,which(tmp.gmean <  0.2)] <- format.percentage.fill.colors[4]
@@ -143,10 +149,16 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             }
         }
     }
+    # After determining cell fonts and fill, calulate Index
+    # By iterating through the rows of 'result' and 'vvi'
+
+    if (!show.question.name)
+        row.labels <- FALSE
     CreateCustomTable(result.formatted, row.header.labels = row.labels, row.spans = row.span,
                      row.span.fill = "#EFEFEF", row.header.fill = "#EFEFEF", corner.fill = "#EFEFEF",
                      col.header.fill = "#EFEFEF", cell.fill = cell.fill,
-                     font.unit = "px", font.size = font.size, cell.font.color = results.font.color)
+                     font.unit = "px", font.size = font.size, cell.font.color = results.font.color,
+                     ...)
 }
 
 
@@ -200,12 +212,12 @@ PValsByGroup <- function(x, group, weights, is.binary = FALSE)
                            ((stats.in$sesq^2)/(stats.in$n - 1) + (stats.out$sesq^2)/(stats.out$n - 1))
             t.statistic <- (stats.in$mean - stats.out$mean)/sqrt(stats.in$sesq + stats.out$sesq)
             pval[i] <- 2 * pt(abs(t.statistic), deg.freedom, lower.tail = FALSE)
-            cat(levs[i], ": mean =", stats.in$mean, "se =", sqrt(stats.in$sesq), "n =", stats.in$n, "p =", pval[i], "\n")
+            #cat(levs[i], ": mean =", stats.in$mean, "se =", sqrt(stats.in$sesq), "n =", stats.in$n, "p =", pval[i], "\n")
         } else
         { 
             tmp <- CellStatistic(x, y = group == levs[i], w = weights)
             pval[i] <- tmp["p"]
-            cat(levs[i], ": se =", tmp["Standard Error"], "\n")
+            #cat(levs[i], ": se =", tmp["Standard Error"], "\n")
         }
     }
     return(pval)
@@ -247,7 +259,5 @@ ComputeStats <- function(x, w = NULL, is.binary = FALSE)
     sum_of_squares.w = sum.xxww - 2 * mean * sum.xww + mean2 * sum.ww
 
     taylor = sum_of_squares.w / (sum.w * sum.w) * bessel.correction
-    #return(sqrt(taylor)) # standard error but we mainly use se^2
-    return (list(mean = mean, sesq = taylor, n = n.observations)) # n is used for degrees of freedom - not weighted?
-
+    return (list(mean = mean, sesq = taylor, n = n.observations))
 }
