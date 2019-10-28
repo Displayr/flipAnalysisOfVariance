@@ -1,4 +1,54 @@
-
+#' \code{SegmentComparisonTable}
+#'
+#' Creates a html table allowing comparison between segments using
+#' variables or variable sets
+#' @param x A list of variables or variable sets. These can be numeric or
+#'    categorical (PickOne or PickAny). It is expected that the attributes
+#'    for "question", "label" and "questiontype" is defined.
+#' @param group The segmentation variable. Should be a factor.
+#' @param weights Numeric; An optional vector of sampling weights. 
+#'     Should be the same length as \code{group}.
+#' @param subset An optional vector specifying a subset of observations to be used.
+#' @param format.numeric.decimals The number of decimals shown in the output table
+#'     for numeric values.
+#' @param format.percentage.decimals The number of decimals shown in the output table
+#'     for percentage values.
+#' @param format.conditional.fill Whether the fill color of the cells should reflect the
+#'     value in the cells.
+#' @param format.numeric.fill.colors A vector or comma-separated list of 5 colors that
+#'     is used when \code{format.conditional.fill}. The colors indicate that 
+#'     the standardized number value in the cell is smaller than -0.2, -0.1, 0, 0.1, 0.2.
+#'     Numeric variables are standardized by dividing twice the standard deviation
+#'     http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf
+#' @param format.percentage.fill.colors A vector or comma-separated list of 5 colors that
+#'     is used when \code{format.conditional.fill}. The colors indicate that 
+#'     the percentage in the cell is smaller than -20%, -10%, 0%, 10%, 20%.
+#' @param show.index.values. Percentage values are shown as a ratio to the percentage
+#'     computed on the whole population (i.e. unsegmented).
+#' @param cell.fill The default background color of the cells in the table.
+#' @param summary.cell.fill The background color of the first two rows in
+#'     the table which gives a summary of the segmentation variable.
+#' @param font.color Default font color of the cells in the table.
+#' @param font.size Default font size.
+#' @param font.unit One of "px" or "pt".
+#' @param row.height Height of one row in the table (includes units).
+#' @param font.color.set.if.nonsignificant Logical; whether p-values should be computed
+#'     to test the significance of the value in the table.
+#' @param font.color.nonsignificant Font color used to show insignificant values if
+#'     \code{font.color.set.if.nonsignificant}.
+#' @param font.color.FDRcorrection Logical; whether an FDR correction is applied to deal
+#'    with multiple testing.
+#' @param show.question.name Whether the question name should be shown in the output table.
+#' @param col.widths Vector or comma-separated list to control column widths.
+#' @param row.header.font.weight One of "bold" or "normal".
+#' @param row.span.font.weight One of "bold" or "normal".
+#' @param col.header.font.weight One of "bold" or "normal".
+#' @param row.header.pad Space between border and text.
+#' @param row.span.pad Space between border and text.
+#' @param row.header.fill Background color of row header cells.
+#' @param column.header.fill Background color of column header cells.
+#' @param row.span.fill Background color of row span cells.
+#' @param corner.fill Background color of corner cells.
 #' @importFrom flipFormat CreateCustomTable
 #' @importFrom flipU ConvertCommaSeparatedStringToVector CopyAttributes
 #' @importFrom flipStatistics WeightedTable Table StatisticsByGroup Mean StandardDeviation
@@ -12,12 +62,26 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    format.percentage.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
                                    show.index.values = FALSE, 
                                    cell.fill = "#FFFFFF",
-                                   font.color = "#2C2C2C", font.size = 10,
+                                   font.color = "#2C2C2C", 
+                                   font.size = 10,
+                                   font.unit = "px",
+                                   row.height = paste0(font.size * 1.1, font.unit),
                                    font.color.set.if.nonsignificant = TRUE,
                                    font.color.nonsignificant = "#CCCCCC", font.color.confidence = 0.95,
                                    font.color.FDRcorrection = FALSE,
                                    show.question.name = TRUE,
-                                   ...) # extra parameters to pass to CreateCustomTable
+                                   col.widths = "100px, 100px",
+                                   row.header.font.weight = "normal",
+                                   row.span.font.weight = "normal",
+                                   col.header.font.weight = "normal",
+                                   row.header.pad = "5px",
+                                   row.span.pad = "5px",
+                                   summary.cell.fill = "#EFEFEF",
+                                   row.header.fill = "#DDDDDD",
+                                   row.span.fill = row.header.fill,
+                                   col.header.fill = row.header.fill,
+                                   corner.fill = row.header.fill,
+                                   ...)
 {
 
     format.percentage.fill.colors <- ConvertCommaSeparatedStringToVector(format.percentage.fill.colors)
@@ -30,8 +94,11 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
 
     counts <-t(WeightedTable(group, weights = weights))
     result <- rbind(counts, counts/sum(counts))
-    row.labels <- c(" ", " ")
-    row.span <- list(list(label = " ", height = 2))
+    row.labels <- c("Sample size", "Percentage")
+    group.label <- attr(group, "label") # group should be a variable not a variable set
+    if (is.null(group.label))
+        group.label <- " "
+    row.span <- list(list(label = group.label, height = 2))
     row.format <- c("numeric", "percentage")
     row.vvi <- c(0, 0)
     row.vcol <- c(0, 0)
@@ -121,9 +188,10 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     }
 
     # Fill color is determined by cell values
+    cell.fill <- matrix(cell.fill, nrow(result), ncol(result))
+    cell.fill[1:2,] <- summary.cell.fill
     if (format.conditional.fill)
     {
-        cell.fill <- matrix(cell.fill, nrow(result), ncol(result))
         for (i in 3:nrow(result))
         {
             if (row.format[i] == "percentage") # and if show index values is used
@@ -134,13 +202,11 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                 cell.fill[i,which(result[i,] < -0.2)] <- format.percentage.fill.colors[1]
             } else
             {
-                # What about filters and weights?
                 tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
                            else                  v.list[[row.vvi[i]]][,row.vcol[i]]
                 tmp.sd <- StandardDeviation(tmp.var, weights = weights)
                 tmp.gmean <- StatisticsByGroup(tmp.var/(2*tmp.sd), group = group, weights = weights)
 
-                # These values seem strance 
                 cell.fill[i,which(tmp.gmean <  0.2)] <- format.percentage.fill.colors[4]
                 cell.fill[i,which(tmp.gmean <  0.1)] <- format.percentage.fill.colors[3]
                 cell.fill[i,which(tmp.gmean < -0.1)] <- format.percentage.fill.colors[2]
@@ -149,16 +215,24 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             }
         }
     }
-    # After determining cell fonts and fill, calulate Index
-    # By iterating through the rows of 'result' and 'vvi'
 
     if (!show.question.name)
         row.labels <- FALSE
-    CreateCustomTable(result.formatted, row.header.labels = row.labels, row.spans = row.span,
-                     row.span.fill = "#EFEFEF", row.header.fill = "#EFEFEF", corner.fill = "#EFEFEF",
-                     col.header.fill = "#EFEFEF", cell.fill = cell.fill,
-                     font.unit = "px", font.size = font.size, cell.font.color = results.font.color,
+    output <- CreateCustomTable(result.formatted, row.header.labels = row.labels, 
+                      row.spans = row.span, cell.fill = cell.fill, 
+                      cell.font.color = results.font.color,
+                      row.span.fill = row.span.fill, row.header.fill = row.header.fill, 
+                      corner.fill = corner.fill, col.header.fill = col.header.fill,
+                      font.unit = font.unit, font.size = font.size, col.widths = col.widths,
+                      row.span.pad = row.span.pad, row.header.pad = row.header.pad, 
+                      row.header.font.weight = row.header.font.weight,
+                      row.span.font.weight = row.span.font.weight,
+                      col.header.font.weight = col.header.font.weight, 
                      ...)
+    result.rows <- unlist(sapply(row.span, function(r) rep(r$label, r$height)))
+    rownames(result) <- paste0(result.rows, ":", row.labels)
+    attr(output, "ChartData") <- result
+    return(output)
 }
 
 
