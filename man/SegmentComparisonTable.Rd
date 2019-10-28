@@ -51,7 +51,10 @@ http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf}
 
 \item{format.percentage.fill.colors}{A vector or comma-separated list of 5 colors that
 is used when \code{format.conditional.fill}. The colors indicate that 
-the percentage in the cell is smaller than -20%, -10%, 0%, 10%, 20%.}
+the percentage in the cell is smaller than -20\%, -10\%, 0\%, 10\%, 20\%.}
+
+\item{show.index.values}{Percentage values are shown as a ratio to the percentage
+computed on the whole population (i.e. unsegmented).}
 
 \item{cell.fill}{The default background color of the cells in the table.}
 
@@ -68,6 +71,10 @@ to test the significance of the value in the table.}
 
 \item{font.color.nonsignificant}{Font color used to show insignificant values if
 \code{font.color.set.if.nonsignificant}.}
+
+\item{font.color.confidence}{The confidence level below which insignificant values
+should be shown in \code{font.color.nonsignificant} if
+\code{font.color.set.if.nonsignficant}.}
 
 \item{font.color.FDRcorrection}{Logical; whether an FDR correction is applied to deal
 with multiple testing.}
@@ -93,12 +100,11 @@ the table which gives a summary of the segmentation variable.}
 
 \item{row.span.fill}{Background color of row span cells.}
 
+\item{col.header.fill}{Background color of column header cells.}
+
 \item{corner.fill}{Background color of corner cells.}
 
-\item{show.index.values.}{Percentage values are shown as a ratio to the percentage
-computed on the whole population (i.e. unsegmented).}
-
-\item{column.header.fill}{Background color of column header cells.}
+\item{...}{Other parameters passed to \link[flipFormat]{CreateCustomTable}.}
 }
 \description{
 Creates a html table allowing comparison between segments using

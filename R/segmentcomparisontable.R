@@ -22,8 +22,8 @@
 #'     http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf
 #' @param format.percentage.fill.colors A vector or comma-separated list of 5 colors that
 #'     is used when \code{format.conditional.fill}. The colors indicate that 
-#'     the percentage in the cell is smaller than -20%, -10%, 0%, 10%, 20%.
-#' @param show.index.values. Percentage values are shown as a ratio to the percentage
+#'     the percentage in the cell is smaller than -20\%, -10\%, 0\%, 10\%, 20\%.
+#' @param show.index.values Percentage values are shown as a ratio to the percentage
 #'     computed on the whole population (i.e. unsegmented).
 #' @param cell.fill The default background color of the cells in the table.
 #' @param summary.cell.fill The background color of the first two rows in
@@ -36,6 +36,9 @@
 #'     to test the significance of the value in the table.
 #' @param font.color.nonsignificant Font color used to show insignificant values if
 #'     \code{font.color.set.if.nonsignificant}.
+#' @param font.color.confidence The confidence level below which insignificant values
+#'     should be shown in \code{font.color.nonsignificant} if
+#'     \code{font.color.set.if.nonsignficant}.
 #' @param font.color.FDRcorrection Logical; whether an FDR correction is applied to deal
 #'    with multiple testing.
 #' @param show.question.name Whether the question name should be shown in the output table.
@@ -46,9 +49,10 @@
 #' @param row.header.pad Space between border and text.
 #' @param row.span.pad Space between border and text.
 #' @param row.header.fill Background color of row header cells.
-#' @param column.header.fill Background color of column header cells.
+#' @param col.header.fill Background color of column header cells.
 #' @param row.span.fill Background color of row span cells.
 #' @param corner.fill Background color of corner cells.
+#' @param ... Other parameters passed to \link[flipFormat]{CreateCustomTable}.
 #' @importFrom flipFormat CreateCustomTable
 #' @importFrom flipU ConvertCommaSeparatedStringToVector CopyAttributes
 #' @importFrom flipStatistics WeightedTable Table StatisticsByGroup Mean StandardDeviation
@@ -67,7 +71,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    font.unit = "px",
                                    row.height = paste0(font.size * 1.1, font.unit),
                                    font.color.set.if.nonsignificant = TRUE,
-                                   font.color.nonsignificant = "#CCCCCC", font.color.confidence = 0.95,
+                                   font.color.nonsignificant = "#CCCCCC", 
+                                   font.color.confidence = 0.95,
                                    font.color.FDRcorrection = FALSE,
                                    show.question.name = TRUE,
                                    col.widths = "100px, 100px",
