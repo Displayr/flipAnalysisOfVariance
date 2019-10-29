@@ -233,7 +233,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       row.header.font.weight = row.header.font.weight,
                       row.span.font.weight = row.span.font.weight,
                       col.header.font.weight = col.header.font.weight, 
-                     ...)
+                      row.height = row.height, ...)
     result.rows <- unlist(sapply(row.span, function(r) rep(r$label, r$height)))
     rownames(result) <- paste0(result.rows, ":", row.labels)
     attr(output, "ChartData") <- result
