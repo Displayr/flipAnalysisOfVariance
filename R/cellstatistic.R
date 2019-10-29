@@ -228,7 +228,8 @@ CellStatistic = function(x, # A binary 1/0 variable representing a category (e.g
                                        counts,
                                        variance, 
                                        n.observations - sum.y, 
-                                       sum.y)
+                                       sum.y,
+                                       is.weighted = length(unique(w)) > 1)
             c("Column %" = column.prop * 100,
               "Row %" = sum.xyw / sum.xw * 100,
               "Total %" = total.prop * 100,
@@ -291,7 +292,8 @@ RaoScottSecondOrder2b2 <- function(proportions,
                        counts,
                        variance, 
                        n0,  
-                       n1)
+                       n1,
+                       is.weighted)
         {
             group_sizes = colSums(counts)
             row.totals = rowSums(counts)
@@ -301,7 +303,10 @@ RaoScottSecondOrder2b2 <- function(proportions,
                                 group_sizes[1]*row.totals[2]/total,
                                 group_sizes[2]*row.totals[1]/total,
                                 group_sizes[2]*row.totals[2]/total), 2)
-            pearson.statistic = sum((counts - expected)^2/expected)#chisq.test(counts, correct = FALSE)$statistic
+            pearson.statistic = sum((counts - expected)^2/expected)
+            if (!is.weighted)
+                return(pchisq(pearson.statistic, 1, lower.tail = FALSE))
+           
             if (!is.na(pearson.statistic)) # If not a missing value
             {
                 a = matrix(0, 4, 1)
