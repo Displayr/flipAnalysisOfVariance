@@ -48,7 +48,8 @@ CellStatistic = function(x, # A binary 1/0 variable representing a category (e.g
             a = stats[[1]]
             b = stats[[2]]
             test = IndependentSamplesTTestMeans(a["Average"], b["Average"], a["Standard Error"], b["Standard Error"], a["Base n"], b["Base n"])
-            #z = zStatistic(test$p, test$t > 0) 
+            #z = zStatistic(test$p, test$t > 0)
+            return(test)
             return(c(a[1:5],
               "Column n" = unname(a["Base n"]),
               "Base n" = unname(a["Base n"] + b["Base n"]),

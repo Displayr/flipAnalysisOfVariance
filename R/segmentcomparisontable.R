@@ -280,7 +280,7 @@ PValsByGroup <- function(x, group, weights, is.binary = FALSE)
 
     for (i in 1:n.levels)
     {
-        if (!is.binary)
+        if (FALSE && !is.binary)
         {
             ind.in <- which(group == levs[i])
             ind.out <- which(group != levs[i]) 
@@ -294,8 +294,8 @@ PValsByGroup <- function(x, group, weights, is.binary = FALSE)
             #cat(levs[i], ": mean =", stats.in$mean, "se =", sqrt(stats.in$sesq), "n =", stats.in$n, "p =", pval[i], "\n")
         } else
         { 
-            tmp <- CellStatistic(x, y = group == levs[i], w = weights)
-            pval[i] <- tmp["p"]
+            tmp <- CellStatistic(x, x.is.binary = is.binary, y = group == levs[i], w = weights)
+            pval[i] <- unlist(tmp["p"])
             #cat(levs[i], ": se =", tmp["Standard Error"], "\n")
         }
     }
