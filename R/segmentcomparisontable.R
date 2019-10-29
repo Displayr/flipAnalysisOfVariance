@@ -58,6 +58,7 @@
 #' @importFrom flipStatistics WeightedTable Table StatisticsByGroup Mean StandardDeviation
 #' @importFrom flipRegression PValueAdjustFDR
 #' @importFrom flipTransformations AsDataFrame
+#' @export
 SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    format.numeric.decimals = 1,
                                    format.percentage.decimals = 0,
