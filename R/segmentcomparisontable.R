@@ -116,9 +116,9 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         if (length(dim(vv)) < 2)
             vv <- CopyAttributes(vv[subset], vv)
         else
-            vv <- CopyAttributes(vv[,subset], vv)
+            vv <- CopyAttributes(as.data.frame(vv)[subset,], vv)
         
-        if (isTRUE(attr(vv, "questiontype") %in% c("NumberMulti")))
+        if (isTRUE(attr(vv, "questiontype") %in% c("NumberMulti", "PickAny")))
         {
             tmp <- t(StatisticsByGroup(vv, group = group, weights = weights))
         } else

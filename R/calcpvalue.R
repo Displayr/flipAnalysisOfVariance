@@ -32,8 +32,8 @@ CalcPValue = function(x,                        # A binary or numeric variable
     
     if (!x.is.binary)
     {  
-        filters = list(y == 1 & !is.na(y), # The asymmetric is.na due to double counting of 'Missing n'
-                       y == 0 ) 
+        filters = list(which(y == 1), # y == 1 & !is.na(y), # The asymmetric is.na due to double counting of 'Missing n'
+                       which(y==0)) #y == 0 ) 
 
         a = ComputeNumericVarStats(Filter(x, filters[[1]]), Filter(w, filters[[1]]))        
         b = ComputeNumericVarStats(Filter(x, filters[[2]]), Filter(w, filters[[2]]))
@@ -272,6 +272,7 @@ ComputeNumericVarStats <- function(x, w)
     population.variance = sum.xxw / sum.w - mean.x * mean.x 
     n.used.in.bessel.correction = n.observations
     var = ComputeVariances(mean.x, FALSE, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.used.in.bessel.correction)
+    cat(n.observations, mean.x, var$se, "\n")
     return(c("Average" = mean.x, "Base n" = n.observations, "Standard Error" = var$se))
 }
 
