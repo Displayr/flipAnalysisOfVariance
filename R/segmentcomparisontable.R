@@ -57,7 +57,7 @@
 #' @importFrom flipU ConvertCommaSeparatedStringToVector CopyAttributes
 #' @importFrom flipStatistics WeightedTable Table StatisticsByGroup Mean StandardDeviation
 #' @importFrom flipRegression PValueAdjustFDR
-#' @importFrom flipTransformations AsDataFrame
+#' @importFrom flipTransformations AsDataFrame FactorToNumeric
 #' @export
 SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    format.numeric.decimals = 1,
@@ -109,47 +109,41 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     row.vvi <- c(0, 0)
     row.vcol <- c(0, 0)
 
-    v.list <- ProcessQVariables(x)
-    for (vvi in 1:length(v.list))
+    v.list <- list()
+    for (vvi in 1:length(x))
     {
-        #vv <- ProcessQVariables(v.list[[vvi]])
-        vv <- v.list[[vvi]]
-        if (length(dim(vv)) < 2)
-            vv <- CopyAttributes(vv[subset], vv)
+        # Convert everything to a data frame
+        v.qtype <- paste0("", attr(x[[vvi]], "questiontype")) # avoid NULL
+        if (v.qtype == "Date")
+            vv <- FactorToNumeric(ProcessQVariables(x[[vvi]]), binary = TRUE, remove.first = FALSE)
         else
-            vv <- CopyAttributes(as.data.frame(vv)[subset,], vv)
+            vv <- AsDataFrame(x[[vvi]], categorical.as.binary = TRUE)
+        vv <- vv[subset,,drop = FALSE]
 
-        if (isTRUE(attr(vv, "questiontype") %in% c("NumberMulti", "PickAny")))
-        {
-            tmp <- t(StatisticsByGroup(vv, group = group, weights = weights))
-        } else
-            tmp <- crosstabOneVariable(vv, group = group, weights = weights)
-
-        tmp.nrow <- 1
-        if (length(dim(tmp)) < 2 || NROW(tmp) == 1)
-        {
-            row.span[[length(row.span) + 1]] <- list(label = attr(vv, "question"), height = 1)
-            row.labels <- c(row.labels, attr(vv, "label"))
-            row.vcol <- c(row.vcol, 0)
-        } else
-        {
-            tmp.nrow <- nrow(tmp)
-            row.vcol <- c(row.vcol, 1:tmp.nrow)
-            row.span[[length(row.span) + 1]] <- list(label = attr(vv, "question"), height = nrow(tmp))
-            if (!is.null(rownames(tmp)))
-                row.labels <- c(row.labels, rownames(tmp))
-        }
-        tmp.numeric <- isTRUE(attr(vv, "questiontype") %in% c("NumberMulti", "Number"))
-        row.format <- c(row.format, rep(if (tmp.numeric) "numeric" else "percentage", tmp.nrow))
-        row.vvi <- c(row.vvi, rep(vvi, tmp.nrow))
-
-        # Compute column percentages for Pick One questions
-        if (isTRUE(attr(vv, "questiontype") %in% c("PickOne", "Date")))
-        {
+        # Compute main statistic (average/percentage)
+        tmp <- t(StatisticsByGroup(vv, group = group, weights = weights))
+        if (v.qtype %in% c("PickOne", "Date"))
             tmp <- sweep(tmp, 2, colSums(tmp), "/")
-            v.list[[vvi]] <- AsDataFrame(vv, categorical.as.binary = TRUE)
-        } else
-            v.list[[vvi]] <- vv # save subsetted variable
+
+        # Use question attributes to determine row names
+        if (v.qtype == "Date")
+            rownames(tmp) <- levels(attr(x[[vvi]], "QDate"))
+        else if (v.qtype == "PickOne")
+            rownames(tmp) <- levels(x[[vvi]])
+        else if (v.qtype %in% c("PickAny", "NumberMulti"))
+            rownames(tmp) <- colnames(x[[vvi]])
+        else
+            rownames(tmp) <- attr(x[[vvi]], "label")
+
+        tmp.nvar <- ncol(vv)
+        row.vcol <- c(row.vcol, 1:tmp.nvar)
+        row.span[[length(row.span) + 1]] <- list(label = attr(x[[vvi]], "question"), height = tmp.nvar)
+        if (!is.null(rownames(tmp)))
+            row.labels <- c(row.labels, rownames(tmp))
+        tmp.numeric <- isTRUE(attr(x[[vvi]], "questiontype") %in% c("NumberMulti", "Number"))
+        row.format <- c(row.format, rep(if (tmp.numeric) "numeric" else "percentage", tmp.nvar))
+        row.vvi <- c(row.vvi, rep(vvi, tmp.nvar))
+        v.list[[vvi]] <- vv # save subsetted variable
         
         # Compute Index - does not affect font color or cell fill
         if (show.index.values && !tmp.numeric)
@@ -242,31 +236,3 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     attr(output, "ChartData") <- result
     return(output)
 }
-
-
-crosstabOneVariable <- function(x, group, weights = NULL, subset = TRUE,
-        categorical.as.binary = TRUE)
-{
-    data <- data.frame(x = x, y = group)
-    data$w <- if (is.null(weights)) rep.int(1L, NROW(data)) else weights
-    if (length(subset) > 1)
-        data <- data[subset,]
-
-    if (is.numeric(x) || !categorical.as.binary)
-    {
-        data$x <- AsNumeric(data$x, binary = FALSE)
-        if (!is.null(weights))
-        {
-            data$xw <- data$x * weights
-            out <- Table(xw~y, data = data, FUN = sum)/Table(w~y, data = data, FUN = sum)
-
-        } else
-            out <- Table(x~y, data = data, FUN = mean)
-    } else
-    {
-        out <- Table(w~x+y, data = data, FUN = sum)
-    }
-    return(out)
-}
-
-
