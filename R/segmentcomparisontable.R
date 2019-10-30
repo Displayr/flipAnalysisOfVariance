@@ -112,12 +112,13 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     v.list <- ProcessQVariables(x)
     for (vvi in 1:length(v.list))
     {
+        #vv <- ProcessQVariables(v.list[[vvi]])
         vv <- v.list[[vvi]]
         if (length(dim(vv)) < 2)
             vv <- CopyAttributes(vv[subset], vv)
         else
             vv <- CopyAttributes(as.data.frame(vv)[subset,], vv)
-        
+
         if (isTRUE(attr(vv, "questiontype") %in% c("NumberMulti", "PickAny")))
         {
             tmp <- t(StatisticsByGroup(vv, group = group, weights = weights))
@@ -143,7 +144,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         row.vvi <- c(row.vvi, rep(vvi, tmp.nrow))
 
         # Compute column percentages for Pick One questions
-        if (isTRUE(attr(vv, "questiontype") == "PickOne"))
+        if (isTRUE(attr(vv, "questiontype") %in% c("PickOne", "Date")))
         {
             tmp <- sweep(tmp, 2, colSums(tmp), "/")
             v.list[[vvi]] <- AsDataFrame(vv, categorical.as.binary = TRUE)
@@ -234,6 +235,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       row.header.font.weight = row.header.font.weight,
                       row.span.font.weight = row.span.font.weight,
                       col.header.font.weight = col.header.font.weight, 
+                      suppress.nan = FALSE, suppress.na = FALSE,
                       row.height = row.height, ...)
     result.rows <- unlist(sapply(row.span, function(r) rep(r$label, r$height)))
     rownames(result) <- paste0(result.rows, ":", row.labels)
