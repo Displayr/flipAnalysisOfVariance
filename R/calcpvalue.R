@@ -39,8 +39,7 @@ CalcPValue = function(x,                        # A binary or numeric variable
 
         a = ComputeNumericVarStats(Filter(x, filters[[1]]), Filter(w, filters[[1]]))        
         b = ComputeNumericVarStats(Filter(x, filters[[2]]), Filter(w, filters[[2]]))
-        test = IndependentSamplesTTestMeans(a["Average"], b["Average"], a["Standard Error"], b["Standard Error"], a["Base n"], b["Base n"])
-        z = zStatistic(test$p, !is.na(test$t) && test$t > 0)
+        return(IndependentSamplesTTestMeans(a["Average"], b["Average"], a["Standard Error"], b["Standard Error"], a["Base n"], b["Base n"]))
         return(test$p)
     }
     
@@ -209,18 +208,8 @@ IndependentSamplesTTestMeans <- function(mean1,
     t = (mean1 - mean2) / .ComputeStandardError(standard_error_1,  standard_error_2)
     df = .WelchDegreesOfFreedom(standard_error_1, standard_error_2, n1, n2)
     p = pt(-abs(t), df)  * 2
-    return(list(t = t, df = df, p = p))
-    #return(p)
+    return(p)
 }
-
-zStatistic <- function(p, positive)
-{
-    z = qnorm(1 - p/2)
-    if (!positive)
-        z = -z
-    z
-}
-
 
 MultinomialCovarianceMatrix <- function(proportions, ww, ww_total, w_total, n)
 {
