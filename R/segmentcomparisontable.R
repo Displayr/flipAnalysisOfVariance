@@ -187,7 +187,6 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         }
         if (font.color.FDRcorrection)
             pvals <- PValueAdjustFDR(pvals, alpha = 1 - font.color.confidence) 
-        print(pvals)
         results.font.color[which(pvals < 1 - font.color.confidence)] <- font.color
     }
 
@@ -237,5 +236,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     result.rows <- unlist(sapply(row.span, function(r) rep(r$label, r$height)))
     rownames(result) <- paste0(result.rows, ":", row.labels)
     attr(output, "ChartData") <- result
+    # Store p-values for testing
+    if (font.color.set.if.nonsignificant)
+        attr(output, "p-values") <- pvals
     return(output)
 }
