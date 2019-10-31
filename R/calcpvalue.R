@@ -10,6 +10,7 @@ PValsByGroup <- function(x, group, weights, is.binary = FALSE)
     if (n.levels < 2)
         return(pval)
 
+    #x <- rank(x, na.last = "keep")/100
     for (i in 1:n.levels)
         pval[i] <- CalcPValue(x, x.is.binary = is.binary, y = group == levs[i], w = weights)
     return(pval)
@@ -40,7 +41,6 @@ CalcPValue = function(x,                        # A binary or numeric variable
         a = ComputeNumericVarStats(Filter(x, filters[[1]]), Filter(w, filters[[1]]))        
         b = ComputeNumericVarStats(Filter(x, filters[[2]]), Filter(w, filters[[2]]))
         return(IndependentSamplesTTestMeans(a["Average"], b["Average"], a["Standard Error"], b["Standard Error"], a["Base n"], b["Base n"]))
-        return(test$p)
     }
     
     # Identifying missing values; these are values that are:
