@@ -90,6 +90,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    ...)
 {
 
+    group <- ProcessQVariables(group)
     format.percentage.fill.colors <- ConvertCommaSeparatedStringToVector(format.percentage.fill.colors)
     if (length(subset) > 1)
     {
@@ -118,7 +119,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             vv <- FactorToNumeric(ProcessQVariables(x[[vvi]]), binary = TRUE, remove.first = FALSE)
         else
             vv <- AsDataFrame(x[[vvi]], categorical.as.binary = TRUE)
-        vv <- vv[subset,,drop = FALSE]
+        if (length(subset) > 1)
+            vv <- vv[subset,,drop = FALSE]
 
         # Compute main statistic (average/percentage)
         tmp <- t(StatisticsByGroup(vv, group = group, weights = weights))
@@ -130,7 +132,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             rownames(tmp) <- levels(attr(x[[vvi]], "QDate"))
         else if (v.qtype == "PickOne")
             rownames(tmp) <- levels(x[[vvi]])
-        else if (v.qtype %in% c("PickAny", "NumberMulti"))
+        else if (v.qtype %in% c("PickAny", "NumberMulti") && ncol(vv) > 1)
             rownames(tmp) <- colnames(x[[vvi]])
         else
             rownames(tmp) <- attr(x[[vvi]], "label")
@@ -148,7 +150,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         # Compute Index - does not affect font color or cell fill
         if (show.index.values && !tmp.numeric)
         {
-            tot.mean <- Mean(v.list[[vvi]], weights = weights)
+            ind.not.missing <- !is.na(group)
+            tot.mean <- Mean(vv[ind.not.missing,,drop = FALSE], weights = weights[ind.not.missing])
             if (NROW(tmp) > 1)
                 tmp <- sweep(tmp, 1, tot.mean, "/")
             else
