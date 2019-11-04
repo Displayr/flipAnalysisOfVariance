@@ -14,13 +14,14 @@ SegmentComparisonTable(x, group, weights = NULL, subset = TRUE,
   row.height = paste0(font.size * 1.1, font.unit),
   font.color.set.if.nonsignificant = TRUE,
   font.color.nonsignificant = "#CCCCCC", font.color.confidence = 0.95,
-  font.color.FDRcorrection = FALSE, show.question.name = TRUE,
-  col.widths = "100px, 100px", row.header.font.weight = "normal",
-  row.span.font.weight = "normal", col.header.font.weight = "normal",
-  row.header.pad = "5px", row.span.pad = "5px",
-  summary.cell.fill = "#EFEFEF", row.header.fill = "#DDDDDD",
-  row.span.fill = row.header.fill, col.header.fill = row.header.fill,
-  corner.fill = row.header.fill, ...)
+  font.color.FDRcorrection = FALSE, font.color.nonparametric = FALSE,
+  show.question.name = TRUE, col.widths = "100px, 100px",
+  row.header.font.weight = "normal", row.span.font.weight = "normal",
+  col.header.font.weight = "normal", row.header.pad = "5px",
+  row.span.pad = "5px", summary.cell.fill = "#EFEFEF",
+  row.header.fill = "#DDDDDD", row.span.fill = row.header.fill,
+  col.header.fill = row.header.fill, corner.fill = row.header.fill,
+  ...)
 }
 \arguments{
 \item{x}{A list of variables or variable sets. These can be numeric or
@@ -78,6 +79,8 @@ should be shown in \code{font.color.nonsignificant} if
 
 \item{font.color.FDRcorrection}{Logical; whether an FDR correction is applied to deal
 with multiple testing.}
+
+\item{font.color.nonparametric}{Logical; whether a non-parametric test should}
 
 \item{show.question.name}{Whether the question name should be shown in the output table.}
 

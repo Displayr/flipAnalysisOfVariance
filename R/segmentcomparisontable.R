@@ -41,6 +41,8 @@
 #'     \code{font.color.set.if.nonsignficant}.
 #' @param font.color.FDRcorrection Logical; whether an FDR correction is applied to deal
 #'    with multiple testing.
+#' @param font.color.nonparametric Logical; whether a non-parametric test should 
+#     be used.
 #' @param show.question.name Whether the question name should be shown in the output table.
 #' @param col.widths Vector or comma-separated list to control column widths.
 #' @param row.header.font.weight One of "bold" or "normal".
@@ -75,6 +77,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    font.color.nonsignificant = "#CCCCCC", 
                                    font.color.confidence = 0.95,
                                    font.color.FDRcorrection = FALSE,
+                                   font.color.nonparametric = FALSE,
                                    show.question.name = TRUE,
                                    col.widths = "100px, 100px",
                                    row.header.font.weight = "normal",
@@ -183,7 +186,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         {
             tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
                        else                  v.list[[row.vvi[i]]][,row.vcol[i]]
-            pvals[i,] <- PValsByGroup(tmp.var, group, weights, is.binary = row.format[i] != "numeric")
+            pvals[i,] <- pvalsByGroup(tmp.var, group, weights, is.binary = row.format[i] != "numeric",
+                                      non.parametric = font.color.nonparametric)
         }
         if (font.color.FDRcorrection)
             pvals <- PValueAdjustFDR(pvals, alpha = 1 - font.color.confidence) 
@@ -232,7 +236,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       row.span.font.weight = row.span.font.weight,
                       col.header.font.weight = col.header.font.weight, 
                       suppress.nan = FALSE, suppress.na = FALSE,
-                      row.height = row.height, ...)
+                      num.header.rows = 2, row.height = row.height, ...)
     result.rows <- unlist(sapply(row.span, function(r) rep(r$label, r$height)))
     rownames(result) <- paste0(result.rows, ":", row.labels)
     attr(output, "ChartData") <- result

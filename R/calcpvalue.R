@@ -1,5 +1,5 @@
 #' @importFrom stats pt qnorm pchisq
-PValsByGroup <- function(x, group, weights, is.binary = FALSE)
+pvalsByGroup <- function(x, group, weights, is.binary = FALSE, non.parametric = FALSE)
 {
     if (!is.factor(group))
         group <- factor(group)
@@ -9,14 +9,14 @@ PValsByGroup <- function(x, group, weights, is.binary = FALSE)
     pval <- rep(NA, n.levels)
     if (n.levels < 2)
         return(pval)
-
-    #x <- rank(x, na.last = "keep")/100
+    #if (non.parametric && !is.binary)
+    #   x <- rank(x, na.last = "keep")
     for (i in 1:n.levels)
-        pval[i] <- CalcPValue(x, x.is.binary = is.binary, y = group == levs[i], w = weights)
+        pval[i] <- calcPvalue(x, x.is.binary = is.binary, y = group == levs[i], w = weights)
     return(pval)
 }
 
-CalcPValue = function(x,                        # A binary or numeric variable
+calcPvalue = function(x,                        # A binary or numeric variable
                       x.is.binary = TRUE,       # TRUE if x is a binary variable
                       y,                        # A binary variable 
                       w = rep(1, length(x)))    # weight variable (same length as x)
@@ -38,9 +38,9 @@ CalcPValue = function(x,                        # A binary or numeric variable
         filters = list(which(y == 1), # y == 1 & !is.na(y), # The asymmetric is.na due to double counting of 'Missing n'
                        which(y==0)) #y == 0 ) 
 
-        a = ComputeNumericVarStats(Filter(x, filters[[1]]), Filter(w, filters[[1]]))        
-        b = ComputeNumericVarStats(Filter(x, filters[[2]]), Filter(w, filters[[2]]))
-        return(IndependentSamplesTTestMeans(a["Average"], b["Average"], a["Standard Error"], b["Standard Error"], a["Base n"], b["Base n"]))
+        a = computeNumericVarStats(Filter(x, filters[[1]]), Filter(w, filters[[1]]))        
+        b = computeNumericVarStats(Filter(x, filters[[2]]), Filter(w, filters[[2]]))
+        return(independentSamplesTTestMeans(a["Average"], b["Average"], a["Standard Error"], b["Standard Error"], a["Base n"], b["Base n"]))
     }
     
     # Identifying missing values; these are values that are:
@@ -100,8 +100,8 @@ CalcPValue = function(x,                        # A binary or numeric variable
     proportions = c(proportionyNotxNoty, proportionyNotxy,proportionNotxy, proportionxy)
     counts = matrix(proportions * n.observations, 2)
 
-    variance = MultinomialCovarianceMatrix(proportions, sums.ww, sum.ww, sum.w, n.observations)
-    p = RaoScottSecondOrder2b2(proportions,
+    variance = multinomialCovarianceMatrix(proportions, sums.ww, sum.ww, sum.w, n.observations)
+    p = raoScottSecondOrder2b2(proportions,
                                counts,
                                variance, 
                                n.observations - sum.y, 
@@ -111,7 +111,7 @@ CalcPValue = function(x,                        # A binary or numeric variable
 }
 
 # Functions - these are all from the c# SamplingVariance class (albeit in slightly different forms)
-ComputeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.observations)
+computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.observations)
 {
     if (is.binary) # Numerical precision
     {
@@ -139,7 +139,7 @@ ComputeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, su
 }
 
 # A simplification of RaoScottSecondOrder2b2 from Q's C#
-RaoScottSecondOrder2b2 <- function(proportions,
+raoScottSecondOrder2b2 <- function(proportions,
                        counts,
                        variance, 
                        n0,  
@@ -185,7 +185,7 @@ RaoScottSecondOrder2b2 <- function(proportions,
     return(1 - pf(f, 1, n - 1))
 }
 
-IndependentSamplesTTestMeans <- function(mean1,
+independentSamplesTTestMeans <- function(mean1,
                                         mean2,
                                         standard_error_1,
                                         standard_error_2,
@@ -204,14 +204,15 @@ IndependentSamplesTTestMeans <- function(mean1,
         var2 = se_2 * se_2;
         (var1 + var2) * (var1 + var2) / (var1 * var1 / (n_1 - 1) + var2 * var2 / (n_2 - 1));
     }
-    
-    t = (mean1 - mean2) / .ComputeStandardError(standard_error_1,  standard_error_2)
+    se = .ComputeStandardError(standard_error_1,  standard_error_2)
+    t = (mean1 - mean2) / se
     df = .WelchDegreesOfFreedom(standard_error_1, standard_error_2, n1, n2)
     p = pt(-abs(t), df)  * 2
+    #cat(sprintf("p=%.4f, t=%.2f, se=%.3f\n", p, t, se))
     return(p)
 }
 
-MultinomialCovarianceMatrix <- function(proportions, ww, ww_total, w_total, n)
+multinomialCovarianceMatrix <- function(proportions, ww, ww_total, w_total, n)
 {
     k =length(proportions)
     covariance = matrix(0, k, k)
@@ -223,15 +224,15 @@ MultinomialCovarianceMatrix <- function(proportions, ww, ww_total, w_total, n)
             p2 = proportions[c];
             ww1 = ww[r];
             ww2 = ww[c];
-            sc = if(r == c) ComputeSamplingVarianceForProportion(p1, ww1, ww_total, w_total, n)
-                 else       SamplingCovariance(p1, p2, ww1, ww2, ww_total, w_total, n)
+            sc = if(r == c) computeSamplingVarianceForProportion(p1, ww1, ww_total, w_total, n)
+                 else       samplingCovariance(p1, p2, ww1, ww2, ww_total, w_total, n)
             covariance[c, r] = covariance[r, c] = sc
         }
     }
     return(covariance) 
 }
 
-ComputeSamplingVarianceForProportion <- function(input_proportion, ww, ww_total, w_total,sample_size)
+computeSamplingVarianceForProportion <- function(input_proportion, ww, ww_total, w_total,sample_size)
 {
     proportion = input_proportion
     if (proportion < 1E-8)
@@ -250,13 +251,13 @@ ComputeSamplingVarianceForProportion <- function(input_proportion, ww, ww_total,
 }
 
 # From the C# SamplingVariance(double proportion1, double proportion2, double ww1, double ww2, double ww_total, double w_total, int n, StatisticalAssumptions statistical_assumptions)
-SamplingCovariance <- function(proportion1,  proportion2,  ww1,  ww2,  ww_total,  w_total, n)
+samplingCovariance <- function(proportion1,  proportion2,  ww1,  ww2,  ww_total,  w_total, n)
 {
     ww_sums_of_squares = -proportion1 * -proportion2 * (ww_total - ww1 - ww2) + -proportion1 * (1 - proportion2) * ww2 + -proportion2 * (1 - proportion1) * ww1
     return(ww_sums_of_squares / (w_total * w_total) * (n / (n - 1)))
 }
 
-ComputeNumericVarStats <- function(x, w)
+computeNumericVarStats <- function(x, w)
 {
     n.observations <- length(x)
     ww = w * w
@@ -274,7 +275,7 @@ ComputeNumericVarStats <- function(x, w)
 
     population.variance = sum.xxw / sum.w - mean.x * mean.x 
     n.used.in.bessel.correction = n.observations
-    var = ComputeVariances(mean.x, FALSE, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.used.in.bessel.correction)
+    var = computeVariances(mean.x, FALSE, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.used.in.bessel.correction)
     return(c("Average" = mean.x, "Base n" = n.observations, "Standard Error" = var$se))
 }
 
