@@ -48,8 +48,8 @@
 #' @param row.header.font.weight One of "bold" or "normal".
 #' @param row.span.font.weight One of "bold" or "normal".
 #' @param col.header.font.weight One of "bold" or "normal".
-#' @param row.header.pad Space between border and text.
-#' @param row.span.pad Space between border and text.
+#' @param row.header.pad Numeric; Space between border and text in pixels.
+#' @param row.span.pad Numeric; Space between border and text in pixels.
 #' @param row.header.fill Background color of row header cells.
 #' @param col.header.fill Background color of column header cells.
 #' @param row.span.fill Background color of row span cells.
@@ -72,7 +72,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    font.color = "#2C2C2C", 
                                    font.size = 10,
                                    font.unit = "px",
-                                   row.height = paste0(font.size * 1.1, font.unit),
+                                   row.height = paste0(font.size * 1.5, font.unit),
                                    font.color.set.if.nonsignificant = TRUE,
                                    font.color.nonsignificant = "#CCCCCC", 
                                    font.color.confidence = 0.95,
@@ -83,8 +83,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    row.header.font.weight = "normal",
                                    row.span.font.weight = "normal",
                                    col.header.font.weight = "normal",
-                                   row.header.pad = "5px",
-                                   row.span.pad = "5px",
+                                   row.header.pad = 2,
+                                   row.span.pad = row.header.pad,
                                    summary.cell.fill = "#EFEFEF",
                                    row.header.fill = "#DDDDDD",
                                    row.span.fill = row.header.fill,
