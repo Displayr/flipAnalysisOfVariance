@@ -11,14 +11,14 @@ SegmentComparisonTable(x, group, weights = NULL, subset = TRUE,
   format.percentage.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
   show.index.values = FALSE, cell.fill = "#FFFFFF",
   font.color = "#2C2C2C", font.size = 10, font.unit = "px",
-  row.height = paste0(font.size * 1.1, font.unit),
+  row.height = paste0(font.size * 1.5, font.unit),
   font.color.set.if.nonsignificant = TRUE,
   font.color.nonsignificant = "#CCCCCC", font.color.confidence = 0.95,
   font.color.FDRcorrection = FALSE, font.color.nonparametric = FALSE,
   show.question.name = TRUE, col.widths = "100px, 100px",
   row.header.font.weight = "normal", row.span.font.weight = "normal",
-  col.header.font.weight = "normal", row.header.pad = "5px",
-  row.span.pad = "5px", summary.cell.fill = "#EFEFEF",
+  col.header.font.weight = "normal", row.header.pad = 2,
+  row.span.pad = row.header.pad, summary.cell.fill = "#EFEFEF",
   row.header.fill = "#DDDDDD", row.span.fill = row.header.fill,
   col.header.fill = row.header.fill, corner.fill = row.header.fill,
   ...)
@@ -92,9 +92,9 @@ with multiple testing.}
 
 \item{col.header.font.weight}{One of "bold" or "normal".}
 
-\item{row.header.pad}{Space between border and text.}
+\item{row.header.pad}{Numeric; Space between border and text in pixels.}
 
-\item{row.span.pad}{Space between border and text.}
+\item{row.span.pad}{Numeric; Space between border and text in pixels.}
 
 \item{summary.cell.fill}{The background color of the first two rows in
 the table which gives a summary of the segmentation variable.}
