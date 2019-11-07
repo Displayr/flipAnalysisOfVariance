@@ -1,4 +1,6 @@
 #' @importFrom stats pt qnorm pchisq
+#' @importFrom survey svydesign svyranktest
+#' @importFrom stats kruskal.test
 pvalsByGroup <- function(x, group, weights, is.binary = FALSE, non.parametric = FALSE)
 {
     if (!is.factor(group))
@@ -9,10 +11,21 @@ pvalsByGroup <- function(x, group, weights, is.binary = FALSE, non.parametric = 
     pval <- rep(NA, n.levels)
     if (n.levels < 2)
         return(pval)
-    if (non.parametric && !is.binary)
-        x <- rank(x, na.last = "keep")
     for (i in 1:n.levels)
-        pval[i] <- calcPvalue(x, x.is.binary = is.binary, y = group == levs[i], w = weights)
+    {
+        y <- group == levs[i]
+        pval[i] <- if (non.parametric && !is.binary)
+        {
+            if (is.null(weights))
+                kruskal.test(x, y)$p.value
+            else
+                {
+                    df <- data.frame(x = x, y = y, w = weights)
+                    svyranktest(x ~ y, svydesign(id= ~1, weights = ~w, data = df))$p.value
+                }
+        }
+        else calcPvalue(x, x.is.binary = is.binary, y = y, w = weights)
+    }
     return(pval)
 }
 

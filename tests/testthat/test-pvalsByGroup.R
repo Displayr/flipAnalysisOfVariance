@@ -27,12 +27,8 @@ test_that("numeric weight",{
 })
 
 test_that("numeric rank",{
-    # Manually dealing with the rank
-    ps <- flipAnalysisOfVariance:::pvalsByGroup(rank(numeric, na.last = TRUE), colas$d3 == "Male", weights = NULL, is.binary = FALSE)
-    expect_equal(ps[1], 0.3507862447847, tol = 1e-8)
-    # Automatically dealing with the rank
     ps <- flipAnalysisOfVariance:::pvalsByGroup(numeric, colas$d3 == "Male", weights = NULL, is.binary = FALSE, non.parametric = TRUE)
-    expect_equal(ps[1], 0.3507862, tol = 1e-7)
+    expect_equal(ps[1], 0.3503995683021, tol = 1e-7)
 })
 
 test_that("numeric rank and weight",{
@@ -41,6 +37,7 @@ test_that("numeric rank and weight",{
                                                 weights = wgt,
                                                 is.binary = FALSE,
                                                 non.parametric = TRUE)
-    expect_equal(ps[1], 0.1423815205331, tol = 1e-8)
+    # Not that this test is different and better than the one in Q (it uses taylor series
+    # for the weight, rather than calibration)
+    expect_equal(ps[1], 0.1417642, tol = 1e-7)
 })
-
