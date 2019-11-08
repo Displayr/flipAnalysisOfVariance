@@ -21,7 +21,7 @@ pvalsByGroup <- function(x, group, weights, is.binary = FALSE, non.parametric = 
             else
                 {
                     df <- data.frame(x = x, y = y, w = weights)
-                    svyranktest(x ~ y, svydesign(id= ~1, weights = ~w, data = df))$p.value
+                    svyranktest(x ~ y, svydesign(ids = ~1, weights = ~w, data = df))$p.value
                 }
         }
         else calcPvalue(x, x.is.binary = is.binary, y = y, w = weights)
@@ -46,11 +46,7 @@ calcPvalue = function(x,                        # A binary or numeric variable
 
     if (!x.is.binary)
     {
-        #filters = list(y == 1 & !is.na(y), # The asymmetric is.na due to double counting of 'Missing n'
-        #               y == 0 )
-        filters = list(which(y == 1), # y == 1 & !is.na(y), # The asymmetric is.na due to double counting of 'Missing n'
-                       which(y==0)) #y == 0 )
-
+        filters = list(which(y == 1), which(y==0))
         a = computeNumericVarStats(Filter(x, filters[[1]]), Filter(w, filters[[1]]))
         b = computeNumericVarStats(Filter(x, filters[[2]]), Filter(w, filters[[2]]))
         return(independentSamplesTTestMeans(a["Average"], b["Average"], a["Standard Error"], b["Standard Error"], a["Base n"], b["Base n"]))

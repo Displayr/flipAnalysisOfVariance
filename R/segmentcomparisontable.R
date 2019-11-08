@@ -92,6 +92,10 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    corner.fill = row.header.fill,
                                    ...)
 {
+    group.label <- attr(group, "label") # group should be a variable not a variable set
+    if (is.null(group.label))
+        group.label <- " "
+    corner.text <- ""
 
     group <- ProcessQVariables(group)
     format.percentage.fill.colors <- ConvertCommaSeparatedStringToVector(format.percentage.fill.colors)
@@ -105,9 +109,13 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     counts <-t(WeightedTable(group, weights = weights))
     result <- rbind(counts, counts/sum(counts))
     row.labels <- c("Sample size", "Percentage")
-    group.label <- attr(group, "label") # group should be a variable not a variable set
-    if (is.null(group.label))
-        group.label <- " "
+    if (length(weights) > 1)
+    {
+        row.labels <- paste(row.labels, c("(unweighted)", "(weighted)"))
+        result[1,] <- table(group)
+    }
+
+    row.span <- list(list(label = "Segment size", height = 2))
     row.span <- list(list(label = group.label, height = 2))
     row.format <- c("numeric", "percentage")
     row.vvi <- c(0, 0)
@@ -166,8 +174,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     rownames(result) <- NULL # result is preserved in numeric form for exporting
     result.formatted <- matrix("", nrow(result), ncol(result))
     for (i in 1:nrow(result))
-        result.formatted[i,] <- if (row.format[i] == "numeric") formatC(result[i,], format.numeric.decimals, format = "f")
-                                else                            paste0(formatC(result[i,] * 100, format.percentage.decimals, format = "f"), "%")
+        result.formatted[i,] <- if (row.format[i] == "numeric") formatC(result[i,], if (i == 1) 0 else format.numeric.decimals, format = "f", big.mark = ",")
+                                else                            paste0(formatC(result[i,] * 100, format.percentage.decimals, format = "f", big.mark = ","), "%")
     result.formatted[!is.finite(result)] <- ""
     result.formatted <- formatC(result.formatted, format = "s", width = max(nchar(result.formatted)))
     result.formatted <- gsub(" ", "&nbsp;", result.formatted)
@@ -229,7 +237,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       row.spans = row.span, cell.fill = cell.fill, 
                       cell.font.color = results.font.color,
                       row.span.fill = row.span.fill, row.header.fill = row.header.fill, 
-                      corner.fill = corner.fill, col.header.fill = col.header.fill,
+                      corner.fill = corner.fill, corner = corner.text,
+                      col.header.fill = col.header.fill,
                       font.unit = font.unit, font.size = font.size, col.widths = col.widths,
                       row.span.pad = row.span.pad, row.header.pad = row.header.pad, 
                       row.header.font.weight = row.header.font.weight,
@@ -238,7 +247,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       suppress.nan = FALSE, suppress.na = FALSE,
                       num.header.rows = 2, row.height = row.height, ...)
     result.rows <- unlist(sapply(row.span, function(r) rep(r$label, r$height)))
-    rownames(result) <- paste0(result.rows, ":", row.labels)
+    rownames(result) <- paste0(result.rows, ": ", row.labels)
     attr(output, "ChartData") <- result
     # Store p-values for testing
     if (font.color.set.if.nonsignificant)
