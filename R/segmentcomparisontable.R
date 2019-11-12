@@ -161,6 +161,10 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             rownames(tmp) <- tmp.colnames
         else
             rownames(tmp) <- attr(x[[vvi]], "label")
+        
+        if (NROW(tmp) == 1 && rownames(tmp)[1] == attr(x[[vvi]], "question"))
+            rownames(tmp) <- ""      
+
 
         tmp.nvar <- ncol(vv)
         row.vcol <- c(row.vcol, 1:tmp.nvar)
@@ -261,7 +265,9 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       suppress.nan = FALSE, suppress.na = FALSE,
                       num.header.rows = 2, row.height = row.height, ...)
     result.rows <- unlist(sapply(row.span, function(r) rep(r$label, r$height)))
-    rownames(result) <- paste0(result.rows, ": ", row.labels)
+    tmp.rownames <- paste0(result.rows, ": ", row.labels)
+    tmp.rownames <- sub(": $", "", tmp.rownames)
+    rownames(result) <- tmp.rownames
     attr(output, "ChartData") <- result
     # Store p-values for testing
     if (font.color.set.if.nonsignificant)
