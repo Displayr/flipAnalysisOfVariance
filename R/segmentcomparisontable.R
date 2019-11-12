@@ -239,7 +239,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                 tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
                            else                  v.list[[row.vvi[i]]][,row.vcol[i]]
                 tmp.sd <- StandardDeviation(tmp.var, weights = weights)
-                f.vals <- StatisticsByGroup(tmp.var/(2*tmp.sd), group = group, weights = weights)
+                tmp.mean <- Mean(tmp.var, weights = weights)
+                f.vals <- StatisticsByGroup((tmp.var-tmp.mean)/(2*tmp.sd), group = group, weights = weights)
                 f.cols <- format.percentage.fill.colors
             }
             cell.fill[i,which(f.vals >  0.1)] <- f.cols[3]
