@@ -6,6 +6,7 @@
 #'    categorical (PickOne or PickAny). It is expected that the attributes
 #'    for "question", "label" and "questiontype" is defined.
 #' @param group The segmentation variable. Should be a factor.
+#' @param remove.net.or.sum Remove NET or SUM rows for Pick Any or NumberMulti variables.
 #' @param weights Numeric; An optional vector of sampling weights. 
 #'     Should be the same length as \code{group}.
 #' @param subset An optional vector specifying a subset of observations to be used.
@@ -62,6 +63,7 @@
 #' @importFrom flipTransformations AsDataFrame FactorToNumeric
 #' @export
 SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
+                                   remove.net.or.sum = FALSE,
                                    format.numeric.decimals = 1,
                                    format.percentage.decimals = 0,
                                    format.conditional.fill = TRUE,
@@ -134,6 +136,16 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             vv <- AsDataFrame(x[[vvi]], categorical.as.binary = TRUE)
         if (length(subset) > 1)
             vv <- vv[subset,,drop = FALSE]
+        tmp.colnames <- colnames(x[[vvi]])
+        if (remove.net.or.sum)
+        {
+            net.ind <- which(colnames(vv) %in% c("NET", "SUM", "Total"))
+            if (length(net.ind) > 0)
+            {
+                vv <- vv[, -net.ind, drop = FALSE]
+                tmp.colnames <- tmp.colnames[-net.ind]
+            }
+        }
 
         # Compute main statistic (average/percentage)
         tmp <- t(StatisticsByGroup(vv, group = group, weights = weights))
@@ -146,7 +158,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         else if (v.qtype == "PickOne")
             rownames(tmp) <- levels(x[[vvi]])
         else if (v.qtype %in% c("PickAny", "NumberMulti") && ncol(vv) > 1)
-            rownames(tmp) <- colnames(x[[vvi]])
+            rownames(tmp) <- tmp.colnames
         else
             rownames(tmp) <- attr(x[[vvi]], "label")
 
