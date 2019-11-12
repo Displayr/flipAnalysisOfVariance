@@ -99,6 +99,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
 
     group <- ProcessQVariables(group)
     format.percentage.fill.colors <- ConvertCommaSeparatedStringToVector(format.percentage.fill.colors)
+    format.numeric.fill.colors <- ConvertCommaSeparatedStringToVector(format.numeric.fill.colors)
     if (length(subset) > 1)
     {
         group <- group[subset]
@@ -122,6 +123,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     row.vcol <- c(0, 0)
 
     v.list <- list()
+    index.values <- list()
     for (vvi in 1:length(x))
     {
         # Convert everything to a data frame
@@ -158,15 +160,18 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         row.vvi <- c(row.vvi, rep(vvi, tmp.nvar))
         v.list[[vvi]] <- vv # save subsetted variable
         
-        # Compute Index - does not affect font color or cell fill
-        if (show.index.values && !tmp.numeric)
+        # Always compute index values because they are used for cell fill
+        if (!tmp.numeric)
         {
             ind.not.missing <- !is.na(group)
             tot.mean <- Mean(vv[ind.not.missing,,drop = FALSE], weights = weights[ind.not.missing])
             if (NROW(tmp) > 1)
-                tmp <- sweep(tmp, 1, tot.mean, "/")
+                index.values[[vvi]] <- sweep(tmp, 1, tot.mean, "/")
             else
-                tmp <- tmp/tot.mean
+                index.values[[vvi]] <- tmp/tot.mean
+            
+            if (show.index.values)
+                tmp <- index.values[[vvi]]
         }
         result <- rbind(result, tmp)
     }
@@ -202,32 +207,29 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         results.font.color[which(pvals < 1 - font.color.confidence)] <- font.color
     }
 
-    # Fill color is determined by cell values
+    # Fill color is determined by cell value
     cell.fill <- matrix(cell.fill, nrow(result), ncol(result))
     cell.fill[1:2,] <- summary.cell.fill
     if (format.conditional.fill)
     {
         for (i in 3:nrow(result))
         {
-            if (row.format[i] == "percentage") # and if show index values is used
+            if (row.format[i] == "percentage")
             {
-                cell.fill[i,which(result[i,] <  0.2)] <- format.percentage.fill.colors[4]
-                cell.fill[i,which(result[i,] <  0.1)] <- format.percentage.fill.colors[3]
-                cell.fill[i,which(result[i,] < -0.1)] <- format.percentage.fill.colors[2]
-                cell.fill[i,which(result[i,] < -0.2)] <- format.percentage.fill.colors[1]
+                f.vals <- as.numeric((index.values[[row.vvi[i]]])[row.vcol[i],] - 1.0)
+                f.cols <- format.numeric.fill.colors
             } else
             {
                 tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
                            else                  v.list[[row.vvi[i]]][,row.vcol[i]]
                 tmp.sd <- StandardDeviation(tmp.var, weights = weights)
-                tmp.gmean <- StatisticsByGroup(tmp.var/(2*tmp.sd), group = group, weights = weights)
-
-                cell.fill[i,which(tmp.gmean <  0.2)] <- format.percentage.fill.colors[4]
-                cell.fill[i,which(tmp.gmean <  0.1)] <- format.percentage.fill.colors[3]
-                cell.fill[i,which(tmp.gmean < -0.1)] <- format.percentage.fill.colors[2]
-                cell.fill[i,which(tmp.gmean < -0.2)] <- format.percentage.fill.colors[1]
-
+                f.vals <- StatisticsByGroup(tmp.var/(2*tmp.sd), group = group, weights = weights)
+                f.cols <- format.percentage.fill.colors
             }
+            cell.fill[i,which(f.vals >  0.1)] <- f.cols[3]
+            cell.fill[i,which(f.vals >  0.2)] <- f.cols[4]
+            cell.fill[i,which(f.vals < -0.1)] <- f.cols[2]
+            cell.fill[i,which(f.vals < -0.2)] <- f.cols[1]
         }
     }
 
