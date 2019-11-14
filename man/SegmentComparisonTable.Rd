@@ -106,7 +106,7 @@ with multiple testing.}
 
 \item{corner.fill}{Background color of corner cells.}
 
-\item{summary.header.fill}{The background color of the row headers 
+\item{summary.header.fill}{The background color of the row headers
 in the first two rows in the table which given a summary of the
 segmentation variable.}
 

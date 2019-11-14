@@ -29,7 +29,7 @@
 #' @param cell.fill The default background color of the cells in the table.
 #' @param summary.cell.fill The background color of the first two rows in
 #'     the table which gives a summary of the segmentation variable.
-#' @param summary.header.fill The background color of the row headers 
+#' @param summary.header.fill The background color of the row headers
 #'     in the first two rows in the table which given a summary of the
 #'     segmentation variable.
 #' @param font.color Default font color of the cells in the table.
@@ -98,12 +98,16 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    summary.cell.fill = "#D1D7D9",
                                    ...)
 {
+    if (!is.list(x) || length(x[[1]]) <= 1)
+        stop("Input should be a list of variables or variable sets.")
     group.label <- attr(group, "label") # group should be a variable not a variable set
     if (is.null(group.label))
         group.label <- " "
     corner.text <- ""
 
     group <- ProcessQVariables(group)
+    if (!is.factor(group))
+        stop("'Segmentation' should be a nominal or ordinal variable.")
     format.percentage.fill.colors <- ConvertCommaSeparatedStringToVector(format.percentage.fill.colors)
     format.numeric.fill.colors <- ConvertCommaSeparatedStringToVector(format.numeric.fill.colors)
     if (length(subset) > 1)
@@ -271,7 +275,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       row.span.font.weight = row.span.font.weight,
                       col.header.font.weight = col.header.font.weight,
                       suppress.nan = FALSE, suppress.na = FALSE,
-                      num.header.rows = 2, row.height = row.height, 
+                      num.header.rows = 2, row.height = row.height,
                       global.font.color = font.color, ...)
     result.rows <- unlist(sapply(row.span, function(r) rep(r$label, r$height)))
     tmp.rownames <- paste0(result.rows, ": ", row.labels)
