@@ -11,17 +11,17 @@ SegmentComparisonTable(x, group, weights = NULL, subset = TRUE,
   format.percentage.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
   show.index.values = FALSE, cell.fill = "#FFFFFF",
   font.color = "#2C2C2C", font.size = 10, font.unit = "px",
-  row.height = paste0(font.size * 1.5, font.unit),
+  row.height = paste0(font.size + 5, font.unit),
   font.color.set.if.nonsignificant = TRUE,
-  font.color.nonsignificant = "#CCCCCC", font.color.confidence = 0.95,
+  font.color.nonsignificant = "#999999", font.color.confidence = 0.95,
   font.color.FDRcorrection = FALSE, font.color.nonparametric = FALSE,
   show.question.name = TRUE, col.widths = "100px, 100px",
   row.header.font.weight = "normal", row.span.font.weight = "normal",
-  col.header.font.weight = "normal", row.header.pad = 2,
-  row.span.pad = row.header.pad, summary.cell.fill = "#EFEFEF",
-  row.header.fill = "#DDDDDD", row.span.fill = row.header.fill,
-  col.header.fill = row.header.fill, corner.fill = row.header.fill,
-  ...)
+  col.header.font.weight = "normal", row.header.pad = 5,
+  row.span.pad = row.header.pad, row.header.fill = "#F1F3F4",
+  row.span.fill = row.header.fill, col.header.fill = "#AEB7BA",
+  corner.fill = col.header.fill, summary.header.fill = col.header.fill,
+  summary.cell.fill = "#D1D7D9", ...)
 }
 \arguments{
 \item{x}{A list of variables or variable sets. These can be numeric or
@@ -30,7 +30,7 @@ for "question", "label" and "questiontype" is defined.}
 
 \item{group}{The segmentation variable. Should be a factor.}
 
-\item{weights}{Numeric; An optional vector of sampling weights. 
+\item{weights}{Numeric; An optional vector of sampling weights.
 Should be the same length as \code{group}.}
 
 \item{subset}{An optional vector specifying a subset of observations to be used.}
@@ -47,13 +47,13 @@ for percentage values.}
 value in the cells.}
 
 \item{format.numeric.fill.colors}{A vector or comma-separated list of 5 colors that
-is used when \code{format.conditional.fill}. The colors indicate that 
+is used when \code{format.conditional.fill}. The colors indicate that
 the standardized number value in the cell is smaller than -0.2, -0.1, 0, 0.1, 0.2.
 Numeric variables are standardized by dividing twice the standard deviation
 http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf}
 
 \item{format.percentage.fill.colors}{A vector or comma-separated list of 5 colors that
-is used when \code{format.conditional.fill}. The colors indicate that 
+is used when \code{format.conditional.fill}. The colors indicate that
 the percentage in the cell is smaller than -20\%, -10\%, 0\%, 10\%, 20\%.}
 
 \item{show.index.values}{Percentage values are shown as a ratio to the percentage
@@ -98,9 +98,6 @@ with multiple testing.}
 
 \item{row.span.pad}{Numeric; Space between border and text in pixels.}
 
-\item{summary.cell.fill}{The background color of the first two rows in
-the table which gives a summary of the segmentation variable.}
-
 \item{row.header.fill}{Background color of row header cells.}
 
 \item{row.span.fill}{Background color of row span cells.}
@@ -108,6 +105,13 @@ the table which gives a summary of the segmentation variable.}
 \item{col.header.fill}{Background color of column header cells.}
 
 \item{corner.fill}{Background color of corner cells.}
+
+\item{summary.header.fill}{The background color of the row headers 
+in the first two rows in the table which given a summary of the
+segmentation variable.}
+
+\item{summary.cell.fill}{The background color of the first two rows in
+the table which gives a summary of the segmentation variable.}
 
 \item{...}{Other parameters passed to \link[flipFormat]{CreateCustomTable}.}
 }

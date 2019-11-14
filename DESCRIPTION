@@ -9,7 +9,7 @@ Description: Function for computing ANOVA, MANOVA, Table of Means and related
 License: GPL-3
 Imports:
     flipData,
-    flipFormat (>= 1.4.0),
+    flipFormat (>= 1.5.1),
     flipRegression,
     flipStatistics,
     flipTables,

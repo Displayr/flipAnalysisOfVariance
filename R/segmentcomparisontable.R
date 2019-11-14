@@ -7,7 +7,7 @@
 #'    for "question", "label" and "questiontype" is defined.
 #' @param group The segmentation variable. Should be a factor.
 #' @param remove.net.or.sum Remove NET or SUM rows for Pick Any or NumberMulti variables.
-#' @param weights Numeric; An optional vector of sampling weights. 
+#' @param weights Numeric; An optional vector of sampling weights.
 #'     Should be the same length as \code{group}.
 #' @param subset An optional vector specifying a subset of observations to be used.
 #' @param format.numeric.decimals The number of decimals shown in the output table
@@ -17,18 +17,21 @@
 #' @param format.conditional.fill Whether the fill color of the cells should reflect the
 #'     value in the cells.
 #' @param format.numeric.fill.colors A vector or comma-separated list of 5 colors that
-#'     is used when \code{format.conditional.fill}. The colors indicate that 
+#'     is used when \code{format.conditional.fill}. The colors indicate that
 #'     the standardized number value in the cell is smaller than -0.2, -0.1, 0, 0.1, 0.2.
 #'     Numeric variables are standardized by dividing twice the standard deviation
 #'     http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf
 #' @param format.percentage.fill.colors A vector or comma-separated list of 5 colors that
-#'     is used when \code{format.conditional.fill}. The colors indicate that 
+#'     is used when \code{format.conditional.fill}. The colors indicate that
 #'     the percentage in the cell is smaller than -20\%, -10\%, 0\%, 10\%, 20\%.
 #' @param show.index.values Percentage values are shown as a ratio to the percentage
 #'     computed on the whole population (i.e. unsegmented).
 #' @param cell.fill The default background color of the cells in the table.
 #' @param summary.cell.fill The background color of the first two rows in
 #'     the table which gives a summary of the segmentation variable.
+#' @param summary.header.fill The background color of the row headers 
+#'     in the first two rows in the table which given a summary of the
+#'     segmentation variable.
 #' @param font.color Default font color of the cells in the table.
 #' @param font.size Default font size.
 #' @param font.unit One of "px" or "pt".
@@ -42,7 +45,7 @@
 #'     \code{font.color.set.if.nonsignficant}.
 #' @param font.color.FDRcorrection Logical; whether an FDR correction is applied to deal
 #'    with multiple testing.
-#' @param font.color.nonparametric Logical; whether a non-parametric test should 
+#' @param font.color.nonparametric Logical; whether a non-parametric test should
 #     be used.
 #' @param show.question.name Whether the question name should be shown in the output table.
 #' @param col.widths Vector or comma-separated list to control column widths.
@@ -69,14 +72,14 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    format.conditional.fill = TRUE,
                                    format.numeric.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
                                    format.percentage.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
-                                   show.index.values = FALSE, 
+                                   show.index.values = FALSE,
                                    cell.fill = "#FFFFFF",
-                                   font.color = "#2C2C2C", 
+                                   font.color = "#2C2C2C",
                                    font.size = 10,
                                    font.unit = "px",
-                                   row.height = paste0(font.size * 1.5, font.unit),
+                                   row.height = paste0(font.size + 5, font.unit),
                                    font.color.set.if.nonsignificant = TRUE,
-                                   font.color.nonsignificant = "#CCCCCC", 
+                                   font.color.nonsignificant = "#999999",
                                    font.color.confidence = 0.95,
                                    font.color.FDRcorrection = FALSE,
                                    font.color.nonparametric = FALSE,
@@ -85,13 +88,14 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    row.header.font.weight = "normal",
                                    row.span.font.weight = "normal",
                                    col.header.font.weight = "normal",
-                                   row.header.pad = 2,
+                                   row.header.pad = 5,
                                    row.span.pad = row.header.pad,
-                                   summary.cell.fill = "#EFEFEF",
-                                   row.header.fill = "#DDDDDD",
+                                   row.header.fill = "#F1F3F4",
                                    row.span.fill = row.header.fill,
-                                   col.header.fill = row.header.fill,
-                                   corner.fill = row.header.fill,
+                                   col.header.fill = "#AEB7BA",
+                                   corner.fill = col.header.fill,
+                                   summary.header.fill = col.header.fill,
+                                   summary.cell.fill = "#D1D7D9",
                                    ...)
 {
     group.label <- attr(group, "label") # group should be a variable not a variable set
@@ -161,9 +165,9 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             rownames(tmp) <- tmp.colnames
         else
             rownames(tmp) <- attr(x[[vvi]], "label")
-        
+
         if (NROW(tmp) == 1 && rownames(tmp)[1] == attr(x[[vvi]], "question"))
-            rownames(tmp) <- ""      
+            rownames(tmp) <- ""
 
 
         tmp.nvar <- ncol(vv)
@@ -175,7 +179,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         row.format <- c(row.format, rep(if (tmp.numeric) "numeric" else "percentage", tmp.nvar))
         row.vvi <- c(row.vvi, rep(vvi, tmp.nvar))
         v.list[[vvi]] <- vv # save subsetted variable
-        
+
         # Always compute index values because they are used for cell fill
         if (!tmp.numeric)
         {
@@ -185,7 +189,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                 index.values[[vvi]] <- sweep(tmp, 1, tot.mean, "/")
             else
                 index.values[[vvi]] <- tmp/tot.mean
-            
+
             if (show.index.values)
                 tmp <- index.values[[vvi]]
         }
@@ -207,7 +211,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     if (font.color.set.if.nonsignificant)
     {
         results.font.color <- matrix(font.color, nrow(result), ncol(result))
-        results.font.color[3:nrow(result),] <- font.color.nonsignificant # include p = NA 
+        results.font.color[3:nrow(result),] <- font.color.nonsignificant # include p = NA
         pvals <- matrix(NA, nrow(result), ncol(result))
         rownames(pvals) <- row.labels
         colnames(pvals) <- colnames(result)
@@ -219,7 +223,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                       non.parametric = font.color.nonparametric)
         }
         if (font.color.FDRcorrection)
-            pvals <- PValueAdjustFDR(pvals, alpha = 1 - font.color.confidence) 
+            pvals <- PValueAdjustFDR(pvals, alpha = 1 - font.color.confidence)
         results.font.color[which(pvals < 1 - font.color.confidence)] <- font.color
     }
 
@@ -249,22 +253,26 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             cell.fill[i,which(f.vals < -0.2)] <- f.cols[1]
         }
     }
+    row.span.fill <- c(summary.header.fill, rep(row.span.fill, nrow(result)-1))
+    row.header.fill <- c(rep(summary.header.fill, 2),
+                         rep(row.header.fill, nrow(result) -2))
 
     if (!show.question.name)
         row.labels <- FALSE
-    output <- CreateCustomTable(result.formatted, row.header.labels = row.labels, 
-                      row.spans = row.span, cell.fill = cell.fill, 
+    output <- CreateCustomTable(result.formatted, row.header.labels = row.labels,
+                      row.spans = row.span, cell.fill = cell.fill,
                       cell.font.color = results.font.color,
-                      row.span.fill = row.span.fill, row.header.fill = row.header.fill, 
+                      row.span.fill = row.span.fill, row.header.fill = row.header.fill,
                       corner.fill = corner.fill, corner = corner.text,
                       col.header.fill = col.header.fill,
                       font.unit = font.unit, font.size = font.size, col.widths = col.widths,
-                      row.span.pad = row.span.pad, row.header.pad = row.header.pad, 
+                      row.span.pad = row.span.pad, row.header.pad = row.header.pad,
                       row.header.font.weight = row.header.font.weight,
                       row.span.font.weight = row.span.font.weight,
-                      col.header.font.weight = col.header.font.weight, 
+                      col.header.font.weight = col.header.font.weight,
                       suppress.nan = FALSE, suppress.na = FALSE,
-                      num.header.rows = 2, row.height = row.height, ...)
+                      num.header.rows = 2, row.height = row.height, 
+                      global.font.color = font.color, ...)
     result.rows <- unlist(sapply(row.span, function(r) rep(r$label, r$height)))
     tmp.rownames <- paste0(result.rows, ": ", row.labels)
     tmp.rownames <- sub(": $", "", tmp.rownames)
