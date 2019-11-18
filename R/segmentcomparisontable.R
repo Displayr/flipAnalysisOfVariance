@@ -144,15 +144,11 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             vv <- AsDataFrame(x[[vvi]], categorical.as.binary = TRUE)
         if (length(subset) > 1)
             vv <- vv[subset,,drop = FALSE]
-        tmp.colnames <- colnames(x[[vvi]])
         if (remove.net.or.sum)
         {
             net.ind <- which(colnames(vv) %in% c("NET", "SUM", "Total"))
             if (length(net.ind) > 0)
-            {
                 vv <- vv[, -net.ind, drop = FALSE]
-                tmp.colnames <- tmp.colnames[-net.ind]
-            }
         }
 
         # Compute main statistic (average/percentage)
@@ -165,9 +161,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             rownames(tmp) <- levels(attr(x[[vvi]], "QDate"))
         else if (v.qtype == "PickOne")
             rownames(tmp) <- levels(x[[vvi]])
-        else if (v.qtype %in% c("PickAny", "NumberMulti") && ncol(vv) > 1)
-            rownames(tmp) <- tmp.colnames
-        else
+        else if (ncol(tmp) == 1)
             rownames(tmp) <- attr(x[[vvi]], "label")
 
         if (NROW(tmp) == 1 && rownames(tmp)[1] == attr(x[[vvi]], "question"))
@@ -179,7 +173,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         row.span[[length(row.span) + 1]] <- list(label = attr(x[[vvi]], "question"), height = tmp.nvar)
         if (!is.null(rownames(tmp)))
             row.labels <- c(row.labels, rownames(tmp))
-        tmp.numeric <- isTRUE(attr(x[[vvi]], "questiontype") %in% c("NumberMulti", "Number"))
+        tmp.numeric <- isTRUE(attr(x[[vvi]], "questiontype") %in% c("Number", "NumberMulti", "NumberGrid"))
         row.format <- c(row.format, rep(if (tmp.numeric) "numeric" else "percentage", tmp.nvar))
         row.vvi <- c(row.vvi, rep(vvi, tmp.nvar))
         v.list[[vvi]] <- vv # save subsetted variable
