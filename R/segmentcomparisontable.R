@@ -6,7 +6,8 @@
 #'    categorical (PickOne or PickAny). It is expected that the attributes
 #'    for "question", "label" and "questiontype" is defined.
 #' @param group The segmentation variable. Should be a factor.
-#' @param remove.net.or.sum Remove NET or SUM rows for Pick Any or NumberMulti variables.
+#' @param row.names.to.remove Character vector or delimited string of
+#'     row labels specifying rows to remove from the returned table.
 #' @param weights Numeric; An optional vector of sampling weights.
 #'     Should be the same length as \code{group}.
 #' @param subset An optional vector specifying a subset of observations to be used.
@@ -66,7 +67,7 @@
 #' @importFrom flipTransformations AsDataFrame FactorToNumeric
 #' @export
 SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
-                                   remove.net.or.sum = FALSE,
+                                   row.names.to.remove = "",
                                    format.numeric.decimals = 1,
                                    format.percentage.decimals = 0,
                                    format.conditional.fill = TRUE,
@@ -144,9 +145,20 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             vv <- AsDataFrame(x[[vvi]], categorical.as.binary = TRUE)
         if (length(subset) > 1)
             vv <- vv[subset,,drop = FALSE]
-        if (remove.net.or.sum)
+
+        # Use question attributes to names variables
+        if (v.qtype == "Date")
+            colnames(vv) <- levels(attr(x[[vvi]], "QDate"))
+        else if (ncol(vv) == 1)
+            colnames(vv) <- attr(x[[vvi]], "label")
+
+        # Remove variables
+        if (sum(nchar(row.names.to.remove), na.rm = TRUE) > 0)
         {
-            net.ind <- which(colnames(vv) %in% c("NET", "SUM", "Total"))
+            rm.names <- ConvertCommaSeparatedStringToVector(row.names.to.remove, text.qualifier = "\"")
+            rm.patt <- paste(c(paste0("^", rm.names, ", "), paste0(", ", rm.names, "$")), collapse = "|") 
+            net.ind <- if (v.qtype %in% c("NumberGrid", "PickOneMulti")) grep(rm.patt, colnames(vv), perl = TRUE)
+                       else which(colnames(vv) %in% rm.names)
             if (length(net.ind) > 0)
                 vv <- vv[, -net.ind, drop = FALSE]
         }
@@ -156,18 +168,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         if (v.qtype %in% c("PickOne", "Date"))
             tmp <- sweep(tmp, 2, colSums(tmp), "/")
 
-        # Use question attributes to determine row names
-        if (v.qtype == "Date")
-            rownames(tmp) <- levels(attr(x[[vvi]], "QDate"))
-        else if (v.qtype == "PickOne")
-            rownames(tmp) <- levels(x[[vvi]])
-        else if (ncol(tmp) == 1)
-            rownames(tmp) <- attr(x[[vvi]], "label")
-
         if (NROW(tmp) == 1 && rownames(tmp)[1] == attr(x[[vvi]], "question"))
             rownames(tmp) <- ""
-
-
         tmp.nvar <- ncol(vv)
         row.vcol <- c(row.vcol, 1:tmp.nvar)
         row.span[[length(row.span) + 1]] <- list(label = attr(x[[vvi]], "question"), height = tmp.nvar)

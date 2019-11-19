@@ -5,7 +5,7 @@
 \title{\code{SegmentComparisonTable}}
 \usage{
 SegmentComparisonTable(x, group, weights = NULL, subset = TRUE,
-  remove.net.or.sum = FALSE, format.numeric.decimals = 1,
+  row.names.to.remove = "", format.numeric.decimals = 1,
   format.percentage.decimals = 0, format.conditional.fill = TRUE,
   format.numeric.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
   format.percentage.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
@@ -35,7 +35,8 @@ Should be the same length as \code{group}.}
 
 \item{subset}{An optional vector specifying a subset of observations to be used.}
 
-\item{remove.net.or.sum}{Remove NET or SUM rows for Pick Any or NumberMulti variables.}
+\item{row.names.to.remove}{Character vector or delimited string of
+row labels specifying rows to remove from the returned table.}
 
 \item{format.numeric.decimals}{The number of decimals shown in the output table
 for numeric values.}
