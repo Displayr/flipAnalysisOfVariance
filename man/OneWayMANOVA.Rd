@@ -4,11 +4,22 @@
 \alias{OneWayMANOVA}
 \title{\code{OneWayMANOVA}}
 \usage{
-OneWayMANOVA(outcomes, predictor, subset = NULL, weights = NULL,
-  robust.se = FALSE, missing = "Exclude cases with missing data",
-  show.labels = FALSE, seed = 1223, p.cutoff = 0.05,
-  binary = FALSE, pillai = FALSE, fdr = TRUE, return.all = FALSE,
-  ...)
+OneWayMANOVA(
+  outcomes,
+  predictor,
+  subset = NULL,
+  weights = NULL,
+  robust.se = FALSE,
+  missing = "Exclude cases with missing data",
+  show.labels = FALSE,
+  seed = 1223,
+  p.cutoff = 0.05,
+  binary = FALSE,
+  pillai = FALSE,
+  fdr = TRUE,
+  return.all = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outcomes}{The outcome variables.}

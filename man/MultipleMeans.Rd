@@ -4,11 +4,22 @@
 \alias{MultipleMeans}
 \title{\code{MultipleMeans}}
 \usage{
-MultipleMeans(outcomes, predictor, subset = NULL, weights = NULL,
-  correction = "Table FDR", robust.se = FALSE,
-  missing = "Exclude cases with missing data", show.labels = FALSE,
-  seed = 1223, p.cutoff = 0.05, title = "", subtitle = "",
-  footer = "")
+MultipleMeans(
+  outcomes,
+  predictor,
+  subset = NULL,
+  weights = NULL,
+  correction = "Table FDR",
+  robust.se = FALSE,
+  missing = "Exclude cases with missing data",
+  show.labels = FALSE,
+  seed = 1223,
+  p.cutoff = 0.05,
+  title = "",
+  subtitle = "",
+  footer = "",
+  return.data.frame = FALSE
+)
 }
 \arguments{
 \item{outcomes}{The outcome variables.}
@@ -49,7 +60,8 @@ variables label is an attribute (e.g., attr(foo, "label")).}
 
 \item{footer}{The footer to appear in the output.}
 
-\item{...}{Other parameters to be passed to \code{OneWayANOVA}.}
+\item{return.data.frame}{Whether to return a data frame instead of a
+formattable widget.}
 }
 \description{
 Compares means of multiple outcomes on a categorical predictor.

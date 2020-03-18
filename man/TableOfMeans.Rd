@@ -4,9 +4,18 @@
 \alias{TableOfMeans}
 \title{\code{TableOfMeans}}
 \usage{
-TableOfMeans(outcome, row, column, subset = NULL, weights = NULL,
-  correction = "Table FDR", robust.se = FALSE, show.labels = TRUE,
-  p.cutoff = 0.05, ...)
+TableOfMeans(
+  outcome,
+  row,
+  column,
+  subset = NULL,
+  weights = NULL,
+  correction = "Table FDR",
+  robust.se = FALSE,
+  show.labels = TRUE,
+  p.cutoff = 0.05,
+  ...
+)
 }
 \arguments{
 \item{outcome}{The outcome variable.}

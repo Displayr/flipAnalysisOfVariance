@@ -4,24 +4,43 @@
 \alias{SegmentComparisonTable}
 \title{\code{SegmentComparisonTable}}
 \usage{
-SegmentComparisonTable(x, group, weights = NULL, subset = TRUE,
-  row.names.to.remove = "", format.numeric.decimals = 1,
-  format.percentage.decimals = 0, format.conditional.fill = TRUE,
+SegmentComparisonTable(
+  x,
+  group,
+  weights = NULL,
+  subset = TRUE,
+  row.names.to.remove = "",
+  format.numeric.decimals = 1,
+  format.percentage.decimals = 0,
+  format.conditional.fill = TRUE,
   format.numeric.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
   format.percentage.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
-  show.index.values = FALSE, cell.fill = "#FFFFFF",
-  font.color = "#2C2C2C", font.size = 10, font.unit = "px",
+  show.index.values = FALSE,
+  cell.fill = "#FFFFFF",
+  font.color = "#2C2C2C",
+  font.size = 10,
+  font.unit = "px",
   row.height = paste0(font.size + 5, font.unit),
   font.color.set.if.nonsignificant = TRUE,
-  font.color.nonsignificant = "#999999", font.color.confidence = 0.95,
-  font.color.FDRcorrection = FALSE, font.color.nonparametric = FALSE,
-  show.question.name = TRUE, col.widths = "100px, 100px",
-  row.header.font.weight = "normal", row.span.font.weight = "normal",
-  col.header.font.weight = "normal", row.header.pad = 5,
-  row.span.pad = row.header.pad, row.header.fill = "#F1F3F4",
-  row.span.fill = row.header.fill, col.header.fill = "#AEB7BA",
-  corner.fill = col.header.fill, summary.header.fill = col.header.fill,
-  summary.cell.fill = "#D1D7D9", ...)
+  font.color.nonsignificant = "#999999",
+  font.color.confidence = 0.95,
+  font.color.FDRcorrection = FALSE,
+  font.color.nonparametric = FALSE,
+  show.question.name = TRUE,
+  col.widths = "100px, 100px",
+  row.header.font.weight = "normal",
+  row.span.font.weight = "normal",
+  col.header.font.weight = "normal",
+  row.header.pad = 5,
+  row.span.pad = row.header.pad,
+  row.header.fill = "#F1F3F4",
+  row.span.fill = row.header.fill,
+  col.header.fill = "#AEB7BA",
+  corner.fill = col.header.fill,
+  summary.header.fill = col.header.fill,
+  summary.cell.fill = "#D1D7D9",
+  ...
+)
 }
 \arguments{
 \item{x}{A list of variables or variable sets. These can be numeric or
