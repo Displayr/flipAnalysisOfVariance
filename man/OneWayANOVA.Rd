@@ -4,12 +4,24 @@
 \alias{OneWayANOVA}
 \title{\code{OneWayANOVA}}
 \usage{
-OneWayANOVA(outcome, predictor, subset = NULL, weights = NULL,
-  compare = "Pairwise", correction = "Tukey Range",
-  alternative = "Two-sided", robust.se = FALSE,
-  missing = "Exclude cases with missing data", show.labels = TRUE,
-  outcome.name = NULL, predictor.name = NULL, p.cutoff = 0.05,
-  seed = 1223, return.all = FALSE, ...)
+OneWayANOVA(
+  outcome,
+  predictor,
+  subset = NULL,
+  weights = NULL,
+  compare = "Pairwise",
+  correction = "Tukey Range",
+  alternative = "Two-sided",
+  robust.se = FALSE,
+  missing = "Exclude cases with missing data",
+  show.labels = TRUE,
+  outcome.name = NULL,
+  predictor.name = NULL,
+  p.cutoff = 0.05,
+  seed = 1223,
+  return.all = FALSE,
+  ...
+)
 }
 \arguments{
 \item{outcome}{The outcome variable.}

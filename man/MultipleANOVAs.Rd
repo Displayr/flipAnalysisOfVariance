@@ -4,11 +4,22 @@
 \alias{MultipleANOVAs}
 \title{\code{MultipleANOVAs}}
 \usage{
-MultipleANOVAs(dependents, independent, subset = NULL, weights = NULL,
-  compare = "To mean", correction = "Table FDR", robust.se = FALSE,
+MultipleANOVAs(
+  dependents,
+  independent,
+  subset = NULL,
+  weights = NULL,
+  compare = "To mean",
+  correction = "Table FDR",
+  robust.se = FALSE,
   alternative = "Two-sided",
-  missing = "Exclude cases with missing data", show.labels = FALSE,
-  seed = 1223, p.cutoff = 0.05, data = NULL, ...)
+  missing = "Exclude cases with missing data",
+  show.labels = FALSE,
+  seed = 1223,
+  p.cutoff = 0.05,
+  data = NULL,
+  ...
+)
 }
 \arguments{
 \item{dependents}{The outcome variables.}

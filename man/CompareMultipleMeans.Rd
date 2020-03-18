@@ -4,8 +4,16 @@
 \alias{CompareMultipleMeans}
 \title{\code{CompareMultipleMeans}}
 \usage{
-CompareMultipleMeans(outcomes, predictor, title = "", subtitle = "",
-  footer = "", weights = NULL, show.labels = TRUE, ...)
+CompareMultipleMeans(
+  outcomes,
+  predictor,
+  title = "",
+  subtitle = "",
+  footer = "",
+  weights = NULL,
+  show.labels = TRUE,
+  ...
+)
 }
 \arguments{
 \item{outcomes}{The outcome variables.}
