@@ -28,7 +28,8 @@
 #' @param title The title to appear in the output.
 #' @param subtitle The footer to appear in the output.
 #' @param footer The footer to appear in the output.
-#' @param ... Other parameters to be passed to \code{OneWayANOVA}.
+#' @param return.data.frame Whether to return a data frame instead of a
+#'  formattable widget.
 #' @details Conducts multiple \code{OneWayANOVA}s, and puts them in a list. If \code{correction} is
 #'  \code{"Table FDR"}, the false discovery rate correction is applied across the entire table. All
 #' other corrections are performed within rows. Additional detail about the other parameters can be found in \code{OneWayANOVA}.
@@ -47,7 +48,8 @@ MultipleMeans <- function(outcomes,
                            p.cutoff = 0.05,
                           title = "",
                           subtitle = "",
-                          footer = "")
+                          footer = "",
+                          return.data.frame = FALSE)
 {
     outcomes <- ProcessQVariables(outcomes)
     predictor <- ProcessQVariables(predictor)
@@ -60,8 +62,17 @@ MultipleMeans <- function(outcomes,
                         correction = correction,
                         show.labels = show.labels,
                         return.all = TRUE)
-    FormattableANOVAs(anovas,
-                    title = title,
-                    subtitle = subtitle,
-                    footer = footer)
+
+    if (return.data.frame)
+    {
+        output <- ANOVAsAsTable(anovas)
+        result <- cbind(output$means, R_Squared = output$r.squared, p = output$overall.p)
+        colnames(result) <- gsub("\n", " ", colnames(result))
+        result
+    }
+    else
+        FormattableANOVAs(anovas,
+                          title = title,
+                          subtitle = subtitle,
+                          footer = footer)
 }
