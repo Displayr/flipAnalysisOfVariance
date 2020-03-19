@@ -76,7 +76,7 @@ http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf}
 is used when \code{format.conditional.fill}. The colors indicate that
 the percentage in the cell is smaller than -20\%, -10\%, 0\%, 10\%, 20\%.}
 
-\item{show.index.values}{Percentage values are shown as a ratio to the percentage
+\item{show.index.values}{Values are shown as a ratio to the total
 computed on the whole population (i.e. unsegmented).}
 
 \item{cell.fill}{The default background color of the cells in the table.}

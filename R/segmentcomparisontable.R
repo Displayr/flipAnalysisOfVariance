@@ -25,7 +25,7 @@
 #' @param format.percentage.fill.colors A vector or comma-separated list of 5 colors that
 #'     is used when \code{format.conditional.fill}. The colors indicate that
 #'     the percentage in the cell is smaller than -20\%, -10\%, 0\%, 10\%, 20\%.
-#' @param show.index.values Percentage values are shown as a ratio to the percentage
+#' @param show.index.values Values are shown as a ratio to the total
 #'     computed on the whole population (i.e. unsegmented).
 #' @param cell.fill The default background color of the cells in the table.
 #' @param summary.cell.fill The background color of the first two rows in
@@ -181,25 +181,21 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         v.list[[vvi]] <- vv # save subsetted variable
 
         # Always compute index values because they are used for cell fill
-        if (!tmp.numeric)
-        {
-            ind.not.missing <- !is.na(group)
-            tot.mean <- Mean(vv[ind.not.missing,,drop = FALSE], weights = weights[ind.not.missing])
-            if (NROW(tmp) > 1)
-                index.values[[vvi]] <- sweep(tmp, 1, tot.mean, "/")
-            else
-                index.values[[vvi]] <- tmp/tot.mean
+        ind.not.missing <- !is.na(group)
+        tot.mean <- Mean(vv[ind.not.missing,,drop = FALSE], weights = weights[ind.not.missing])
+        if (NROW(tmp) > 1)
+            index.values[[vvi]] <- sweep(tmp, 1, tot.mean, "/")
+        else
+            index.values[[vvi]] <- tmp/tot.mean
 
-            if (show.index.values)
-                tmp <- index.values[[vvi]]
-        }
+        if (show.index.values)
+            tmp <- index.values[[vvi]]
         result <- rbind(result, tmp)
     }
-
     rownames(result) <- NULL # result is preserved in numeric form for exporting
     result.formatted <- matrix("", nrow(result), ncol(result))
     for (i in 1:nrow(result))
-        result.formatted[i,] <- if (row.format[i] == "numeric") formatC(result[i,], if (i == 1) 0 else format.numeric.decimals, format = "f", big.mark = ",")
+        result.formatted[i,] <- if (!show.index.values && row.format[i] == "numeric") formatC(result[i,], if (i == 1) 0 else format.numeric.decimals, format = "f", big.mark = ",")
                                 else                            paste0(formatC(result[i,] * 100, format.percentage.decimals, format = "f", big.mark = ","), "%")
     result.formatted[!is.finite(result)] <- ""
     result.formatted <- formatC(result.formatted, format = "s", width = max(nchar(result.formatted)))
