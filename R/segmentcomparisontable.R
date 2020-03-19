@@ -194,10 +194,10 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     }
     rownames(result) <- NULL # result is preserved in numeric form for exporting
     result.formatted <- matrix("", nrow(result), ncol(result))
-    result.formatted[1,] <- formatC(result[1,], 0, format = "f", big.mark = ",") # first row is always unweighted sample size
+    result.formatted[1,] <- formatC(result[1,], digits = 0, format = "f", big.mark = ",") # first row is always unweighted sample size
     for (i in 2:nrow(result))
-        result.formatted[i,] <- if (!show.index.values && row.format[i] == "numeric") formatC(result[i,], if (i == 1) 0 else format.numeric.decimals, format = "f", big.mark = ",")
-                                else                            paste0(formatC(result[i,] * 100, format.percentage.decimals, format = "f", big.mark = ","), "%")
+        result.formatted[i,] <- if (!show.index.values && row.format[i] == "numeric") formatC(result[i,], format.numeric.decimals, format = "f", big.mark = ",")
+                                else paste0(formatC(result[i,] * 100, format.percentage.decimals, format = "f", big.mark = ","), "%")
     result.formatted[!is.finite(result)] <- ""
     result.formatted <- formatC(result.formatted, format = "s", width = max(nchar(result.formatted)))
     result.formatted <- gsub(" ", "&nbsp;", result.formatted)
