@@ -127,7 +127,6 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         result[1,] <- table(group)
     }
 
-    row.span <- list(list(label = "Segment size", height = 2))
     row.span <- list(list(label = group.label, height = 2))
     row.format <- c("numeric", "percentage")
     row.vvi <- c(0, 0)
@@ -156,7 +155,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         if (sum(nchar(row.names.to.remove), na.rm = TRUE) > 0)
         {
             rm.names <- ConvertCommaSeparatedStringToVector(row.names.to.remove, text.qualifier = "\"")
-            rm.patt <- paste(c(paste0("^", rm.names, ", "), paste0(", ", rm.names, "$")), collapse = "|") 
+            rm.patt <- paste(c(paste0("^", rm.names, ", "), paste0(", ", rm.names, "$")), collapse = "|")
             net.ind <- if (v.qtype %in% c("NumberGrid", "PickOneMulti")) grep(rm.patt, colnames(vv), perl = TRUE)
                        else which(colnames(vv) %in% rm.names)
             if (length(net.ind) > 0)
@@ -172,7 +171,14 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             rownames(tmp) <- ""
         tmp.nvar <- ncol(vv)
         row.vcol <- c(row.vcol, 1:tmp.nvar)
-        row.span[[length(row.span) + 1]] <- list(label = attr(x[[vvi]], "question"), height = tmp.nvar)
+        row.qlabel <- attr(x[[vvi]], "question")
+        if (is.null(row.qlabel))
+            row.qlabel <- attr(x[[vvi]], "label")
+        if (is.null(row.qlabel))
+            row.qlabel <- names(x)[vvi]
+        if (is.null(row.qlabel))
+            row.qlabel <- ""
+        row.span[[length(row.span) + 1]] <- list(label = row.qlabel, height = tmp.nvar)
         if (!is.null(rownames(tmp)))
             row.labels <- c(row.labels, rownames(tmp))
         tmp.numeric <- isTRUE(attr(x[[vvi]], "questiontype") %in% c("Number", "NumberMulti", "NumberGrid"))
@@ -275,8 +281,14 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     tmp.rownames <- sub(": $", "", tmp.rownames)
     rownames(result) <- tmp.rownames
     attr(output, "ChartData") <- result
+
     # Store p-values for testing
     if (font.color.set.if.nonsignificant)
         attr(output, "p-values") <- pvals
+    # Some extra info for KMeans
+    attr(output, "question.labels") <- row.span
+    attr(output, "confidence") <- font.color.confidence
+    attr(output, "FDR correction") <- font.color.FDRcorrection
+    attr(output, "nonparametric") <- font.color.nonparametric
     return(output)
 }
