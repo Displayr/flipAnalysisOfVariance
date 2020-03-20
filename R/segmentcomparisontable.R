@@ -287,8 +287,11 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         attr(output, "p-values") <- pvals
     # Some extra info for KMeans
     attr(output, "question.labels") <- row.span
-    attr(output, "confidence") <- font.color.confidence
-    attr(output, "FDR correction") <- font.color.FDRcorrection
-    attr(output, "nonparametric") <- font.color.nonparametric
+    if (font.color.set.if.nonsignificant)
+    {
+        attr(output, "confidence") <- font.color.confidence
+        attr(output, "FDR correction") <- font.color.FDRcorrection
+        attr(output, "nonparametric") <- font.color.nonparametric
+    }
     return(output)
 }
