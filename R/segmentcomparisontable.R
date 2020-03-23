@@ -276,9 +276,10 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       suppress.nan = FALSE, suppress.na = FALSE,
                       num.header.rows = 2, row.height = row.height,
                       global.font.color = font.color, ...)
-    result.rows <- unlist(sapply(row.span, function(r) rep(r$label, r$height)))
-    tmp.rownames <- paste0(result.rows, ": ", row.labels)
-    tmp.rownames <- sub(": $", "", tmp.rownames)
+    result.rows <- trimws(unlist(sapply(row.span, function(r) rep(r$label, r$height))))
+    tmp.minchar <- pmin(nchar(result.rows), nchar(row.labels))
+    tmp.sep <- ifelse(tmp.minchar > 0, ": ", "")
+    tmp.rownames <- paste0(result.rows, tmp.sep, row.labels)
     rownames(result) <- tmp.rownames
     attr(output, "ChartData") <- result
 
