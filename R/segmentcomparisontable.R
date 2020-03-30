@@ -263,6 +263,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
 
     if (cond.shade != "None" || format.conditional.fill)
     {
+        cond.levels <- length(cond.shade.cutoffs)
+        cond.midlevel <- floor(cond.levels/2)
         for (i in 3:nrow(result))
         {
             if (row.format[i] == "percentage")
@@ -279,11 +281,18 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                 f.cols <- format.percentage.fill.colors
             }
 
+            # Set up indexes allocating shading color
             c.ind <- list()
             c.ind[[1]] <- which(f.vals < cond.shade.cutoffs[1])
-            c.ind[[2]] <- which(f.vals >= cond.shade.cutoffs[1] & f.vals < cond.shade.cutoffs[2])
-            c.ind[[3]] <- which(f.vals <= cond.shade.cutoffs[4] & f.vals > cond.shade.cutoffs[3])
-            c.ind[[4]] <- which(f.vals > cond.shade.cutoffs[4])
+            for (j in 2:(cond.midlevel-1))
+            {
+                k <- cond.levels - j + 1
+                if (k <= 1 || k >= cond.levels)
+                    break
+                c.ind[[j]] <- which(f.vals >= cond.shade.cutoffs[j-1] & f.vals < cond.shade.cutoffs[j])
+                c.ind[[k]] <- which(f.vals <= cond.shade.cutoffs[k+1] & f.vals > cond.shade.cutoffs[k])
+            }
+            c.ind[[cond.levels]] <- which(f.vals > cond.shade.cutoffs[cond.levels])
             if (cond.shade.sig.only && font.color.set.if.nonsignificant)
             {
                 for (j in 1:4)
@@ -294,14 +303,14 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
 
             if (cond.shade == "Cell colors" || format.conditional.fill)
             {
-                for (j in 1:4)
+                for (j in 1:cond.levels)
                     cell.fill[i,c.ind[[j]]] <- f.cols[j]
             }
             else
             {
-                for (j in 1:4)
+                for (j in 1:cond.levels)
                 {
-                    arrow.sym <- if (j <= 2) "&#x2193;" else "&#x2191"
+                    arrow.sym <- if (j <= cond.midlevel) "&#x2193;" else "&#x2191"
                     tmp.prefix <- paste0("<span style='color:", f.cols[j])
                     if (cond.shade == "Boxes")
                         tmp.prefix <- paste0("<span style='border:", cond.box.width,
