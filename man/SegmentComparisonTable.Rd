@@ -19,7 +19,7 @@ SegmentComparisonTable(
     "Fonts and arrows")[2],
   cond.box.radius = 0,
   cond.box.width = 2,
-  cond.shade.colors = c("#E99598", "#E99598", "#A9C0DA", "#82A5CB"),
+  cond.shade.colors = c("#E99598", "#E5C8C4", "#A9C0DA", "#82A5CB"),
   cond.shade.cutoffs = c(-0.2, -0.1, 0.1, 0.2),
   cond.shade.sig.only = TRUE,
   show.index.values = FALSE,
@@ -60,16 +60,16 @@ for "question", "label" and "questiontype" is defined.}
 \item{weights}{Numeric; An optional vector of sampling weights.
 Should be the same length as \code{group}.}
 
-\item{subset}{An optional vector specifying a subset of observations 
+\item{subset}{An optional vector specifying a subset of observations
 to be used.}
 
 \item{row.names.to.remove}{Character vector or delimited string of
 row labels specifying rows to remove from the returned table.}
 
-\item{format.numeric.decimals}{The number of decimals shown in the 
+\item{format.numeric.decimals}{The number of decimals shown in the
 output table for numeric values.}
 
-\item{format.percentage.decimals}{The number of decimals shown in 
+\item{format.percentage.decimals}{The number of decimals shown in
 the output table for percentage values.}
 
 \item{format.conditional.fill}{Deprecated. Whether the fill color
@@ -80,17 +80,17 @@ of the cells should reflect the value in the cells.}
 \item{format.percentage.fill.colors}{Deprecated}
 
 \item{cond.shade}{What should be shaded to reflect the magnitude of
-the value in each cell. One of "None", "Cell colors", 
+the value in each cell. One of "None", "Cell colors",
 "Font colors", "Boxes", "Arrows", Fonts and arrows".}
 
-\item{cond.box.radius}{Numeric; roundness of box corner when 
-\code{cond.shade == "Boxes"} (e.g. 0 for sharp corners, 
+\item{cond.box.radius}{Numeric; roundness of box corner when
+\code{cond.shade == "Boxes"} (e.g. 0 for sharp corners,
 50 for oval).}
 
-\item{cond.box.width}{Numeric; line width of box when 
+\item{cond.box.width}{Numeric; line width of box when
 \code{cond.shade == "Boxes"}.}
 
-\item{cond.shade.colors}{A vector of 4 colors (in order) which 
+\item{cond.shade.colors}{A vector of 4 colors (in order) which
 will be used when values are 1) very small, 2)small, 3) large,
 4) very large.}
 
@@ -98,10 +98,10 @@ will be used when values are 1) very small, 2)small, 3) large,
 whether values are very small/small/large/very large.
 Categorical variables are standardized by dividing by
 the same statistic computed over the whole populatoon.
-Numeric variables are standardized by dividing twice the 
+Numeric variables are standardized by dividing twice the
 standard deviation http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf}
 
-\item{cond.shade.sig.only}{Logical; whether conditional shading 
+\item{cond.shade.sig.only}{Logical; whether conditional shading
 should only be applied to cells with significant values.}
 
 \item{show.index.values}{Values are shown as a ratio to the total
@@ -135,10 +135,10 @@ test should be used.}
 
 \item{show.question.name}{Whether the question name should be shown in the output table.}
 
-\item{col.header.labels}{A vector or comma-separated labels to 
+\item{col.header.labels}{A vector or comma-separated labels to
 override the column name}
 
-\item{col.widths}{Vector or comma-separated list to control 
+\item{col.widths}{Vector or comma-separated list to control
 column widths.}
 
 \item{row.header.font.weight}{One of "bold" or "normal".}

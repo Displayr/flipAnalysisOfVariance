@@ -10,34 +10,34 @@
 #'     row labels specifying rows to remove from the returned table.
 #' @param weights Numeric; An optional vector of sampling weights.
 #'     Should be the same length as \code{group}.
-#' @param subset An optional vector specifying a subset of observations 
+#' @param subset An optional vector specifying a subset of observations
 #'      to be used.
-#' @param format.numeric.decimals The number of decimals shown in the 
+#' @param format.numeric.decimals The number of decimals shown in the
 #'      output table for numeric values.
-#' @param format.percentage.decimals The number of decimals shown in 
+#' @param format.percentage.decimals The number of decimals shown in
 #'      the output table for percentage values.
 #' @param format.conditional.fill Deprecated. Whether the fill color
 #'      of the cells should reflect the value in the cells.
-#' @param format.numeric.fill.colors Deprecated. 
+#' @param format.numeric.fill.colors Deprecated.
 #' @param format.percentage.fill.colors Deprecated
 #' @param cond.shade What should be shaded to reflect the magnitude of
-#'      the value in each cell. One of "None", "Cell colors", 
+#'      the value in each cell. One of "None", "Cell colors",
 #'      "Font colors", "Boxes", "Arrows", Fonts and arrows".
-#' @param cond.shade.colors A vector of 4 colors (in order) which 
+#' @param cond.shade.colors A vector of 4 colors (in order) which
 #'      will be used when values are 1) very small, 2)small, 3) large,
 #'      4) very large.
 #' @param cond.shade.cutoffs A vector of cutoffs used to evaluate
 #'      whether values are very small/small/large/very large.
 #'      Categorical variables are standardized by dividing by
 #'      the same statistic computed over the whole populatoon.
-#'      Numeric variables are standardized by dividing twice the 
+#'      Numeric variables are standardized by dividing twice the
 #'      standard deviation http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf
-#' @param cond.shade.sig.only Logical; whether conditional shading 
+#' @param cond.shade.sig.only Logical; whether conditional shading
 #'      should only be applied to cells with significant values.
-#' @param cond.box.width Numeric; line width of box when 
+#' @param cond.box.width Numeric; line width of box when
 #'      \code{cond.shade == "Boxes"}.
-#' @param cond.box.radius Numeric; roundness of box corner when 
-#'      \code{cond.shade == "Boxes"} (e.g. 0 for sharp corners, 
+#' @param cond.box.radius Numeric; roundness of box corner when
+#'      \code{cond.shade == "Boxes"} (e.g. 0 for sharp corners,
 #'      50 for oval).
 #' @param show.index.values Values are shown as a ratio to the total
 #'     computed on the whole population (i.e. unsegmented).
@@ -63,9 +63,9 @@
 #' @param font.color.nonparametric Logical; whether a non-parametric i
 #'      test should be used.
 #' @param show.question.name Whether the question name should be shown in the output table.
-#' @param col.header.labels A vector or comma-separated labels to 
+#' @param col.header.labels A vector or comma-separated labels to
 #'      override the column name
-#' @param col.widths Vector or comma-separated list to control 
+#' @param col.widths Vector or comma-separated list to control
 #'      column widths.
 #' @param row.header.font.weight One of "bold" or "normal".
 #' @param row.span.font.weight One of "bold" or "normal".
@@ -94,7 +94,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    cond.shade = c("None", "Cell colors", "Font colors", "Boxes", "Arrows", "Fonts and arrows")[2],
                                    cond.box.radius = 0,
                                    cond.box.width = 2,
-                                   cond.shade.colors = c("#E99598", "#E99598", "#A9C0DA", "#82A5CB"), # a vector of 4
+                                   cond.shade.colors = c("#E99598", "#E5C8C4", "#A9C0DA", "#82A5CB"), # a vector of 4
                                    cond.shade.cutoffs = c(-0.2, -0.1, 0.1, 0.2),
                                    cond.shade.sig.only = TRUE,
                                    show.index.values = FALSE,
@@ -259,7 +259,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     cell.fill <- matrix(cell.fill, nrow(result), ncol(result))
     cell.fill[1:2,] <- summary.cell.fill
     prefix <- matrix("", nrow(result), ncol(result))
-    suffix <- matrix("", nrow(result), ncol(result)) 
+    suffix <- matrix("", nrow(result), ncol(result))
 
     if (cond.shade != "None" || format.conditional.fill)
     {
@@ -302,10 +302,10 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                 for (j in 1:4)
                 {
                     arrow.sym <- if (j <= 2) "&#x2193;" else "&#x2191"
-                    tmp.prefix <- paste0("<span style='color:", f.cols[j]) 
+                    tmp.prefix <- paste0("<span style='color:", f.cols[j])
                     if (cond.shade == "Boxes")
-                        tmp.prefix <- paste0("<span style='border:", cond.box.width, 
-                        "px solid ", f.cols[j], "; border-radius:", cond.box.radius, 
+                        tmp.prefix <- paste0("<span style='border:", cond.box.width,
+                        "px solid ", f.cols[j], "; border-radius:", cond.box.radius,
                         "%; padding-right: 5px;'>")
                     else if (cond.shade == "Arrows")
                         tmp.prefix <- ""
@@ -313,7 +313,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                         tmp.prefix <- paste0(tmp.prefix, "'>")
                     prefix[i,c.ind[[j]]] <- tmp.prefix
 
-                    if (cond.shade %in% c("Font colors", "Boxes")) 
+                    if (cond.shade %in% c("Font colors", "Boxes"))
                         suffix[i,c.ind[[j]]] <- "</span>"
                     else if (cond.shade == "Fonts and arrows")
                         suffix[i,c.ind[[j]]] <- paste0(arrow.sym, "</span>")
