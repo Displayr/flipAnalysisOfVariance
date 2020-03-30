@@ -10,21 +10,35 @@
 #'     row labels specifying rows to remove from the returned table.
 #' @param weights Numeric; An optional vector of sampling weights.
 #'     Should be the same length as \code{group}.
-#' @param subset An optional vector specifying a subset of observations to be used.
-#' @param format.numeric.decimals The number of decimals shown in the output table
-#'     for numeric values.
-#' @param format.percentage.decimals The number of decimals shown in the output table
-#'     for percentage values.
-#' @param format.conditional.fill Whether the fill color of the cells should reflect the
-#'     value in the cells.
-#' @param format.numeric.fill.colors A vector or comma-separated list of 5 colors that
-#'     is used when \code{format.conditional.fill}. The colors indicate that
-#'     the standardized number value in the cell is smaller than -0.2, -0.1, 0, 0.1, 0.2.
-#'     Numeric variables are standardized by dividing twice the standard deviation
-#'     http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf
-#' @param format.percentage.fill.colors A vector or comma-separated list of 5 colors that
-#'     is used when \code{format.conditional.fill}. The colors indicate that
-#'     the percentage in the cell is smaller than -20\%, -10\%, 0\%, 10\%, 20\%.
+#' @param subset An optional vector specifying a subset of observations 
+#'      to be used.
+#' @param format.numeric.decimals The number of decimals shown in the 
+#'      output table for numeric values.
+#' @param format.percentage.decimals The number of decimals shown in 
+#'      the output table for percentage values.
+#' @param format.conditional.fill Deprecated. Whether the fill color
+#'      of the cells should reflect the value in the cells.
+#' @param format.numeric.fill.colors Deprecated. 
+#' @param format.percentage.fill.colors Deprecated
+#' @param cond.shade What should be shaded to reflect the magnitude of
+#'      the value in each cell. One of "None", "Cell colors", 
+#'      "Font colors", "Boxes", "Arrows", Fonts and arrows".
+#' @param cond.shade.colors A vector of 4 colors (in order) which 
+#'      will be used when values are 1) very small, 2)small, 3) large,
+#'      4) very large.
+#' @param cond.shade.cutoffs A vector of cutoffs used to evaluate
+#'      whether values are very small/small/large/very large.
+#'      Categorical variables are standardized by dividing by
+#'      the same statistic computed over the whole populatoon.
+#'      Numeric variables are standardized by dividing twice the 
+#'      standard deviation http://www.stat.columbia.edu/~gelman/research/published/standardizing7.pdf
+#' @param cond.shade.sig.only Logical; whether conditional shading 
+#'      should only be applied to cells with significant values.
+#' @param cond.box.width Numeric; line width of box when 
+#'      \code{cond.shade == "Boxes"}.
+#' @param cond.box.radius Numeric; roundness of box corner when 
+#'      \code{cond.shade == "Boxes"} (e.g. 0 for sharp corners, 
+#'      50 for oval).
 #' @param show.index.values Values are shown as a ratio to the total
 #'     computed on the whole population (i.e. unsegmented).
 #' @param cell.fill The default background color of the cells in the table.
@@ -46,10 +60,13 @@
 #'     \code{font.color.set.if.nonsignficant}.
 #' @param font.color.FDRcorrection Logical; whether an FDR correction is applied to deal
 #'    with multiple testing.
-#' @param font.color.nonparametric Logical; whether a non-parametric test should
-#     be used.
+#' @param font.color.nonparametric Logical; whether a non-parametric i
+#'      test should be used.
 #' @param show.question.name Whether the question name should be shown in the output table.
-#' @param col.widths Vector or comma-separated list to control column widths.
+#' @param col.header.labels A vector or comma-separated labels to 
+#'      override the column name
+#' @param col.widths Vector or comma-separated list to control 
+#'      column widths.
 #' @param row.header.font.weight One of "bold" or "normal".
 #' @param row.span.font.weight One of "bold" or "normal".
 #' @param col.header.font.weight One of "bold" or "normal".
@@ -70,9 +87,16 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    row.names.to.remove = "",
                                    format.numeric.decimals = 1,
                                    format.percentage.decimals = 0,
-                                   format.conditional.fill = TRUE,
+                                   format.conditional.fill = FALSE,# deprecated by cond.shade
                                    format.numeric.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
                                    format.percentage.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
+
+                                   cond.shade = c("None", "Cell colors", "Font colors", "Boxes", "Arrows", "Fonts and arrows")[2],
+                                   cond.box.radius = 0,
+                                   cond.box.width = 2,
+                                   cond.shade.colors = c("#E99598", "#E99598", "#A9C0DA", "#82A5CB"), # a vector of 4
+                                   cond.shade.cutoffs = c(-0.2, -0.1, 0.1, 0.2),
+                                   cond.shade.sig.only = TRUE,
                                    show.index.values = FALSE,
                                    cell.fill = "#FFFFFF",
                                    font.color = "#2C2C2C",
@@ -85,6 +109,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    font.color.FDRcorrection = FALSE,
                                    font.color.nonparametric = FALSE,
                                    show.question.name = TRUE,
+                                   col.header.labels = NULL,
                                    col.widths = "100px, 100px",
                                    row.header.font.weight = "normal",
                                    row.span.font.weight = "normal",
@@ -230,10 +255,13 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         results.font.color[which(pvals < 1 - font.color.confidence)] <- font.color
     }
 
-    # Fill color is determined by cell value
+    # Conditionally color based on cell value
     cell.fill <- matrix(cell.fill, nrow(result), ncol(result))
     cell.fill[1:2,] <- summary.cell.fill
-    if (format.conditional.fill)
+    prefix <- matrix("", nrow(result), ncol(result))
+    suffix <- matrix("", nrow(result), ncol(result)) 
+
+    if (cond.shade != "None" || format.conditional.fill)
     {
         for (i in 3:nrow(result))
         {
@@ -250,10 +278,55 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                 f.vals <- StatisticsByGroup((tmp.var-tmp.mean)/(2*tmp.sd), group = group, weights = weights)
                 f.cols <- format.percentage.fill.colors
             }
-            cell.fill[i,which(f.vals >  0.1)] <- f.cols[3]
-            cell.fill[i,which(f.vals >  0.2)] <- f.cols[4]
-            cell.fill[i,which(f.vals < -0.1)] <- f.cols[2]
-            cell.fill[i,which(f.vals < -0.2)] <- f.cols[1]
+
+            c.ind <- list()
+            c.ind[[1]] <- which(f.vals < cond.shade.cutoffs[1])
+            c.ind[[2]] <- which(f.vals >= cond.shade.cutoffs[1] & f.vals < cond.shade.cutoffs[2])
+            c.ind[[3]] <- which(f.vals <= cond.shade.cutoffs[4] & f.vals > cond.shade.cutoffs[3])
+            c.ind[[4]] <- which(f.vals > cond.shade.cutoffs[4])
+            if (cond.shade.sig.only && font.color.set.if.nonsignificant)
+            {
+                for (j in 1:4)
+                    c.ind[[j]] <- intersect(c.ind[[j]],
+                        which(pvals[i,] < 1 - font.color.confidence))
+            }
+
+
+            if (cond.shade == "Cell colors" || format.conditional.fill)
+            {
+                for (j in 1:4)
+                    cell.fill[i,c.ind[[j]]] <- f.cols[j]
+            }
+            else
+            {
+                for (j in 1:4)
+                {
+                    arrow.sym <- if (j <= 2) "&#x2193;" else "&#x2191"
+                    tmp.prefix <- paste0("<span style='color:", f.cols[j]) 
+                    if (cond.shade == "Boxes")
+                        tmp.prefix <- paste0("<span style='border:", cond.box.width, 
+                        "px solid ", f.cols[j], "; border-radius:", cond.box.radius, 
+                        "%; padding-right: 5px;'>")
+                    else if (cond.shade == "Arrows")
+                        tmp.prefix <- ""
+                    else
+                        tmp.prefix <- paste0(tmp.prefix, "'>")
+                    prefix[i,c.ind[[j]]] <- tmp.prefix
+
+                    if (cond.shade %in% c("Font colors", "Boxes")) 
+                        suffix[i,c.ind[[j]]] <- "</span>"
+                    else if (cond.shade == "Fonts and arrows")
+                        suffix[i,c.ind[[j]]] <- paste0(arrow.sym, "</span>")
+                    else if (cond.shade == "Arrows")
+                        suffix[i,c.ind[[j]]] <- paste0("<span style='color:",
+                        f.cols[j], "'>", arrow.sym, "</span>")
+
+                   # Realign cells after adding arrow
+                   if (cond.shade %in% c("Arrows", "Fonts and arrows"))
+                       result.formatted[i,c.ind[[j]]] <- sub("&nbsp;", "&nbsp;&nbsp;",
+                       result.formatted[i,c.ind[[j]]])
+                }
+            }
         }
     }
     row.span.fill <- c(summary.header.fill, rep(row.span.fill, nrow(result)-1))
@@ -268,6 +341,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       row.span.fill = row.span.fill, row.header.fill = row.header.fill,
                       corner.fill = corner.fill, corner = corner.text,
                       col.header.fill = col.header.fill,
+                      col.header.labels = col.header.labels,
                       font.unit = font.unit, font.size = font.size, col.widths = col.widths,
                       row.span.pad = row.span.pad, row.header.pad = row.header.pad,
                       row.header.font.weight = row.header.font.weight,
@@ -275,6 +349,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       col.header.font.weight = col.header.font.weight,
                       suppress.nan = FALSE, suppress.na = FALSE,
                       num.header.rows = 2, row.height = row.height,
+                      cell.prefix = prefix, cell.suffix = suffix,
                       global.font.color = font.color, ...)
     result.rows <- trimws(unlist(sapply(row.span, function(r) rep(r$label, r$height))))
     tmp.minchar <- pmin(nchar(result.rows), nchar(row.labels))
