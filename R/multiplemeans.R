@@ -66,7 +66,9 @@ MultipleMeans <- function(outcomes,
     if (return.data.frame)
     {
         output <- ANOVAsAsTable(anovas)
-        result <- cbind(output$column.names, `R-Squared` = output$r.squared, p = output$overall.p)
+        means <- output$means
+        colnames(means) <- output$column.names
+        result <- cbind(means, `R-Squared` = output$r.squared, p = output$overall.p)
         colnames(result) <- gsub("<br>", " ", gsub("\n", " ", colnames(result)))
         result
     }
