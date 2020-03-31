@@ -275,7 +275,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             if (row.format[i] == "percentage")
             {
                 f.vals <- as.numeric((index.values[[row.vvi[i]]])[row.vcol[i],] - 1.0)
-                f.cols <- format.numeric.fill.colors
+                f.cols <- cond.shade.colors
             } else
             {
                 tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
@@ -283,7 +283,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                 tmp.sd <- StandardDeviation(tmp.var, weights = weights)
                 tmp.mean <- Mean(tmp.var, weights = weights)
                 f.vals <- StatisticsByGroup((tmp.var-tmp.mean)/(2*tmp.sd), group = group, weights = weights)
-                f.cols <- format.percentage.fill.colors
+                f.cols <- cond.shade.colors
             }
 
             # Set up indexes allocating shading color
