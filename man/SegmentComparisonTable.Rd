@@ -21,7 +21,7 @@ SegmentComparisonTable(
   cond.box.width = 2,
   cond.shade.colors = c("#E99598", "#E5C8C4", "#A9C0DA", "#82A5CB"),
   cond.shade.cutoffs = c(-0.2, -0.1, 0.1, 0.2),
-  cond.shade.sig.only = TRUE,
+  cond.shade.sig.only = FALSE,
   show.index.values = FALSE,
   cell.fill = "#FFFFFF",
   font.color = "#2C2C2C",

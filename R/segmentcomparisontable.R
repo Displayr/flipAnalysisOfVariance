@@ -96,7 +96,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    cond.box.width = 2,
                                    cond.shade.colors = c("#E99598", "#E5C8C4", "#A9C0DA", "#82A5CB"), # a vector of 4
                                    cond.shade.cutoffs = c(-0.2, -0.1, 0.1, 0.2),
-                                   cond.shade.sig.only = TRUE,
+                                   cond.shade.sig.only = FALSE,
                                    show.index.values = FALSE,
                                    cell.fill = "#FFFFFF",
                                    font.color = "#2C2C2C",
@@ -254,7 +254,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         {
             old.dim <- dimnames(pvals)
             pvals <- PValueAdjustFDR(pvals, alpha = 1 - font.color.confidence)
-            pvals <- matrix(pvals, nrow(result), ncol(result), dimnames = old.dim) 
+            pvals <- matrix(pvals, nrow(result), ncol(result), dimnames = old.dim)
         }
         results.font.color[which(pvals < 1 - font.color.confidence)] <- font.color
     }
@@ -306,7 +306,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             }
 
 
-            if (cond.shade == "Cell colors" || format.conditional.fill)
+            if (cond.shade == "Cell colors" || isTRUE(format.conditional.fill))
             {
                 for (j in 1:cond.levels)
                     cell.fill[i,c.ind[[j]]] <- f.cols[j]

@@ -3002,8 +3002,12 @@ q2 <- list(q2 = structure(list(`Coca-Cola, 'out and about'` = c(0,
 
 test_that("No missing values",
 {
+    # Check basic output
     expect_error(segcmp.mean <- SegmentComparisonTable(all.var, formSegmentation,
         font.color.FDRcorrection = TRUE), NA)
+    expect_error(segcmp.mean <- SegmentComparisonTable(all.var, formSegmentation,
+        cond.shade = "Boxes"), NA)
+
     expect_error(segcmp.mean <- SegmentComparisonTable(all.var, formSegmentation), NA)
     expect_equal(attr(segcmp.mean, "ChartData"), structure(c(99, 0.12375, 0.464646464646465, 0.535353535353535,
         1586.29292929293, NaN, -0.111111111111111, NaN, 0.181818181818182,
