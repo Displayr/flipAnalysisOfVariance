@@ -12,7 +12,7 @@ SegmentComparisonTable(
   row.names.to.remove = "",
   format.numeric.decimals = 1,
   format.percentage.decimals = 0,
-  format.conditional.fill = FALSE,
+  format.conditional.fill = NULL,
   format.numeric.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
   format.percentage.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
   cond.shade = c("None", "Cell colors", "Font colors", "Boxes", "Arrows",

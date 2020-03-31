@@ -87,7 +87,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    row.names.to.remove = "",
                                    format.numeric.decimals = 1,
                                    format.percentage.decimals = 0,
-                                   format.conditional.fill = FALSE,# deprecated by cond.shade
+                                   format.conditional.fill = NULL,      # deprecated - use cond.shade instead
                                    format.numeric.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
                                    format.percentage.fill.colors = "#E99598, #E5C8C4, #A9C0DA, #82A5CB",
 
@@ -251,7 +251,11 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                       non.parametric = font.color.nonparametric)
         }
         if (font.color.FDRcorrection)
+        {
+            old.dim <- dimnames(pvals)
             pvals <- PValueAdjustFDR(pvals, alpha = 1 - font.color.confidence)
+            pvals <- matrix(pvals, nrow(result), ncol(result), dimnames = old.dim) 
+        }
         results.font.color[which(pvals < 1 - font.color.confidence)] <- font.color
     }
 
@@ -261,7 +265,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     prefix <- matrix("", nrow(result), ncol(result))
     suffix <- matrix("", nrow(result), ncol(result))
 
-    if (cond.shade != "None" || format.conditional.fill)
+    if ((cond.shade != "None" && is.null(format.conditional.fill)) ||
+        isTRUE(format.conditional.fill))
     {
         cond.levels <- length(cond.shade.cutoffs)
         cond.midlevel <- floor(cond.levels/2)
