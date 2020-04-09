@@ -338,7 +338,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                             tmp.vals <- round(abs(f.vals[c.ind[[j]]])/max.val * 100)
 
                             tmp.rem <- 100 - tmp.vals
-                            tmp.prefix <- paste0("<div style='padding: 0px 0px;'><div style='background:blue; width:", tmp.rem, "%; height:100%; float:left'></div><div style='background:", f.cols[j], "; width:", tmp.vals, "%; height: 100%; float:right; vertical-align:middle; overflow: hidden; border-right: solid 5px rgba(0, 0, 0, 0);'>")
+                            tmp.prefix <- paste0("<div style='padding: 0px 0px;'><div style='background:blue; width:", tmp.rem, "%; height:100%; float:left'></div><div style='background:", f.cols[j], "; width:", tmp.vals, "%; height: 100%; float:right; vertical-align:middle; overflow: hidden; padding-right: 5px; border: solid 1px ", f.cols[j], "; border-radius: 15%;'>")
                             cell.pad[i,c.ind[[j]]] <- 0
                         }
                     }
