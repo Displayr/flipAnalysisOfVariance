@@ -19,6 +19,7 @@ SegmentComparisonTable(
     "Fonts and arrows")[2],
   cond.box.radius = 0,
   cond.box.width = 2,
+  cond.bar.radius = 13,
   cond.shade.colors = c("#E99598", "#E5C8C4", "#A9C0DA", "#82A5CB"),
   cond.shade.cutoffs = c(-0.2, -0.1, 0.1, 0.2),
   cond.shade.sig.only = FALSE,
@@ -89,6 +90,10 @@ the value in each cell. One of "None", "Cell colors",
 
 \item{cond.box.width}{Numeric; line width of box when
 \code{cond.shade == "Boxes"}.}
+
+\item{cond.bar.radius}{Numeric; roundness of bar corner when
+\code{cond.shade == "Bars"} (e.g. 0 for sharp corners,
+50 for oval).}
 
 \item{cond.shade.colors}{A vector of 4 colors (in order) which
 will be used when values are 1) very small, 2)small, 3) large,

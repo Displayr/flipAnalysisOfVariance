@@ -39,6 +39,9 @@
 #' @param cond.box.radius Numeric; roundness of box corner when
 #'      \code{cond.shade == "Boxes"} (e.g. 0 for sharp corners,
 #'      50 for oval).
+#' @param cond.bar.radius Numeric; roundness of bar corner when
+#'      \code{cond.shade == "Bars"} (e.g. 0 for sharp corners,
+#'      50 for oval).
 #' @param show.index.values Values are shown as a ratio to the total
 #'     computed on the whole population (i.e. unsegmented).
 #' @param cell.fill The default background color of the cells in the table.
@@ -94,6 +97,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    cond.shade = c("None", "Cell colors", "Font colors", "Boxes", "Arrows", "Fonts and arrows")[2],
                                    cond.box.radius = 0,
                                    cond.box.width = 2,
+                                   cond.bar.radius = 13,
                                    cond.shade.colors = c("#E99598", "#E5C8C4", "#A9C0DA", "#82A5CB"), # a vector of 4
                                    cond.shade.cutoffs = c(-0.2, -0.1, 0.1, 0.2),
                                    cond.shade.sig.only = FALSE,
@@ -231,7 +235,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                 else paste0(formatC(result[i,] * 100, format.percentage.decimals, format = "f", big.mark = ","), "%")
     result.formatted[!is.finite(result)] <- ""
     result.formatted <- formatC(result.formatted, format = "s", width = max(nchar(result.formatted)))
-    result.formatted <- gsub(" ", "&nbsp;", result.formatted)
+    if (cond.shade != "Bars")
+        result.formatted <- gsub(" ", "&nbsp;", result.formatted)
     colnames(result.formatted) <- colnames(result)
 
     # Font color is determined by p-values
@@ -260,6 +265,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     }
 
     # Conditionally color based on cell value
+    cell.align <- "center"
+    cell.pad <- 0
     cell.fill <- matrix(cell.fill, nrow(result), ncol(result))
     cell.fill[1:2,] <- summary.cell.fill
     prefix <- matrix("", nrow(result), ncol(result))
@@ -268,6 +275,12 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     if ((cond.shade != "None" && is.null(format.conditional.fill)) ||
         isTRUE(format.conditional.fill))
     {
+        if (cond.shade == "Bars")
+        {
+            cell.align <- "right"
+            cell.pad <- matrix(5, nrow(result), ncol(result))
+        }
+
         cond.levels <- length(cond.shade.cutoffs)
         cond.midlevel <- floor(cond.levels/2)
         for (i in 3:nrow(result))
@@ -316,15 +329,25 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                 for (j in 1:cond.levels)
                 {
                     arrow.sym <- if (j <= cond.midlevel) "&#x2193;" else "&#x2191"
-                    tmp.prefix <- paste0("<span style='color:", f.cols[j])
                     if (cond.shade == "Boxes")
                         tmp.prefix <- paste0("<span style='border:", cond.box.width,
                         "px solid ", f.cols[j], "; border-radius:", cond.box.radius,
                         "%; padding-right: 5px;'>")
+                    else if (cond.shade == "Bars")
+                    {
+                        tmp.prefix <- ""
+                        if (any(is.finite(f.vals)) && any(f.vals > 0))
+                        {
+                            max.val <- max(abs(as.numeric(f.vals)), na.rm = TRUE)
+                            tmp.vals <- round(abs(f.vals[c.ind[[j]]])/max.val * 100)
+                            tmp.prefix <- paste0("<div style='padding: 0px 0px;'><div style='background:", f.cols[j], "; width: calc(", tmp.vals, "% - 5px); height: 100%; float:right; vertical-align:middle; overflow: visible; white-space: nowrap; padding-right: 5px; border: solid 1px ", f.cols[j], "; border-radius: ", cond.bar.radius, "%; direction: rtl;'>&lrm;")
+                            cell.pad[i,c.ind[[j]]] <- 0
+                        }
+                    }
                     else if (cond.shade == "Arrows")
                         tmp.prefix <- ""
                     else
-                        tmp.prefix <- paste0(tmp.prefix, "'>")
+                        tmp.prefix <- paste0("<span style='color:", f.cols[j], "'>")
                     prefix[i,c.ind[[j]]] <- tmp.prefix
 
                     if (cond.shade %in% c("Font colors", "Boxes"))
@@ -334,6 +357,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                     else if (cond.shade == "Arrows")
                         suffix[i,c.ind[[j]]] <- paste0("<span style='color:",
                         f.cols[j], "'>", arrow.sym, "</span>")
+                    else if (cond.shade == "Bars")
+                        suffix[i,c.ind[[j]]] <- "</div></div>"
 
                    # Realign cells after adding arrow
                    if (cond.shade %in% c("Arrows", "Fonts and arrows"))
@@ -364,6 +389,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       suppress.nan = FALSE, suppress.na = FALSE,
                       num.header.rows = 2, row.height = row.height,
                       cell.prefix = prefix, cell.suffix = suffix,
+                      cell.align.horizontal = cell.align, cell.pad = cell.pad,
                       global.font.color = font.color, ...)
     result.rows <- trimws(unlist(sapply(row.span, function(r) rep(r$label, r$height))))
     tmp.minchar <- pmin(nchar(result.rows), nchar(row.labels))
