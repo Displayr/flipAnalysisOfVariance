@@ -340,7 +340,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                         {
                             max.val <- max(abs(as.numeric(f.vals)), na.rm = TRUE)
                             tmp.vals <- round(abs(f.vals[c.ind[[j]]])/max.val * 100)
-                            tmp.prefix <- paste0("<div style='padding: 0px 0px;'><div style='background:", f.cols[j], "; width: calc(", tmp.vals, "% - 10px); height: 100%; float:right; vertical-align:middle; overflow: visible; white-space: nowrap; padding-right: 5px; border: solid 1px ", f.cols[j], "; border-radius: ", cond.bar.radius, "%; direction: rtl;'>&lrm;")
+                            tmp.prefix <- paste0("<div style='padding: 0px 0px;'><div style='background:", f.cols[j], "; width: calc(", tmp.vals, "% - 5px); height: 100%; float:right; vertical-align:middle; overflow: visible; white-space: nowrap; padding-right: 5px; border: solid 1px ", f.cols[j], "; border-radius: ", cond.bar.radius, "%; direction: rtl;'>&lrm;")
                             cell.pad[i,c.ind[[j]]] <- 0
                         }
                     }
