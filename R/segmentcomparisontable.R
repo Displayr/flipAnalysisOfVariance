@@ -39,6 +39,9 @@
 #' @param cond.box.radius Numeric; roundness of box corner when
 #'      \code{cond.shade == "Boxes"} (e.g. 0 for sharp corners,
 #'      50 for oval).
+#' @param cond.bar.radius Numeric; roundness of bar corner when
+#'      \code{cond.shade == "Bars"} (e.g. 0 for sharp corners,
+#'      50 for oval).
 #' @param show.index.values Values are shown as a ratio to the total
 #'     computed on the whole population (i.e. unsegmented).
 #' @param cell.fill The default background color of the cells in the table.
@@ -94,6 +97,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    cond.shade = c("None", "Cell colors", "Font colors", "Boxes", "Arrows", "Fonts and arrows")[2],
                                    cond.box.radius = 0,
                                    cond.box.width = 2,
+                                   cond.bar.radius = 13,
                                    cond.shade.colors = c("#E99598", "#E5C8C4", "#A9C0DA", "#82A5CB"), # a vector of 4
                                    cond.shade.cutoffs = c(-0.2, -0.1, 0.1, 0.2),
                                    cond.shade.sig.only = FALSE,
@@ -336,9 +340,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                         {
                             max.val <- max(abs(as.numeric(f.vals)), na.rm = TRUE)
                             tmp.vals <- round(abs(f.vals[c.ind[[j]]])/max.val * 100)
-
-                            tmp.rem <- 100 - tmp.vals
-                            tmp.prefix <- paste0("<div style='padding: 0px 0px;'><div style='background:blue; width:", tmp.rem, "%; height:100%; float:left'></div><div style='background:", f.cols[j], "; width:", tmp.vals, "%; height: 100%; float:right; vertical-align:middle; overflow: hidden; padding-right: 5px; border: solid 1px ", f.cols[j], "; border-radius: 15%;'>")
+                            tmp.prefix <- paste0("<div style='padding: 0px 0px;'><div style='background:", f.cols[j], "; width: calc(", tmp.vals, "% - 10px); height: 100%; float:right; vertical-align:middle; overflow: visible; white-space: nowrap; padding-right: 5px; border: solid 1px ", f.cols[j], "; border-radius: ", cond.bar.radius, "%; direction: rtl;'>&lrm;")
                             cell.pad[i,c.ind[[j]]] <- 0
                         }
                     }
