@@ -135,9 +135,16 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         group.label <- " "
     corner.text <- ""
 
+    # Coerce non-factors into factors
     group <- ProcessQVariables(group)
     if (!is.factor(group))
-        stop("'Segmentation' should be a nominal or ordinal variable.")
+    {
+        if (length(attr(group, "label")) == 1) # pick-any question
+            group <- factor(group, labels = attr(group, "label"))
+        else
+            group <- factor(group)
+    }
+
     format.percentage.fill.colors <- ConvertCommaSeparatedStringToVector(format.percentage.fill.colors)
     format.numeric.fill.colors <- ConvertCommaSeparatedStringToVector(format.numeric.fill.colors)
     if (length(subset) > 1)
