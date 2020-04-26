@@ -139,8 +139,9 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     group <- ProcessQVariables(group)
     if (!is.factor(group))
     {
-        if (length(attr(group, "label")) == 1) # pick-any question
-            group <- factor(group, labels = attr(group, "label"))
+        tmp.lab <- if (is.null(attr(group, "label"))) "1" else attr(group, "label")
+        if (all(group %in% c(0, 1))) # binary variable - level "0" not shown
+            group <- factor(group, levels = c(0, 1), labels = c("_binary0", tmp.lab))
         else
             group <- factor(group)
     }
@@ -269,6 +270,15 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             pvals <- matrix(pvals, nrow(result), ncol(result), dimnames = old.dim)
         }
         results.font.color[which(pvals < 1 - font.color.confidence)] <- font.color
+    }
+
+    # Remove column corresponding to 0 in binary variables
+    ind.b0 <- which(colnames(result) == "_binary0")
+    if (length(ind.b0) > 0)
+    {
+        result.formatted <- result.formatted[,-ind.b0, drop = FALSE]
+        result <- result[,-ind.b0, drop = FALSE]
+        pvals <- pvals[,-ind.b0, drop = FALSE]
     }
 
     # Conditionally color based on cell value
