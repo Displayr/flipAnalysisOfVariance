@@ -345,7 +345,10 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             {
                 for (j in 1:cond.levels)
                 {
-                    arrow.sym <- if (j <= cond.midlevel) "&#x2193;" else "&#x2191"
+                    #arrow.sym <- if (j <= cond.midlevel) "&#x2193;" else "&#x2191"  # require fonts that are not on always available
+                    arrow.sym <- if (j <= cond.midlevel) "&#9660;" else "&#9650;"
+                    arrow.sym <- paste0("<span style='font-size:'", font.size + 10, font.unit, "'>",
+                        arrow.sym, "</span>")
                     if (cond.shade == "Boxes")
                         tmp.prefix <- paste0("<span style='border:", cond.box.width,
                         "px solid ", f.cols[j], "; border-radius:", cond.box.radius,
