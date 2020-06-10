@@ -154,8 +154,9 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         if (length(weights) > 1)
             weights <- weights[subset]
     }
-
-    counts <-t(WeightedTable(group, weights = weights))
+    c.n <- nlevels(group)
+    counts <-t(WeightedTable(group, weights = weights, useNA = "always"))
+    counts <- counts[1:c.n]
     result <- rbind(counts, counts/sum(counts))
     row.labels <- c("Sample size", "Percentage")
     if (length(weights) > 1)
