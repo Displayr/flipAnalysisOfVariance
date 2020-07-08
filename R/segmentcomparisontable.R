@@ -176,6 +176,11 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     {
         # Convert everything to a data frame
         v.qtype <- paste0("", attr(x[[vvi]], "questiontype")) # avoid NULL
+        # Convert ordered factor to factor because the order will force FactorToNumeric
+        # to convert factors into sequential numbers (not indicator variables)
+        if (is.ordered(x[[vvi]]))
+            class(x[[vvi]]) <- "factor"
+
         if (v.qtype == "Date")
             vv <- FactorToNumeric(ProcessQVariables(x[[vvi]]), binary = TRUE, remove.first = FALSE)
         else
