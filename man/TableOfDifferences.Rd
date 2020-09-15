@@ -40,6 +40,8 @@ TableOfDifferences(
   cond.box.padding.left = 0,
   cond.box.padding.top = 0,
   cond.box.padding.bottom = 0,
+  row.names.to.remove = "NET, Total, Sum",
+  column.names.to.remove = "NET, Total, Sum",
   ...
 )
 }
@@ -152,6 +154,12 @@ from the text when \code{cond.shade == "Boxes"}.}
 
 \item{cond.box.padding.bottom}{Number; controls how far the box extends
 from the text when \code{cond.shade == "Boxes"}.}
+
+\item{row.names.to.remove}{Character vector or delimited string of
+row labels specifying rows to remove from the returned table.}
+
+\item{column.names.to.remove}{Character vector or delimited string of
+column labels specifying columns to remove from the returned table.}
 
 \item{...}{Other parameters passed to \link[flipFormat]{CreateCustomTable}.}
 }

@@ -76,10 +76,15 @@
 #'      difference should be automatically set to black or white
 #'      to maximise the contrast to the cell fill. 
 #'      Overrides \code{format.difference.font.color}.
+#' @param row.names.to.remove Character vector or delimited string of
+#'     row labels specifying rows to remove from the returned table.
+#' @param column.names.to.remove Character vector or delimited string of
+#'     column labels specifying columns to remove from the returned table.
 #' @param format.difference.font.color Font color of difference if it
 #'      is shown in the cell.
 #' @param ... Other parameters passed to \link[flipFormat]{CreateCustomTable}.
 #' @importFrom flipFormat CreateCustomTable
+#' @importFrom flipTables RemoveRowsAndOrColumns
 #' @export
 
 TableOfDifferences <- function(table1,
@@ -117,27 +122,37 @@ TableOfDifferences <- function(table1,
                                cond.box.padding.left = 0,
                                cond.box.padding.top = 0,
                                cond.box.padding.bottom = 0,
+                               row.names.to.remove = "NET, Total, Sum",
+                               column.names.to.remove = "NET, Total, Sum",
                                ...)
 {
-    # 1-column table may be not have 3 dimensions
+    # Check input data
+    table1 <- convertToTableWithStatistics(table1, required.statistics = c("Base n|Count", 
+                "Standard Error|Column Standard Error"))
+    table2 <- convertToTableWithStatistics(table2, required.statistics = c("Base n|Count", 
+                "Standard Error|Column Standard Error"))
+    table1 <- RemoveRowsAndOrColumns(table1, row.names.to.remove, column.names.to.remove)
+    table2 <- RemoveRowsAndOrColumns(table2, row.names.to.remove, column.names.to.remove)
     stat1 <- dimnames(table1)[[3]]
     stat2 <- dimnames(table2)[[3]]
-
     if (stat1[1] != stat2[1])
         stop("The primary statistic of Table 1 (", stat1[1],
         ") does not match the primary statistic of Table 2 (",
         stat2[1], ").")
-    # allow row/column names to be in different arrangements
-    # retain only matching ones
+    if (any(rownames(table1) != rownames(table2)))
+        stop("Row names of Table 1 and Table 2 should be identical and in the same order.")
+    if (any(colnames(table1) != colnames(table2)))
+        stop("Column names of Table 1 and Table 2 should be identical and in the same order.")
 
+    # Compute significance of differences
+    is.percentage <- grepl("%", stat1[1], fixed = TRUE)
+    denom <- if (is.percentage) 100 else 1
     cell.diff <- primaryStat(table2) - primaryStat(table1)
     pvals <- independentSamplesTTestMeans(
-        primaryStat(table1), primaryStat(table2),
-        table1[,,"Standard Error"], table2[,,"Standard Error"],
-        table1[,,"Count"], table2[,,"Count"])
-    #print(pvals, digits = 5)
+        primaryStat(table2)/denom, primaryStat(table1)/denom,
+        table2[,,"Standard Error"], table1[,,"Standard Error"],
+        table2[,,"Count"], table1[,,"Count"])
 
-    is.percentage <- grepl("%", stat1[1], fixed = TRUE)
     if (is.null(format.statistic.decimals))
         format.statistic.decimals <- if (is.percentage) 0 else 2
     if (is.null(format.difference.decimals))
@@ -267,9 +282,11 @@ TableOfDifferences <- function(table1,
 
     cell.text <- matrix(cell.text,
         nrow(table1), ncol(table1), dimnames = dimnames(table1)[1:2])
-    CreateCustomTable(cell.text, cell.fill = cell.fill,
+    result <- CreateCustomTable(cell.text, cell.fill = cell.fill,
         cell.font.family = cell.font.family, cell.font.size = cell.font.size,
-        cell.font.color = cell.font.color)
+        cell.font.color = cell.font.color, ...)
+    attr(result, "p-values") <- pvals
+    return(result)
 }
 
 
@@ -287,4 +304,32 @@ autoFontColor <- function (colors)
     tmp.rgb <- col2rgb(colors)
     tmp.lum <- apply(tmp.rgb, 2, function(x) return(0.299*x[1] + 0.587*x[2] + 0.114*x[3]))
     return(ifelse(tmp.lum > 126, "#2C2C2C", "#FFFFFF"))
+}
+
+convertToTableWithStatistics <- function(x, required.statistics = NULL)
+{
+    # 1-column table with multiple stats in 2nd dimension
+    if (length(dim(x)) == 2)
+    {
+        dn <- dimnames(x)
+        dn <- c(dn[1], "", dn[2])
+        x <- array(x, dim = sapply(dn, length), dimnames = dn)
+    
+    } else if (length(dim(x)) < 2)
+        stop("Table must contain statistics: ", 
+            paste(sub("|", " or ", required.statistics, fixed = TRUE),
+            sep = ", "), ".")
+
+    if (length(required.statistics) > 0)
+    {
+        stats <- dimnames(x)[[3]]
+        for (i in 1:length(required.statistics))
+        {
+            if (!any(grepl(required.statistics[i], stats)))
+                stop("Table does not contain the statistic ",
+                sub("|", " or ", required.statistics[i], fixed = TRUE),
+                ".")
+        }
+    }
+    return(x)
 }

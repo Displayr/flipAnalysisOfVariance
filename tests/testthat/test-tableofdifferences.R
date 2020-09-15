@@ -82,7 +82,37 @@ tb1 <- structure(c(6.97674418604651, 6.97674418604651, 16.2790697674419,
         3L))), name = "table.Income.by.Gender.2", questions = c("Income",
         "Gender"))
 
+vec1dA <- structure(c(100, 100, 93.9393939393939, 100, 79.7979797979798,
+95.959595959596, 100, 99, 99, 93, 99, 79, 95, 99, 0, 0, 0.0241028760295672,
+0, 0.0405583530232473, 0.0198904022396684, 0), .Dim = c(7L, 3L
+), .Dimnames = list(c("Coca-Cola", "Diet Coke", "Coke Zero",
+"Pepsi", "Diet Pepsi", "Pepsi Max", "NET"), c("%", "Count", "Standard Error"
+)), basedescriptiontext = "sample size = 99; 88% filtered out", basedescription = list(
+    Minimum = 99L, Maximum = 99L, Range = FALSE, Total = 99L,
+    Missing = 0L, EffectiveSampleSize = 99L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 87.625), questiontypes = "PickAny", span = list(
+    rows = structure(list(c("Coca-Cola", "Diet Coke", "Coke Zero",
+    "Pepsi", "Diet Pepsi", "Pepsi Max", "NET")), class = "data.frame", .Names = "", row.names = c(NA,
+    7L))), name = "table.Awareness", questions = c("Awareness",
+"SUMMARY"))
+
+vec1dB <- structure(c(100, 100, 90.6593406593407, 100, 82.967032967033,
+92.8571428571429, 100, 182, 182, 165, 182, 151, 169, 182, 0,
+0, 0.0216299620455664, 0, 0.0279420744290416, 0.0191427511217599,
+0), .Dim = c(7L, 3L), .Dimnames = list(c("Coca-Cola", "Diet Coke",
+"Coke Zero", "Pepsi", "Diet Pepsi", "Pepsi Max", "NET"), c("%",
+"Count", "Standard Error")), basedescriptiontext = "sample size = 182; 77% filtered out", basedescription = list(
+    Minimum = 182L, Maximum = 182L, Range = FALSE, Total = 182L,
+    Missing = 0L, EffectiveSampleSize = 182L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 77.25), questiontypes = "PickAny", span = list(
+    rows = structure(list(c("Coca-Cola", "Diet Coke", "Coke Zero",
+    "Pepsi", "Diet Pepsi", "Pepsi Max", "NET")), class = "data.frame", .Names = "", row.names = c(NA,
+    7L))), name = "table.Awareness.2", questions = c("Awareness",
+"SUMMARY"))
+
+
 test_that("Table of differences",
 {
     expect_error(TableOfDifferences(tb1, tb2), NA)
+    expect_error(TableofDifferences(vec1dA, vec1dB))
 })
