@@ -8,7 +8,7 @@
 #'      significantly different.
 #' @param table2 A Q Table with the same labels as \code{table1}.
 #' @param show Controls text shown in the output table. Select one of
-#'      "Primary statistic of Table 2 with differences", 
+#'      "Primary statistic of Table 2 with differences",
 #'      "Primary statistic of Table 2" or "Differences".
 #' @param cond.shade Controls which elements are colored differently
 #'      to show significance. Select one of "None", "Cell colors", "Arrows", "Boxes".
@@ -58,7 +58,7 @@
 #' @param format.statistic.font.size Font size of primary statistic.
 #' @param format.statistic.font.autocolor Whether the font of the
 #'      primary statistic should be automatically set to black or white
-#'      to maximise the contrast to the cell fill. 
+#'      to maximise the contrast to the cell fill.
 #'      Overrides \code{format.statistic.font.color}.
 #' @param format.statistic.font.color Font color of primary statistic if it
 #'      is shown in the cell.
@@ -74,11 +74,11 @@
 #' @param format.difference.font.size Font size of difference.
 #' @param format.difference.font.autocolor Whether the font of the
 #'      difference should be automatically set to black or white
-#'      to maximise the contrast to the cell fill. 
+#'      to maximise the contrast to the cell fill.
 #'      Overrides \code{format.difference.font.color}.
 #' @param format.difference.font.color Font color of difference if it
 #'      is shown in the cell.
-#' @param legend.show Logical; whether or not to show legend at the 
+#' @param legend.show Logical; whether or not to show legend at the
 #'      bottom of the table.
 #' @param legend.sep Character; the string used to separate entries in
 #'      the legend.
@@ -144,9 +144,9 @@ TableOfDifferences <- function(table1,
                                ...)
 {
     # Check input data
-    table1 <- convertToTableWithStatistics(table1, required.statistics = c("Base n|Count", 
+    table1 <- convertToTableWithStatistics(table1, required.statistics = c("Base n|Count",
                 "Standard Error|Column Standard Error"))
-    table2 <- convertToTableWithStatistics(table2, required.statistics = c("Base n|Count", 
+    table2 <- convertToTableWithStatistics(table2, required.statistics = c("Base n|Count",
                 "Standard Error|Column Standard Error"))
     table1 <- RemoveRowsAndOrColumns(table1, row.names.to.remove, column.names.to.remove)
     table2 <- RemoveRowsAndOrColumns(table2, row.names.to.remove, column.names.to.remove)
@@ -160,7 +160,7 @@ TableOfDifferences <- function(table1,
         stop("Row names of Table 1 and Table 2 should be identical and in the same order.")
     if (any(colnames(table1) != colnames(table2)))
         stop("Column names of Table 1 and Table 2 should be identical and in the same order.")
-   
+
     ind1.n <- findIndexOfStat(stat1, c("Base n", "Count"), "Table 1")
     ind2.n <- findIndexOfStat(stat2, c("Base n", "Count"), "Table 2")
     ind1.se <- findIndexOfStat(stat1, c("Standard Error", "Column Standard Error"), "Table 1")
@@ -168,7 +168,7 @@ TableOfDifferences <- function(table1,
 
     # Compute significance of differences
     is.percentage <- grepl("%", stat1[1], fixed = TRUE)
-    denom <- if (is.percentage) 100 else 1 
+    denom <- if (is.percentage) 100 else 1
     cell.diff <- primaryStat(table2) - primaryStat(table1)
     pvals <- independentSamplesTTestMeans(
         primaryStat(table2)/denom, primaryStat(table1)/denom,
@@ -192,9 +192,9 @@ TableOfDifferences <- function(table1,
         for (i in cond.ord)
         {
             ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff < 0)
-            cell.fill[ind] <- cond.shade.lb.colors[i] 
+            cell.fill[ind] <- cond.shade.lb.colors[i]
             ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff > 0)
-            cell.fill[ind] <- cond.shade.ub.colors[i] 
+            cell.fill[ind] <- cond.shade.ub.colors[i]
         }
     } else if (cond.shade == "Arrows")
     {
@@ -210,12 +210,12 @@ TableOfDifferences <- function(table1,
             cell.text[ind] <- sub("&nbsp;", "&nbsp;&nbsp;", cell.text[ind])
         }
     } else if (cond.shade == "Boxes")
-    {   
+    {
         tmp.fill <- cell.fill
         for (i in cond.ord)
         {
             ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff < 0)
-            tmp.prefix[ind] <- paste0("<span style='border:", 
+            tmp.prefix[ind] <- paste0("<span style='border:",
                 cond.box.borderwidth, "px solid ",cond.shade.lb.bordercolors[i],
                 "; background-color:", cond.shade.lb.colors[i],
                 "; border-radius:", cond.box.radius, "%",
@@ -227,7 +227,7 @@ TableOfDifferences <- function(table1,
             tmp.fill[ind] <- cond.shade.lb.colors[i]
 
             ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff > 0)
-            tmp.prefix[ind] <- paste0("<span style='border:", 
+            tmp.prefix[ind] <- paste0("<span style='border:",
                 cond.box.borderwidth, "px solid ",cond.shade.ub.bordercolors[i],
                 "; background-color:", cond.shade.ub.colors[i],
                 "; border-radius:", cond.box.radius, "%",
@@ -241,18 +241,18 @@ TableOfDifferences <- function(table1,
     }
 
     # Construct text to be shown inside table cells
-    if (show == "Primary statistic of Table 2" || 
+    if (show == "Primary statistic of Table 2" ||
         show == "Primary statistic of Table 2 with differences")
     {
-        cell.text <- paste0(format.statistic.prefix, 
-            formatC(primaryStat(table2), format.statistic.decimals, 
+        cell.text <- paste0(format.statistic.prefix,
+            formatC(primaryStat(table2), format.statistic.decimals,
             format = "f", big.mark = ","),
             format.statistic.suffix)
-    
+
     } else
     {
         cell.text <- paste0(format.difference.prefix,
-            formatC(cell.diff, format.difference.decimals, 
+            formatC(cell.diff, format.difference.decimals,
             format = "f", big.mark = ",",
             flag = if (format.difference.sign) "+" else ""),
             format.difference.suffix)
@@ -267,7 +267,7 @@ TableOfDifferences <- function(table1,
         if (format.difference.font.autocolor)
             format.difference.font.color <- autoFontColor(cell.fill)
         tmp.text <- paste0(format.difference.prefix,
-                     formatC(cell.diff, format.difference.decimals, 
+                     formatC(cell.diff, format.difference.decimals,
                      format = "f", big.mark = ",",
                      flag = if (format.difference.sign) "+" else ""),
                      format.difference.suffix)
@@ -276,7 +276,7 @@ TableOfDifferences <- function(table1,
         tmp.text <- gsub(" ", "&nbsp;", tmp.text)
         cell.text <- paste0(cell.text,
                      "<span style='font-family:", format.difference.font.family,
-                     "; color:", format.difference.font.color, 
+                     "; color:", format.difference.font.color,
                      "; font-size:", format.difference.font.size, font.unit, "'>",
                      tmp.text,
                      "</span>")
@@ -284,7 +284,7 @@ TableOfDifferences <- function(table1,
 
     # Set fonts to pass to CreateCustomTable
     # This needs to be done after the conditional shading
-    # so the autoFontColor can be called appropriately 
+    # so the autoFontColor can be called appropriately
     if (show == "Differences")
     {
         cell.font.family = format.difference.font.family
@@ -319,23 +319,23 @@ TableOfDifferences <- function(table1,
             tmp.text <- sprintf("<span style='color:%s'>%s</span>",
                 tmp.fill, rep(c("&#9650;", "&#9660;"), each = tmp.lev))
         else if (cond.shade == "Boxes")
-            tmp.text <- sprintf("<span style='border:%dpx solid %s; background-color: %s; border-radius:%d%%'>%s</span>",
-                cond.box.borderwidth, 
+            tmp.text <- sprintf("<span style='border:%.0fpx solid %s; background-color: %s; border-radius:%.0f%%'>%s</span>",
+                cond.box.borderwidth,
                 c(cond.shade.ub.bordercolors, rev(cond.shade.lb.bordercolors)),
                 tmp.fill, cond.box.radius, empty.text)
 
         tmp.text <- paste("<nobr>", tmp.text,
-                        sprintf("Signficant %s at %d%% confidence limit",
+                        sprintf("Signficant %s at %.0f%% confidence limit",
                         rep(c("increase", "decrease"), each = tmp.lev),
                         c(conf, rev(conf))), "</nobr>")
         legend.text <- paste(tmp.text, collapse = legend.sep)
     }
-    
+
     cell.text <- matrix(cell.text,
         nrow(table1), ncol(table1), dimnames = dimnames(table1)[1:2])
     result <- CreateCustomTable(cell.text, cell.fill = cell.fill,
         cell.font.family = cell.font.family, cell.font.size = cell.font.size,
-        cell.font.color = cell.font.color, 
+        cell.font.color = cell.font.color,
         footer = legend.text, footer.fill = legend.fill,
         footer.font.color = legend.font.color,
         footer.font.family = legend.font.family,
@@ -375,7 +375,7 @@ convertToTableWithStatistics <- function(x, required.statistics = NULL)
         dn <- dimnames(x)
         dn <- c(dn[1], "", dn[2])
         x <- array(x, dim = sapply(dn, length), dimnames = dn)
-    
+
     } else if (length(dim(x)) < 2)
         stop("Input tables must be Q Tables showing cell statistics ",
             "'Base n' or 'Count' and 'Standard Error' or 'Column Standard Error'")
@@ -391,7 +391,7 @@ findIndexOfStat <- function(stat.names, target, table.name)
     {
         ind <- which(stat.names == tt)
         # stop after first match is found
-        if (length(ind) > 0)               
+        if (length(ind) > 0)
             break
     }
     if (length(ind) == 0)
