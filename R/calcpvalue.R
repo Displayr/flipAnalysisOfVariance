@@ -199,7 +199,8 @@ independentSamplesTTestMeans <- function(mean1,
                                         standard_error_1,
                                         standard_error_2,
                                         n1,
-                                        n2)
+                                        n2,
+                                        two.sided = TRUE)
 {
     .ComputeStandardError <- function(se_1, se_2)
     {
@@ -216,7 +217,12 @@ independentSamplesTTestMeans <- function(mean1,
     se = .ComputeStandardError(standard_error_1,  standard_error_2)
     t = (mean1 - mean2) / se
     df = .WelchDegreesOfFreedom(standard_error_1, standard_error_2, n1, n2)
-    p = pt(-abs(t), df)  * 2
+  
+    # By default return the two-sided test
+    # Note that the one-sided test in this case does not correspond to testing
+    # diff > 0 or diff < 0 but is conditional on the correct sign being chosen 
+    m <- if (two.sided) 2 else 1
+    p = pt(-abs(t), df)  * m
     #cat(sprintf("p=%.4f, t=%.2f, se=%.3f\n", p, t, se))
     return(p)
 }

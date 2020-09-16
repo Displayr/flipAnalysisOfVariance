@@ -19,6 +19,13 @@ TableOfDifferences(
   font.size = 10,
   font.unit = "px",
   font.family = "Arial",
+  legend.show = TRUE,
+  legend.sep = "&nbsp;&nbsp;&nbsp;",
+  legend.fill = "transparent",
+  legend.font.family = font.family,
+  legend.font.color = font.color,
+  legend.font.size = font.size,
+  legend.lineheight = 2,
   format.statistic.decimals = NULL,
   format.statistic.prefix = "",
   format.statistic.suffix = "",
@@ -90,6 +97,23 @@ to color the borders when \code{cond.shade == "Boxes"}..}
 \item{font.unit}{One of "px" or "pt".}
 
 \item{font.family}{Default font family of the cells in the table.}
+
+\item{legend.show}{Logical; whether or not to show legend at the 
+bottom of the table.}
+
+\item{legend.sep}{Character; the string used to separate entries in
+the legend.}
+
+\item{legend.fill}{Background color of the region behind the legend.}
+
+\item{legend.font.family}{Font family of text in the legend.}
+
+\item{legend.font.color}{Font color of text in the legend.}
+
+\item{legend.font.size}{Font size of text in the legend.}
+
+\item{legend.lineheight}{Numeric; controls the spacing between
+lines in the legend. It is applied as a multiple of the font size.}
 
 \item{format.statistic.decimals}{Numeric; The number of decimals shown
 if the primary statistic is shown in the cells.}

@@ -76,12 +76,22 @@
 #'      difference should be automatically set to black or white
 #'      to maximise the contrast to the cell fill. 
 #'      Overrides \code{format.difference.font.color}.
+#' @param format.difference.font.color Font color of difference if it
+#'      is shown in the cell.
+#' @param legend.show Logical; whether or not to show legend at the 
+#'      bottom of the table.
+#' @param legend.sep Character; the string used to separate entries in
+#'      the legend.
+#' @param legend.fill Background color of the region behind the legend.
+#' @param legend.lineheight Numeric; controls the spacing between
+#'      lines in the legend. It is applied as a multiple of the font size.
+#' @param legend.font.family Font family of text in the legend.
+#' @param legend.font.color Font color of text in the legend.
+#' @param legend.font.size Font size of text in the legend.
 #' @param row.names.to.remove Character vector or delimited string of
 #'     row labels specifying rows to remove from the returned table.
 #' @param column.names.to.remove Character vector or delimited string of
 #'     column labels specifying columns to remove from the returned table.
-#' @param format.difference.font.color Font color of difference if it
-#'      is shown in the cell.
 #' @param ... Other parameters passed to \link[flipFormat]{CreateCustomTable}.
 #' @importFrom flipFormat CreateCustomTable
 #' @importFrom flipTables RemoveRowsAndOrColumns
@@ -150,15 +160,20 @@ TableOfDifferences <- function(table1,
         stop("Row names of Table 1 and Table 2 should be identical and in the same order.")
     if (any(colnames(table1) != colnames(table2)))
         stop("Column names of Table 1 and Table 2 should be identical and in the same order.")
+   
+    ind1.n <- findIndexOfStat(stat1, c("Base n", "Count"), "Table 1")
+    ind2.n <- findIndexOfStat(stat2, c("Base n", "Count"), "Table 2")
+    ind1.se <- findIndexOfStat(stat1, c("Standard Error", "Column Standard Error"), "Table 1")
+    ind2.se <- findIndexOfStat(stat2, c("Standard Error", "Column Standard Error"), "Table 2")
 
     # Compute significance of differences
     is.percentage <- grepl("%", stat1[1], fixed = TRUE)
-    denom <- if (is.percentage) 100 else 1
+    denom <- if (is.percentage) 100 else 1 
     cell.diff <- primaryStat(table2) - primaryStat(table1)
     pvals <- independentSamplesTTestMeans(
         primaryStat(table2)/denom, primaryStat(table1)/denom,
-        table2[,,"Standard Error"], table1[,,"Standard Error"],
-        table2[,,"Count"], table1[,,"Count"])
+        table2[,,ind2.se], table1[,,ind1.se],
+        table2[,,ind2.n], table1[,,ind1.n], two.sided = FALSE)
 
     if (is.null(format.statistic.decimals))
         format.statistic.decimals <- if (is.percentage) 0 else 2
@@ -350,6 +365,10 @@ autoFontColor <- function (colors)
 
 convertToTableWithStatistics <- function(x, required.statistics = NULL)
 {
+    if (is.null(attr(x, "questions")) || is.null(attr(x, "name")))
+        stop("Input tables must be Q Tables showing cell statistics ",
+            "'Base n' or 'Count' and 'Standard Error' or 'Column Standard Error'")
+
     # 1-column table with multiple stats in 2nd dimension
     if (length(dim(x)) == 2)
     {
@@ -358,20 +377,25 @@ convertToTableWithStatistics <- function(x, required.statistics = NULL)
         x <- array(x, dim = sapply(dn, length), dimnames = dn)
     
     } else if (length(dim(x)) < 2)
-        stop("Table must contain statistics: ", 
-            paste(sub("|", " or ", required.statistics, fixed = TRUE),
-            sep = ", "), ".")
+        stop("Input tables must be Q Tables showing cell statistics ",
+            "'Base n' or 'Count' and 'Standard Error' or 'Column Standard Error'")
 
-    if (length(required.statistics) > 0)
-    {
-        stats <- dimnames(x)[[3]]
-        for (i in 1:length(required.statistics))
-        {
-            if (!any(grepl(required.statistics[i], stats)))
-                stop("Table does not contain the statistic ",
-                sub("|", " or ", required.statistics[i], fixed = TRUE),
-                ".")
-        }
-    }
     return(x)
+}
+
+
+findIndexOfStat <- function(stat.names, target, table.name)
+{
+    ind <- integer(0)
+    for (tt in target)
+    {
+        ind <- which(stat.names == tt)
+        # stop after first match is found
+        if (length(ind) > 0)               
+            break
+    }
+    if (length(ind) == 0)
+        stop(table.name, " must contain one of following cell statistics: '",
+            paste(target, collapse = "', '"), "'.")
+    return(ind)
 }
