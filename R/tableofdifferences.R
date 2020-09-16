@@ -101,6 +101,13 @@ TableOfDifferences <- function(table1,
                                font.size = 10,
                                font.unit = "px",
                                font.family = "Arial",
+                               legend.show = TRUE,
+                               legend.sep = "&nbsp;&nbsp;&nbsp;",
+                               legend.fill = "transparent",
+                               legend.font.family = font.family,
+                               legend.font.color = font.color,
+                               legend.font.size = font.size,
+                               legend.lineheight = 2,
                                format.statistic.decimals = NULL,
                                format.statistic.prefix = "",
                                format.statistic.suffix = "",
@@ -158,30 +165,8 @@ TableOfDifferences <- function(table1,
     if (is.null(format.difference.decimals))
         format.difference.decimals <- if (is.percentage) 0 else 2
 
-    if (show == "Primary statistic of Table 2" || 
-        show == "Primary statistic of Table 2 with differences")
-    {
-        cell.text <- paste0(format.statistic.prefix, 
-            formatC(primaryStat(table2), format.statistic.decimals, 
-            format = "f", big.mark = ","),
-            format.statistic.suffix)
-    
-    } else
-    {
-        cell.text <- paste0(format.difference.prefix,
-            formatC(cell.diff, format.difference.decimals, 
-            format = "f", big.mark = ",",
-            flag = if (format.difference.sign) "+" else ""),
-            format.difference.suffix)
-    }
-    max.width <- max(nchar(cell.text))
-    cell.text <- formatC(cell.text, format = "s", width = max.width)
-    cell.text <- gsub(" ", "&nbsp;", cell.text)
 
-    # Conditional cell fill shading is specified before cell.text
-    # so that autoFontColor can be computed
-    # However conditional shading is arrows is performed later
-    # so that text can re-aligned after adding extra character 
+    # Conditional shading
     cond.ord <- order(cond.shade.cutoffs, decreasing = TRUE)
     tmp.prefix <- matrix("", nrow = nrow(table1), ncol(table1))
     tmp.suffix <- matrix("", nrow = nrow(table1), ncol(table1))
@@ -240,6 +225,27 @@ TableOfDifferences <- function(table1,
         }
     }
 
+    # Construct text to be shown inside table cells
+    if (show == "Primary statistic of Table 2" || 
+        show == "Primary statistic of Table 2 with differences")
+    {
+        cell.text <- paste0(format.statistic.prefix, 
+            formatC(primaryStat(table2), format.statistic.decimals, 
+            format = "f", big.mark = ","),
+            format.statistic.suffix)
+    
+    } else
+    {
+        cell.text <- paste0(format.difference.prefix,
+            formatC(cell.diff, format.difference.decimals, 
+            format = "f", big.mark = ",",
+            flag = if (format.difference.sign) "+" else ""),
+            format.difference.suffix)
+    }
+    max.width <- max(nchar(cell.text))
+    cell.text <- formatC(cell.text, format = "s", width = max.width)
+    cell.text <- gsub(" ", "&nbsp;", cell.text)
+
     cell.text <- paste0(tmp.prefix, cell.text, tmp.suffix)
     if (show == "Primary statistic of Table 2 with differences")
     {
@@ -261,6 +267,9 @@ TableOfDifferences <- function(table1,
                      "</span>")
     }
 
+    # Set fonts to pass to CreateCustomTable
+    # This needs to be done after the conditional shading
+    # so the autoFontColor can be called appropriately 
     if (show == "Differences")
     {
         cell.font.family = format.difference.font.family
@@ -280,11 +289,44 @@ TableOfDifferences <- function(table1,
         cell.font.color = format.statistic.font.color
     }
 
+    legend.text <- ""
+    if (legend.show && cond.shade != "None")
+    {
+        conf <- (1 - cond.shade.cutoffs) * 100
+        tmp.lev <- length(conf)
+        tmp.fill <- c(cond.shade.ub.colors, rev(cond.shade.lb.colors))
+        empty.text <- paste(rep("&nbsp;", 4), collapse = "")
+
+        if (cond.shade == "Cell colors")
+            tmp.text <- sprintf("<span style='border:1px solid %s; background-color: %s'>%s</span>",
+                tmp.fill, tmp.fill, empty.text)
+        else if (cond.shade == "Arrows")
+            tmp.text <- sprintf("<span style='color:%s'>%s</span>",
+                tmp.fill, rep(c("&#9650;", "&#9660;"), each = tmp.lev))
+        else if (cond.shade == "Boxes")
+            tmp.text <- sprintf("<span style='border:%dpx solid %s; background-color: %s; border-radius:%d%%'>%s</span>",
+                cond.box.borderwidth, 
+                c(cond.shade.ub.bordercolors, rev(cond.shade.lb.bordercolors)),
+                tmp.fill, cond.box.radius, empty.text)
+
+        tmp.text <- paste("<nobr>", tmp.text,
+                        sprintf("Signficant %s at %d%% confidence limit",
+                        rep(c("increase", "decrease"), each = tmp.lev),
+                        c(conf, rev(conf))), "</nobr>")
+        legend.text <- paste(tmp.text, collapse = legend.sep)
+    }
+    
     cell.text <- matrix(cell.text,
         nrow(table1), ncol(table1), dimnames = dimnames(table1)[1:2])
     result <- CreateCustomTable(cell.text, cell.fill = cell.fill,
         cell.font.family = cell.font.family, cell.font.size = cell.font.size,
-        cell.font.color = cell.font.color, ...)
+        cell.font.color = cell.font.color, 
+        footer = legend.text, footer.fill = legend.fill,
+        footer.font.color = legend.font.color,
+        footer.font.family = legend.font.family,
+        footer.font.size = legend.font.size,
+        footer.lineheight = legend.lineheight,
+        ...)
     attr(result, "p-values") <- pvals
     return(result)
 }
