@@ -219,6 +219,7 @@ TableOfDifferences <- function(table1,
         }
     } else if (cond.shade == "Boxes")
     {
+        cell.fill <- matrix(cell.fill, nrow = nrow(table1), ncol = ncol(table1))
         tmp.fill <- cell.fill
         for (i in cond.ord)
         {
