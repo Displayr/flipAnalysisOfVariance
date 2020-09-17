@@ -144,10 +144,8 @@ TableOfDifferences <- function(table1,
                                ...)
 {
     # Check input data
-    table1 <- convertToTableWithStatistics(table1, required.statistics = c("Base n|Count",
-                "Standard Error|Column Standard Error"))
-    table2 <- convertToTableWithStatistics(table2, required.statistics = c("Base n|Count",
-                "Standard Error|Column Standard Error"))
+    table1 <- convertToTableWithStatistics(table1)
+    table2 <- convertToTableWithStatistics(table2)
     table1 <- RemoveRowsAndOrColumns(table1, row.names.to.remove, column.names.to.remove)
     table2 <- RemoveRowsAndOrColumns(table2, row.names.to.remove, column.names.to.remove)
     stat1 <- dimnames(table1)[[3]]
@@ -169,9 +167,9 @@ TableOfDifferences <- function(table1,
     # Compute significance of differences
     is.percentage <- grepl("%", stat1[1], fixed = TRUE)
     denom <- if (is.percentage) 100 else 1
-    cell.diff <- primaryStat(table2) - primaryStat(table1)
+    cell.diff <- table2[,,1] - table1[,,1]
     pvals <- independentSamplesTTestMeans(
-        primaryStat(table2)/denom, primaryStat(table1)/denom,
+        table2[,,1]/denom, table1[,,1]/denom,
         table2[,,ind2.se], table1[,,ind1.se],
         table2[,,ind2.n], table1[,,ind1.n], two.sided = FALSE)
 
@@ -195,19 +193,6 @@ TableOfDifferences <- function(table1,
             cell.fill[ind] <- cond.shade.lb.colors[i]
             ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff > 0)
             cell.fill[ind] <- cond.shade.ub.colors[i]
-        }
-    } else if (cond.shade == "Arrows")
-    {
-        for (i in cond.ord)
-        {
-            ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff < 0)
-            tmp.suffix[ind] <- paste0("<span style='color:",
-                cond.shade.lb.colors[i], "'>&#9660;</span>")
-            cell.text[ind] <- sub("&nbsp;", "&nbsp;&nbsp;", cell.text[ind])
-            ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff > 0)
-            tmp.suffix[ind] <- paste0("<span style='color:",
-                cond.shade.ub.colors[i], "'>&#9650;</span>")
-            cell.text[ind] <- sub("&nbsp;", "&nbsp;&nbsp;", cell.text[ind])
         }
     } else if (cond.shade == "Boxes")
     {
@@ -245,7 +230,7 @@ TableOfDifferences <- function(table1,
         show == "Primary statistic of Table 2 with differences")
     {
         cell.text <- paste0(format.statistic.prefix,
-            formatC(primaryStat(table2), format.statistic.decimals,
+            formatC(table2[,,1], format.statistic.decimals,
             format = "f", big.mark = ","),
             format.statistic.suffix)
 
@@ -260,6 +245,23 @@ TableOfDifferences <- function(table1,
     max.width <- max(nchar(cell.text))
     cell.text <- formatC(cell.text, format = "s", width = max.width)
     cell.text <- gsub(" ", "&nbsp;", cell.text)
+
+    # This occurs later than the "Cell colors" and "Boxes" options
+    # because we need to add spaces to cell.text to re-align characters
+    if (cond.shade == "Arrows")
+    {
+        for (i in cond.ord)
+        {
+            ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff < 0)
+            tmp.suffix[ind] <- paste0("<span style='color:",
+                cond.shade.lb.colors[i], "'>&#9660;</span>")
+            cell.text[ind] <- sub("&nbsp;", "&nbsp;&nbsp;", cell.text[ind])
+            ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff > 0)
+            tmp.suffix[ind] <- paste0("<span style='color:",
+                cond.shade.ub.colors[i], "'>&#9650;</span>")
+            cell.text[ind] <- sub("&nbsp;", "&nbsp;&nbsp;", cell.text[ind])
+        }
+    }
 
     cell.text <- paste0(tmp.prefix, cell.text, tmp.suffix)
     if (show == "Primary statistic of Table 2 with differences")
@@ -346,13 +348,7 @@ TableOfDifferences <- function(table1,
     return(result)
 }
 
-
-primaryStat <- function(x)
-{
-    return(x[,,1])
-}
-
-#' use black or white for good contrast against colors
+#' Use black or white for good contrast against colors
 #'
 #' @param colors vector of colors which will be the background color of the
 #' @importFrom grDevices col2rgb rgb2hsv
@@ -363,7 +359,10 @@ autoFontColor <- function (colors)
     return(ifelse(tmp.lum > 126, "#2C2C2C", "#FFFFFF"))
 }
 
-convertToTableWithStatistics <- function(x, required.statistics = NULL)
+# Tries to convert the QTable into a 3d array
+# An error will be thrown if the input is not a QTable
+# or it does not contain multiple statistics
+convertToTableWithStatistics <- function(x)
 {
     if (is.null(attr(x, "questions")) || is.null(attr(x, "name")))
         stop("Input tables must be Q Tables showing cell statistics ",
@@ -383,7 +382,9 @@ convertToTableWithStatistics <- function(x, required.statistics = NULL)
     return(x)
 }
 
-
+# Tries to find target in the stat.names list
+# If multiple entries in target are in stat.names, the index of the first match is returned
+# If no entry in target matches stat.names then an error is thrown
 findIndexOfStat <- function(stat.names, target, table.name)
 {
     ind <- integer(0)

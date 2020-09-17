@@ -113,6 +113,8 @@ vec1dB <- structure(c(100, 100, 90.6593406593407, 100, 82.967032967033,
 
 test_that("Table of differences",
 {
-    expect_error(TableOfDifferences(tb1, tb2), NA)
-    expect_error(TableofDifferences(vec1dA, vec1dB))
+    expect_error(TableOfDifferences(tb1, tb2, cond.shade = "Arrows"), NA)
+    expect_error(TableOfDifferences(tb1, tb2, cond.shade = "Boxes"), NA)
+    expect_error(TableOfDifferences(tb1, tb2, cond.shade = "Cell colors"), NA)
+    expect_error(TableOfDifferences(vec1dA, vec1dB), NA)
 })

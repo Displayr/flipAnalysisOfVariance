@@ -2,7 +2,7 @@
 % Please edit documentation in R/tableofdifferences.R
 \name{autoFontColor}
 \alias{autoFontColor}
-\title{use black or white for good contrast against colors}
+\title{Use black or white for good contrast against colors}
 \usage{
 autoFontColor(colors)
 }
@@ -10,5 +10,5 @@ autoFontColor(colors)
 \item{colors}{vector of colors which will be the background color of the}
 }
 \description{
-use black or white for good contrast against colors
+Use black or white for good contrast against colors
 }

@@ -61,7 +61,7 @@ significantly different.}
 \item{table2}{A Q Table with the same labels as \code{table1}.}
 
 \item{show}{Controls text shown in the output table. Select one of
-"Primary statistic of Table 2 with differences", 
+"Primary statistic of Table 2 with differences",
 "Primary statistic of Table 2" or "Differences".}
 
 \item{cond.shade}{Controls which elements are colored differently
@@ -98,7 +98,7 @@ to color the borders when \code{cond.shade == "Boxes"}..}
 
 \item{font.family}{Default font family of the cells in the table.}
 
-\item{legend.show}{Logical; whether or not to show legend at the 
+\item{legend.show}{Logical; whether or not to show legend at the
 bottom of the table.}
 
 \item{legend.sep}{Character; the string used to separate entries in
@@ -126,7 +126,7 @@ to the primary statistic if it is shown in the cells.}
 
 \item{format.statistic.font.autocolor}{Whether the font of the
 primary statistic should be automatically set to black or white
-to maximise the contrast to the cell fill. 
+to maximise the contrast to the cell fill.
 Overrides \code{format.statistic.font.color}.}
 
 \item{format.statistic.font.color}{Font color of primary statistic if it
@@ -150,7 +150,7 @@ always be prepended to the difference.}
 
 \item{format.difference.font.autocolor}{Whether the font of the
 difference should be automatically set to black or white
-to maximise the contrast to the cell fill. 
+to maximise the contrast to the cell fill.
 Overrides \code{format.difference.font.color}.}
 
 \item{format.difference.font.color}{Font color of difference if it
