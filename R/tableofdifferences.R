@@ -148,21 +148,44 @@ TableOfDifferences <- function(table1,
     table2 <- convertToTableWithStatistics(table2)
     table1 <- RemoveRowsAndOrColumns(table1, row.names.to.remove, column.names.to.remove)
     table2 <- RemoveRowsAndOrColumns(table2, row.names.to.remove, column.names.to.remove)
+    if (any(rownames(table1) != rownames(table2)))
+        stop("Row names of Table 1 and Table 2 should be identical and in the same order.")
+    if (any(colnames(table1) != colnames(table2)))
+        stop("Column names of Table 1 and Table 2 should be identical and in the same order.")
+
+    # Check that input tables contain the required statistics
+    # which depends on the primary statistic in the table
     stat1 <- dimnames(table1)[[3]]
     stat2 <- dimnames(table2)[[3]]
     if (stat1[1] != stat2[1])
         stop("The primary statistic of Table 1 (", stat1[1],
         ") does not match the primary statistic of Table 2 (",
         stat2[1], ").")
-    if (any(rownames(table1) != rownames(table2)))
-        stop("Row names of Table 1 and Table 2 should be identical and in the same order.")
-    if (any(colnames(table1) != colnames(table2)))
-        stop("Column names of Table 1 and Table 2 should be identical and in the same order.")
+    if (stat1[1] == "Column %")
+    {
+        n.stat.name <- c("Column Sample Size", "Column n")
+        se.stat.name <- "Column Standard Error"
 
-    ind1.n <- findIndexOfStat(stat1, c("Base n", "Count"), "Table 1")
-    ind2.n <- findIndexOfStat(stat2, c("Base n", "Count"), "Table 2")
-    ind1.se <- findIndexOfStat(stat1, c("Standard Error", "Column Standard Error"), "Table 1")
-    ind2.se <- findIndexOfStat(stat2, c("Standard Error", "Column Standard Error"), "Table 2")
+    } else if (stat1[1] == "Row %")
+    {
+        n.stat.name <- c("Row Sample Size", "Row n")
+        se.stat.name <- "Row Standard Error"
+
+    } else
+    {
+        n.stat.name <- c("Sample Size", "Base n")
+        se.stat.name <- "Standard Error"
+    }
+    ind1.n <- findIndexOfStat(stat1, n.stat.name)
+    ind2.n <- findIndexOfStat(stat2, n.stat.name)
+    ind1.se <- findIndexOfStat(stat1, se.stat.name)
+    ind2.se <- findIndexOfStat(stat2, se.stat.name)
+
+    if (length(ind1.n) == 0 || length(ind1.se) == 0 ||
+        length(ind2.n) == 0 || length(ind2.se) == 0)
+        stop("To test whether the difference in the primary statistic '",
+            stat1[1], "' is significant, input tables need to contain the cell statistic '",
+            se.stat.name, "' and one of '", n.stat.name[1], "' or '", n.stat.name[2], "'.")
 
     # Compute significance of differences
     is.percentage <- grepl("%", stat1[1], fixed = TRUE)
@@ -365,8 +388,13 @@ autoFontColor <- function (colors)
 convertToTableWithStatistics <- function(x)
 {
     if (is.null(attr(x, "questions")) || is.null(attr(x, "name")))
-        stop("Input tables must be Q Tables showing cell statistics ",
-            "'Base n' or 'Count' and 'Standard Error' or 'Column Standard Error'")
+        stop("Input tables must be Q Tables showing statistics computed from questions or variable sets")
+    if (is.character(x))
+        x <- array(suppressWarnings(as.numeric(x)), dim = dim(x), dimnames = dimnames(x))
+    if (length(dim(x)) > 3)
+        stop("Output cannot be produced because the input table has too many dimensions. ",
+             "Try removing one of the questions from the crosstab or ",
+             "splitting up the multinomial question.")
 
     # 1-column table with multiple stats in 2nd dimension
     if (length(dim(x)) == 2)
@@ -376,8 +404,7 @@ convertToTableWithStatistics <- function(x)
         x <- array(x, dim = sapply(dn, length), dimnames = dn)
 
     } else if (length(dim(x)) < 2)
-        stop("Input tables must be Q Tables showing cell statistics ",
-            "'Base n' or 'Count' and 'Standard Error' or 'Column Standard Error'")
+        stop("Input tables must be Q Tables showing statistics computed from questions or variable sets")
 
     return(x)
 }
@@ -385,7 +412,7 @@ convertToTableWithStatistics <- function(x)
 # Tries to find target in the stat.names list
 # If multiple entries in target are in stat.names, the index of the first match is returned
 # If no entry in target matches stat.names then an error is thrown
-findIndexOfStat <- function(stat.names, target, table.name)
+findIndexOfStat <- function(stat.names, target)
 {
     ind <- integer(0)
     for (tt in target)
@@ -395,8 +422,5 @@ findIndexOfStat <- function(stat.names, target, table.name)
         if (length(ind) > 0)
             break
     }
-    if (length(ind) == 0)
-        stop(table.name, " must contain one of following cell statistics: '",
-            paste(target, collapse = "', '"), "'.")
     return(ind)
 }
