@@ -24,7 +24,7 @@ Suggests:
     car
 Remotes:
     Displayr/flipData,
-    Displayr/flipFormat,
+    Displayr/flipFormat@DS-3082,
     Displayr/flipRegression,
     Displayr/flipStatistics,
     Displayr/flipTables,
