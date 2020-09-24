@@ -203,9 +203,9 @@ TableOfDifferences <- function(table1,
         # SE is computed using p(1-p)/n where n is the Column sample size/Row sample size or Sample size
         # Only works when primary statistic is "Column %"/"Row %"/"Total %"
         p1 <- table1[,,1]/100
-        se1 <- p1 * (1-p1)/table1[,,ind1.n]
+        se1 <- sqrt(p1 * (1-p1)/table1[,,ind1.n])
         p2 <- table2[,,1]/100
-        se2 <- p2 * (1-p2)/table2[,,ind2.n]
+        se2 <- sqrt(p2 * (1-p2)/table2[,,ind2.n])
 
     } else
     {
