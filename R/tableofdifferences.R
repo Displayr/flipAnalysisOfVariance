@@ -92,6 +92,7 @@
 #'     row labels specifying rows to remove from the returned table.
 #' @param column.names.to.remove Character vector or delimited string of
 #'     column labels specifying columns to remove from the returned table.
+#' @param se.source For testing only
 #' @param ... Other parameters passed to \link[flipFormat]{CreateCustomTable}.
 #' @importFrom flipFormat CreateCustomTable
 #' @importFrom flipTables RemoveRowsAndOrColumns
@@ -100,6 +101,7 @@
 TableOfDifferences <- function(table1,
                                table2,
                                show = c("Primary statistic of Table 2 with differences"),
+                               se.source = "From table",
                                cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
                                cond.shade.cutoffs = c(0.05, 0.1),
                                cond.shade.ub.colors = c("#82A5CB", "#A9C0DA"),
@@ -187,13 +189,41 @@ TableOfDifferences <- function(table1,
             stat1[1], "' is significant, input tables need to contain the cell statistic '",
             se.stat.name, "' and one of '", n.stat.name[1], "' or '", n.stat.name[2], "'.")
 
+    if (se.source == "Total sample size")
+    {
+        # Always use the "Standard Error" statistic regardless of the primary statistic
+        se1 <- try(table1[,,"Standard Error"], silent = T)
+        se2 <- try(table2[,,"Standard Error"], silent = T)
+        if (inherits(se1, "try-error") || inherits(se2, "try-error"))
+            stop("Missing 'Standard Error'")
+
+    } else if (se.source == "Computed from n")
+    {
+        # Not using standard error statistics from table at all
+        # SE is computed using p(1-p)/n where n is the Column sample size/Row sample size or Sample size
+        # Only works when primary statistic is "Column %"/"Row %"/"Total %"
+        p1 <- table1[,,1]/100
+        se1 <- p1 * (1-p1)/table1[,,ind1.n]
+        p2 <- table2[,,1]/100
+        se2 <- p2 * (1-p2)/table2[,,ind2.n]
+
+    } else
+    {
+        # Using "Column standard error" or "Standard error" from input tables
+        # This is the default
+        se2 = table2[,,ind2.se]
+        se1 <- table2[,,ind1.se]
+    }
+
+
+
     # Compute significance of differences
     is.percentage <- grepl("%", stat1[1], fixed = TRUE)
     denom <- if (is.percentage) 100 else 1
     cell.diff <- table2[,,1] - table1[,,1]
     pvals <- independentSamplesTTestMeans(
         table2[,,1]/denom, table1[,,1]/denom,
-        table2[,,ind2.se], table1[,,ind1.se],
+        se2, se1, #table2[,,ind2.se], table1[,,ind1.se],
         table2[,,ind2.n], table1[,,ind1.n], two.sided = FALSE)
 
     if (is.null(format.statistic.decimals))
