@@ -183,8 +183,8 @@ TableOfDifferences <- function(table1,
     ind1.se <- findIndexOfStat(stat1, se.stat.name)
     ind2.se <- findIndexOfStat(stat2, se.stat.name)
 
-    if (length(ind1.n) == 0 || length(ind1.se) == 0 ||
-        length(ind2.n) == 0 || length(ind2.se) == 0)
+    if (length(ind1.n) == 0 || #length(ind1.se) == 0 ||
+        length(ind2.n) == 0 ) #|| length(ind2.se) == 0)
         stop("To test whether the difference in the primary statistic '",
             stat1[1], "' is significant, input tables need to contain the cell statistic '",
             se.stat.name, "' and one of '", n.stat.name[1], "' or '", n.stat.name[2], "'.")
