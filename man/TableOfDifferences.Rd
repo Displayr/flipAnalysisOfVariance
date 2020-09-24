@@ -8,7 +8,6 @@ TableOfDifferences(
   table1,
   table2,
   show = c("Primary statistic of Table 2 with differences"),
-  se.source = "From table",
   cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
   cond.shade.cutoffs = c(0.05, 0.1),
   cond.shade.ub.colors = c("#82A5CB", "#A9C0DA"),
@@ -21,7 +20,7 @@ TableOfDifferences(
   font.unit = "px",
   font.family = "Arial",
   legend.show = TRUE,
-  legend.sep = "&nbsp;&nbsp;&nbsp;",
+  legend.sep = " ",
   legend.fill = "transparent",
   legend.font.family = font.family,
   legend.font.color = font.color,
@@ -64,8 +63,6 @@ significantly different.}
 \item{show}{Controls text shown in the output table. Select one of
 "Primary statistic of Table 2 with differences",
 "Primary statistic of Table 2" or "Differences".}
-
-\item{se.source}{For testing only}
 
 \item{cond.shade}{Controls which elements are colored differently
 to show significance. Select one of "None", "Cell colors", "Arrows", "Boxes".}
