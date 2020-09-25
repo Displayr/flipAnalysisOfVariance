@@ -163,7 +163,9 @@ TableOfDifferences <- function(table1,
         ") does not match the primary statistic of Table 2 (",
         stat2[1], ").")
 
-    allowed.primary <- c("Average", "%", "Column %", "Row %", "Total %")
+    allowed.primary <- c("Average", "%", "Total %", "Column %")
+    if (isTRUE(q.type == "PickOneMulti"))
+        allowed.primary <- c(allowed.primary, "Row %")
     if (!(stat1[1] %in% allowed.primary))
         stop("The primary statistic in the input table cannot be '", stat1[1],
              "'. A t-test can only be computed on '",
@@ -174,12 +176,11 @@ TableOfDifferences <- function(table1,
         n.stat.name <- c("Column Sample Size", "Column n")
         se.stat.name <- "Column Standard Error"
 
-    } else if (stat1[1] == "Row %")
+    } else if (stat1[1] == "Row %") # Only for PickOneMulti tables
     {
-        n.stat.name <- if (q.type == "PickOneMulti") c("Sample Size", "Base n")
-                       else                         c("Row Sample Size", "Row n")
-        se.stat.name <- if (q.type == "PickOneMulti") "Standard Error"
-                        else                         "Row Standard Error" # does not exist
+        n.stat.name <- c("Sample Size", "Base n")
+        se.stat.name <- "Standard Error"
+
     } else
     {
         n.stat.name <- c("Sample Size", "Base n")
@@ -187,20 +188,12 @@ TableOfDifferences <- function(table1,
     }
 
     # Get sample size and standard errors
-    # If appropriate SEs are not found, try to recompute using the sample size
     ind1.n <- findIndexOfStat(stat1, n.stat.name)
     ind2.n <- findIndexOfStat(stat2, n.stat.name)
     ind1.se <- findIndexOfStat(stat1, se.stat.name)
     ind2.se <- findIndexOfStat(stat2, se.stat.name)
-    se1 <- if (length(ind1.se) > 0) table1[,,ind1.se]
-    se2 <- if (length(ind2.se) > 0) table2[,,ind2.se]
-    .calcSE <- function(p, n) return(sqrt(p * (1-p)/n * n/(n-1)))
-    pct.stats <- c("Row %", "Columm %", "Total %", "%")
-    if (is.null(se1) && length(ind1.n) > 0 && stat1[1] %in% pct.stats)
-        se1 <- .calcSE(table1[,,1]/100, table1[,,ind1.n])
-    if (is.null(se2) && length(ind2.n) > 0 && stat2[1] %in% pct.stats)
-        se2 <- .calcSE(table2[,,1]/100, table1[,,ind2.n])
-    if (length(ind1.n) == 0 || is.null(se1) || length(ind2.n) == 0 || is.null(se2))
+    if (length(ind1.n) == 0 || length(ind1.se) == 0 ||
+        length(ind2.n) == 0 || length(ind2.se) == 0)
         stop("To test whether the difference in the primary statistic '",
             stat1[1], "' is significant, input tables need to contain the cell statistic '",
             se.stat.name, "' and one of '", n.stat.name[1], "' or '", n.stat.name[2], "'.")
@@ -210,7 +203,8 @@ TableOfDifferences <- function(table1,
     denom <- if (is.percentage) 100 else 1
     cell.diff <- table2[,,1] - table1[,,1]
     pvals <- independentSamplesTTestMeans(table2[,,1]/denom, table1[,,1]/denom,
-        se2, se1, table2[,,ind2.n], table1[,,ind1.n], two.sided = FALSE)
+                 table2[,,ind2.se], table1[,,ind1.se],
+                 table2[,,ind2.n], table1[,,ind1.n], two.sided = FALSE)
 
     if (is.null(format.statistic.decimals))
         format.statistic.decimals <- if (is.percentage) 0 else 2
