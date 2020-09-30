@@ -7,6 +7,7 @@
 TableOfDifferences(
   table1,
   table2,
+  output = c("widget", "qtable")[1],
   show = c("Primary statistic of Table 2 with differences"),
   cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
   cond.shade.cutoffs = c(0.05, 0.1),
@@ -61,6 +62,11 @@ and \code{table2}, with values to highlight cells which are
 significantly different.}
 
 \item{table2}{A Q Table with the same labels as \code{table1}.}
+
+\item{output}{The type of output to return. The default is "htmlwidget" that
+visualizes the significance levels of the differences. The alternative
+is "qtable" which is a 3d array containing the primary statistic of table2,
+the differences, and the p-values of the differences.}
 
 \item{show}{Controls text shown in the output table. Select one of
 "Primary statistic of Table 2 with differences",
