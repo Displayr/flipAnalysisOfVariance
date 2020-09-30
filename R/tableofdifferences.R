@@ -44,6 +44,7 @@
 #'      from the text when \code{cond.shade == "Boxes"}.
 #' @param cond.box.padding.bottom Number; controls how far the box extends
 #'      from the text when \code{cond.shade == "Boxes"}.
+#' @param cond.arrow.size Size of the arrows in font units.
 #' @param font.family Default font family of the cells in the table.
 #' @param font.color Default font color of the cells in the table.
 #' @param font.size Default font size.
@@ -133,6 +134,7 @@ TableOfDifferences <- function(table1,
                                format.difference.font.color = font.color,
                                format.difference.font.size = font.size,
                                format.difference.font.family = font.family,
+                               cond.arrow.size = font.size,
                                cond.box.radius = 0,
                                cond.box.borderwidth = 2,
                                cond.box.padding.right = 5,
@@ -145,6 +147,9 @@ TableOfDifferences <- function(table1,
 {
     # Check input data
     q.type <- attr(table1, "questiontype")
+    if (!is.null(attr(table1, "statistic")) || !is.null(attr(table2, "statistic")))
+        stop("Input tables must contain cell statistics for the sample size and standard error.")
+
     table1 <- convertToTableWithStatistics(table1)
     table2 <- convertToTableWithStatistics(table2)
     table1 <- RemoveRowsAndOrColumns(table1, row.names.to.remove, column.names.to.remove)
@@ -153,6 +158,7 @@ TableOfDifferences <- function(table1,
         stop("Row names of Table 1 and Table 2 should be identical and in the same order.")
     if (any(colnames(table1) != colnames(table2)))
         stop("Column names of Table 1 and Table 2 should be identical and in the same order.")
+
 
     # Check that input tables contain the required statistics
     # which depends on the primary statistic in the table
@@ -287,7 +293,8 @@ TableOfDifferences <- function(table1,
         {
             ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff < 0)
             tmp.suffix[ind] <- paste0("<span style='color:",
-                cond.shade.lb.colors[i], "'>&#9660;</span>")
+                cond.shade.lb.colors[i], "; font-size:", 
+                cond.arrow.size, font.unit, "'>&#9660;</span>")
             cell.text[ind] <- sub("&nbsp;", "&nbsp;&nbsp;", cell.text[ind])
             ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff > 0)
             tmp.suffix[ind] <- paste0("<span style='color:",
@@ -376,7 +383,7 @@ TableOfDifferences <- function(table1,
         footer.font.family = legend.font.family,
         footer.font.size = legend.font.size,
         footer.lineheight = legend.lineheight,
-        ...)
+        font.unit = font.unit, ...)
     attr(result, "p-values") <- pvals
     return(result)
 }

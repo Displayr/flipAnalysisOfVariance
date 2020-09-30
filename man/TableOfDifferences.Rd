@@ -41,6 +41,7 @@ TableOfDifferences(
   format.difference.font.color = font.color,
   format.difference.font.size = font.size,
   format.difference.font.family = font.family,
+  cond.arrow.size = font.size,
   cond.box.radius = 0,
   cond.box.borderwidth = 2,
   cond.box.padding.right = 5,
@@ -159,6 +160,8 @@ is shown in the cell.}
 \item{format.difference.font.size}{Font size of difference.}
 
 \item{format.difference.font.family}{Font family of difference.}
+
+\item{cond.arrow.size}{Size of the arrows in font units.}
 
 \item{cond.box.radius}{Numeric; roundness of box corner when
 \code{cond.shade == "Boxes"} (e.g. 0 for sharp corners,
