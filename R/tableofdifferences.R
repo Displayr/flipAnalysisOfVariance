@@ -293,12 +293,13 @@ TableOfDifferences <- function(table1,
         {
             ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff < 0)
             tmp.suffix[ind] <- paste0("<span style='color:",
-                cond.shade.lb.colors[i], "; font-size:", 
+                cond.shade.lb.colors[i], "; font-size:",
                 cond.arrow.size, font.unit, "'>&#9660;</span>")
             cell.text[ind] <- sub("&nbsp;", "&nbsp;&nbsp;", cell.text[ind])
             ind <- which(pvals < cond.shade.cutoffs[i] & cell.diff > 0)
             tmp.suffix[ind] <- paste0("<span style='color:",
-                cond.shade.ub.colors[i], "'>&#9650;</span>")
+                cond.shade.ub.colors[i], "; font-size:",
+                cond.arrow.size, font.unit, "'>&#9650;</span>")
             cell.text[ind] <- sub("&nbsp;", "&nbsp;&nbsp;", cell.text[ind])
         }
     }
@@ -358,8 +359,8 @@ TableOfDifferences <- function(table1,
             tmp.text <- sprintf("<span style='border:1px solid %s; background-color: %s'>%s</span>",
                 tmp.fill, tmp.fill, empty.text)
         else if (cond.shade == "Arrows")
-            tmp.text <- sprintf("<span style='color:%s'>%s</span>",
-                tmp.fill, rep(c("&#9650;", "&#9660;"), each = tmp.lev))
+            tmp.text <- sprintf("<span style='color:%s; font-size: %.0f%s'>%s</span>",
+                tmp.fill, cond.arrow.size, font.unit, rep(c("&#9650;", "&#9660;"), each = tmp.lev))
         else if (cond.shade == "Boxes")
             tmp.text <- sprintf("<span style='border:%.0fpx solid %s; background-color: %s; border-radius:%.0f%%'>%s</span>",
                 cond.box.borderwidth,
