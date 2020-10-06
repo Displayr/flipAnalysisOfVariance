@@ -26,6 +26,7 @@ TableOfDifferences(
   legend.font.color = font.color,
   legend.font.size = font.size,
   legend.lineheight = 2,
+  legend.decimals = 1,
   format.statistic.decimals = NULL,
   format.statistic.prefix = "",
   format.statistic.suffix = "",
@@ -115,6 +116,9 @@ the legend.}
 
 \item{legend.lineheight}{Numeric; controls the spacing between
 lines in the legend. It is applied as a multiple of the font size.}
+
+\item{legend.decimals}{Numeric; the number of decimal places to
+show for confidence levels in the legend.}
 
 \item{format.statistic.decimals}{Numeric; The number of decimals shown
 if the primary statistic is shown in the cells.}

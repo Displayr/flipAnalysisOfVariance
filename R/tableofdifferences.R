@@ -86,6 +86,8 @@
 #' @param legend.fill Background color of the region behind the legend.
 #' @param legend.lineheight Numeric; controls the spacing between
 #'      lines in the legend. It is applied as a multiple of the font size.
+#' @param legend.decimals Numeric; the number of decimal places to
+#'      show for confidence levels in the legend.
 #' @param legend.font.family Font family of text in the legend.
 #' @param legend.font.color Font color of text in the legend.
 #' @param legend.font.size Font size of text in the legend.
@@ -119,6 +121,7 @@ TableOfDifferences <- function(table1,
                                legend.font.color = font.color,
                                legend.font.size = font.size,
                                legend.lineheight = 2,
+                               legend.decimals = 1,
                                format.statistic.decimals = NULL,
                                format.statistic.prefix = "",
                                format.statistic.suffix = "",
@@ -368,7 +371,7 @@ TableOfDifferences <- function(table1,
                 tmp.fill, cond.box.radius, empty.text)
 
         tmp.text <- paste("<nobr>", tmp.text,
-                        sprintf("Signficant %s at %.0f%% confidence limit",
+                        sprintf(paste0("Signficant %s at %.", legend.decimals, "f%% confidence level"),
                         rep(c("increase", "decrease"), each = tmp.lev),
                         c(conf, rev(conf))), "</nobr>")
         legend.text <- paste(tmp.text, collapse = legend.sep)
