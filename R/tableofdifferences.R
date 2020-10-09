@@ -317,8 +317,12 @@ TableOfDifferences <- function(table1,
                      format = "f", big.mark = ",",
                      flag = if (format.difference.sign) "+" else ""),
                      format.difference.suffix)
+
+        # Add spaces so that the +/- signs line up
+        # Difference values need to be left-aligned so that
+        # extra padding preceding the +/- sign is not seen
         max.width <- max(nchar(tmp.text))
-        tmp.text <- formatC(tmp.text, format = "s", width = max.width)
+        tmp.text <- formatC(tmp.text, format = "s", width = max.width, flag = "-")
         tmp.text <- gsub(" ", "&nbsp;", tmp.text)
         cell.text <- paste0(cell.text,
                      "<span style='font-family:", format.difference.font.family,
