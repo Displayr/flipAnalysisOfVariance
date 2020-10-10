@@ -227,7 +227,7 @@ TableOfDifferences <- function(table1,
         output[,,1] <- table2[,,1]
         output[,,2] <- cell.diff
         output[,,3] <- pvals
-        return(output)
+        return(CopyAttributes(output, table1))
     }
 
     if (is.null(format.statistic.decimals))
