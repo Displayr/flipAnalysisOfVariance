@@ -7,7 +7,7 @@
 TableOfDifferences(
   table1,
   table2,
-  output = c("widget", "qtable")[1],
+  output = c("widget", "qtable"),
   show = c("Primary statistic of Table 2 with differences"),
   cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
   cond.shade.cutoffs = c(0.05, 0.1),

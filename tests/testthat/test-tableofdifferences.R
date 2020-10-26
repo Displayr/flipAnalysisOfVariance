@@ -224,10 +224,6 @@ test_that("Table of differences",
             "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
             "$200,001 or more"), c("Male", "Female"), c("Column %", "Differences",
             "p")),
-            basedescriptiontext = "sample size = 707; total sample size = 800; 93 missing",
-            basedescription = list(Minimum = 707L, Maximum = 707L, Range = FALSE,
-            Total = 800L, Missing = 93L, EffectiveSampleSize = 707L,
-            EffectiveSampleSizeProportion = 100, FilteredProportion = 0),
             questiontypes = c("PickOne", "PickOne"),
             span = list(rows = structure(list(c("Less than $15,000", "$15,001 to $30,000",
             "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
@@ -235,5 +231,5 @@ test_that("Table of differences",
             "$200,001 or more", "NET")), class = "data.frame", .Names = "",
             row.names = c(NA, 10L)), columns = structure(list(c("Male", "Female", "NET")),
             class = "data.frame", .Names = "", row.names = c(NA, 3L))),
-            name = "table.Income.by.Gender", questions = c("Income", "Gender")))
+            questions = c("Income", "Gender")))
 })

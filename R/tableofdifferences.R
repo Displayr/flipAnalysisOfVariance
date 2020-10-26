@@ -106,7 +106,7 @@
 
 TableOfDifferences <- function(table1,
                                table2,
-                               output = c("widget", "qtable")[1],
+                               output = c("widget", "qtable"),
                                show = c("Primary statistic of Table 2 with differences"),
                                cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
                                cond.shade.cutoffs = c(0.05, 0.1),
@@ -154,6 +154,7 @@ TableOfDifferences <- function(table1,
                                ...)
 {
     # Check input data
+    output <- match.arg(output)
     q.type <- attr(table1, "questiontype")
     if (!is.null(attr(table1, "statistic")) || !is.null(attr(table2, "statistic")))
         stop("Input tables must contain cell statistics for the sample size and standard error.")
@@ -227,7 +228,9 @@ TableOfDifferences <- function(table1,
         output[,,1] <- table2[,,1]
         output[,,2] <- cell.diff
         output[,,3] <- pvals
-        return(CopyAttributes(output, table1))
+        return(CopyAttributes(output, table2, c("name", "basedescription",
+            "basedescriptiontext", "dimnames", "names", "row.names",
+            "dim", "class", "levels")))
     }
 
     if (is.null(format.statistic.decimals))
