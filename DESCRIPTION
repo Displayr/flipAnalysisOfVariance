@@ -1,7 +1,7 @@
 Package: flipAnalysisOfVariance
 Type: Package
 Title: Functions for computing ANOVA, MANOVA, and related methods
-Version: 1.2.18
+Version: 1.2.19
 Author: Displayr <opensource@displayr.com>
 Maintainer: Displayr <opensource@displayr.com>
 Description: Function for computing ANOVA, MANOVA, Table of Means and related
@@ -24,7 +24,7 @@ Suggests:
     car
 Remotes:
     Displayr/flipData,
-    Displayr/flipFormat@DS-3082,
+    Displayr/flipFormat,
     Displayr/flipRegression,
     Displayr/flipStatistics,
     Displayr/flipTables,

@@ -7,6 +7,10 @@
 #'      and \code{table2}, with values to highlight cells which are
 #'      significantly different.
 #' @param table2 A Q Table with the same labels as \code{table1}.
+#' @param output The type of output to return. The default is "htmlwidget" that
+#'      visualizes the significance levels of the differences. The alternative
+#'      is "qtable" which is a 3d array containing the primary statistic of table2,
+#'      the differences, and the p-values of the differences.
 #' @param show Controls text shown in the output table. Select one of
 #'      "Primary statistic of Table 2 with differences",
 #'      "Primary statistic of Table 2" or "Differences".
@@ -102,6 +106,7 @@
 
 TableOfDifferences <- function(table1,
                                table2,
+                               output = c("widget", "qtable"),
                                show = c("Primary statistic of Table 2 with differences"),
                                cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
                                cond.shade.cutoffs = c(0.05, 0.1),
@@ -149,6 +154,7 @@ TableOfDifferences <- function(table1,
                                ...)
 {
     # Check input data
+    output <- match.arg(output)
     q.type <- attr(table1, "questiontype")
     if (!is.null(attr(table1, "statistic")) || !is.null(attr(table2, "statistic")))
         stop("Input tables must contain cell statistics for the sample size and standard error.")
@@ -214,6 +220,18 @@ TableOfDifferences <- function(table1,
     pvals <- independentSamplesTTestMeans(table2[,,1]/denom, table1[,,1]/denom,
                  table2[,,ind2.se], table1[,,ind1.se],
                  table2[,,ind2.n], table1[,,ind1.n], two.sided = FALSE)
+
+    if (output == "qtable")
+    {
+        output <- array(NA, dim = c(nrow(table2), ncol(table2), 3),
+            dimnames = list(rownames(table2), colnames(table2), c(stat2[1], "Differences", "p")))
+        output[,,1] <- table2[,,1]
+        output[,,2] <- cell.diff
+        output[,,3] <- pvals
+        return(CopyAttributes(output, table2, c("name", "basedescription",
+            "basedescriptiontext", "dimnames", "names", "row.names",
+            "dim", "class", "levels")))
+    }
 
     if (is.null(format.statistic.decimals))
         format.statistic.decimals <- if (is.percentage) 0 else 2

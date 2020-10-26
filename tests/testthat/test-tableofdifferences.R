@@ -199,7 +199,37 @@ test_that("Table of differences",
     expect_error(TableOfDifferences(tb1, tb.missingN),
         "tables need to contain the cell statistic 'Column Standard Error' and one of 'Column Sample Size'")
     expect_error(TableOfDifferences(tb.char, tb2), NA)
+    expect_error(TableOfDifferences(tb1, tb2, cond.shade = "None"), NA)
     expect_error(TableOfDifferences(tb1, tb2, cond.shade = "Arrows"), NA)
     expect_error(TableOfDifferences(tb1, tb2, cond.shade = "Boxes"), NA)
     expect_error(TableOfDifferences(tb1, tb2, cond.shade = "Cell colors"), NA)
+
+    expect_equal(TableOfDifferences(tb1, tb2, output = "qtable"),
+            structure(c(0, 5.65217391304348, 8.69565217391304, 16.5217391304348,
+            27.3913043478261, 21.304347826087, 5.65217391304348, 10.4347826086957,
+            4.34782608695652, 0.884955752212389, 9.29203539823009, 6.63716814159292,
+            19.9115044247788, 23.8938053097345, 15.929203539823, 11.9469026548673,
+            3.53982300884956, 7.9646017699115, -2.75482093663912, -0.408432147562579,
+            -3.97652413462686, -1.9355611450473, 2.597915918074, 5.3263863935801,
+            -0.408432147562579, 2.17031979877834, -0.61085159899389, -2.89411401522947,
+            -6.69633669479321, -1.21166906770941, 1.8882486108253, 4.1263634492694,
+            2.8478081909858, 1.1910887013789, -0.52994443301091, 1.27855525828359,
+            0.000741964717945443, 0.418133073631607, 0.0600445895656511,
+            0.272184421444679, 0.242625061309944, 0.0547325308521204, 0.418133073631607,
+            0.191470045897168, 0.364765042528343, 0.00829099705476146, 0.00794061460769444,
+            0.291462982400215, 0.288087301305384, 0.123812599371673, 0.1750137223589,
+            0.331634498830038, 0.372587406232211, 0.285346836002909), .Dim = c(9L,
+            2L, 3L), .Dimnames = list(c("Less than $15,000", "$15,001 to $30,000",
+            "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+            "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+            "$200,001 or more"), c("Male", "Female"), c("Column %", "Differences",
+            "p")),
+            questiontypes = c("PickOne", "PickOne"),
+            span = list(rows = structure(list(c("Less than $15,000", "$15,001 to $30,000",
+            "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+            "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+            "$200,001 or more", "NET")), class = "data.frame", .Names = "",
+            row.names = c(NA, 10L)), columns = structure(list(c("Male", "Female", "NET")),
+            class = "data.frame", .Names = "", row.names = c(NA, 3L))),
+            questions = c("Income", "Gender")))
 })
