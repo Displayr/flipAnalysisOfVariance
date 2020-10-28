@@ -644,3 +644,11 @@ test_that("Ordered factors",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"
         ))))
 })
+
+test_that("Order Multi - Grid",
+{
+    dat.orderedmultigrid <- list(as.data.frame(lapply(brand.attitute[[1]], as.ordered)))
+    res <- SegmentComparisonTable(dat.orderedmultigrid, formSegmentation)
+    res0 <- SegmentComparisonTable(brand.attitute, formSegmentation)
+    expect_equal(attr(res, "p-value"), attr(res0, "p-value"), check.attributes = FALSE)
+})
