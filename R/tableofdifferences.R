@@ -99,6 +99,14 @@
 #'     row labels specifying rows to remove from the returned table.
 #' @param column.names.to.remove Character vector or delimited string of
 #'     column labels specifying columns to remove from the returned table.
+#' @param means.test The type of test used to compare a table of means 
+#'  (i.e. from numeric variable). Usually taken from QSettings. 
+#'  One of "tTest", "zTest", "Nonparametric".  
+#' @param proportions.test The type of test used to compare a table of proportions 
+#'  (i.e. from PickOne or PickAny variable). Usually taken from QSettings. 
+#'  One of "tTest", "zTest", "Nonparametric".
+#' @param bessel Either a 0 or 1 which is a correction factor used in some tests.
+#'  Usually taken from QSettings.
 #' @param ... Other parameters passed to \link[flipFormat]{CreateCustomTable}.
 #' @importFrom flipFormat CreateCustomTable
 #' @importFrom flipTables RemoveRowsAndOrColumns
@@ -106,6 +114,8 @@
 
 TableOfDifferences <- function(table1,
                                table2,
+                               means.test = "tTest",
+                               proportion.test = "zTest",
                                output = c("widget", "qtable"),
                                show = c("Primary statistic of Table 2 with differences"),
                                cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
@@ -151,6 +161,7 @@ TableOfDifferences <- function(table1,
                                cond.box.padding.bottom = 0,
                                row.names.to.remove = "NET, Total, Sum",
                                column.names.to.remove = "NET, Total, Sum",
+                               bessel = 0,
                                ...)
 {
     # Check input data
@@ -158,6 +169,8 @@ TableOfDifferences <- function(table1,
     q.type <- attr(table1, "questiontype")
     if (!is.null(attr(table1, "statistic")) || !is.null(attr(table2, "statistic")))
         stop("Input tables must contain cell statistics for the sample size and standard error.")
+    is.weighted <- !is.null(attr(table1, "weight.name")) || !is.null(attr(table2, "weight.name"))
+
 
     table1 <- convertToTableWithStatistics(table1)
     table2 <- convertToTableWithStatistics(table2)
@@ -216,10 +229,21 @@ TableOfDifferences <- function(table1,
     # Compute significance of differences
     is.percentage <- grepl("%", stat1[1], fixed = TRUE)
     denom <- if (is.percentage) 100 else 1
+    test.type <- if (is.percentage) proportion.test else means.test
+    if (is.percentage && test.type %in% c("Nonparametric", "Chisquare") && is.weighted)
+    {
+        warning("The tables were compared using the Z-test.")
+        test.type <- "zTest"
+    }
+    if (!is.percentage && test.type == "Nonparametric")
+    {
+        warning("The tables were compared using a t-Test.")
+        test.type <- "tTest"
+    }
     cell.diff <- table2[,,1] - table1[,,1]
-    pvals <- independentSamplesTTestMeans(table2[,,1]/denom, table1[,,1]/denom,
+    pvals <- compareTwoSamples(test.type, table2[,,1]/denom, table1[,,1]/denom,
                  table2[,,ind2.se], table1[,,ind1.se],
-                 table2[,,ind2.n], table1[,,ind1.n], two.sided = FALSE)
+                 table2[,,ind2.n], table1[,,ind1.n], is.weighted, bessel = bessel)
 
     if (output == "qtable")
     {
