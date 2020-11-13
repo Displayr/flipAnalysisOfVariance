@@ -64,14 +64,43 @@ calcPvalueForVariable = function(x,             # A binary or numeric variable
     # assumptions in QSettings
     # Need to update function signature and tests 
     test.type <- if (!x.is.binary) "tTest" else "Nonparametric"
-    return(compareTwoSamples(test.type, a, b, is.binary
-           is.weighted = length(unique(w)) > 1, bessel = 0)
-    
-    if (!x.is.binary)
-        return(independentSamplesTTestMeans(a["Average"], b["Average"], a["Standard Error"], b["Standard Error"], a["Base n"], b["Base n"]))
+    return(compareTwoSamples(test.type, a, b, x.is.binary,
+           is.weighted = length(unique(w)) > 1, bessel = 0))
+}
 
+# Functions - these are all from the c# SamplingVariance class (albeit in slightly different forms)
+computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.observations)
+{
+    if (is.binary) # Numerical precision
+    {
+        if (mean < 0.00000001)
+            mean = 0
+        else if (mean > 0.99999999)
+            mean = 1
+    }
+    bessel.correction = n.observations / (n.observations - 1)
+    mean2 = mean * mean
+    sum_of_squares = sum.xxw - 2 * mean * sum.xw + mean2 * sum.w
+    sum_of_squares.w = sum.xxww - 2 * mean * sum.xww + mean2 * sum.ww
 
-    # Use a and b only
+    taylor = sum_of_squares.w / (sum.w * sum.w) * bessel.correction
+
+    naive = if (is.binary) mean * (1 - mean) else sum_of_squares / sum.w
+    naive = naive * bessel.correction / n.observations
+    ess = if (!is.na(taylor) && taylor < 0.000001) # Due to numeric precision issues
+        sum.w * sum.w / sum.ww
+        else n.observations * naive / taylor
+
+    list(taylor = taylor,
+         naive = naive,
+         ess = ess,
+         se = sqrt(taylor))
+}
+
+# A simplification of RaoScottSecondOrder2b2 from Q's C#
+# a and b contain summary statistics for each sample
+raoScottSecondOrderChiSquareTest <- function(a, b, is.weighted)
+{
     n.observations <- a[["Base n"]] + b[["Base n"]]
     sum.w <- a[["sumW"]] + b[["sumW"]]
     sum.ww <- a[["sumWW"]] + b[["sumWW"]]
@@ -91,63 +120,12 @@ calcPvalueForVariable = function(x,             # A binary or numeric variable
     proportions <- c(p.b * (1-mean.b), p.b * mean.b,
                      p.a * (1-mean.a), p.a * mean.a)
     counts = matrix(proportions * n.observations, 2)
-    variance = multinomialCovarianceMatrix(proportions, 
-            sums.ww, sum.ww, sum.w, n.observations)
-    p = raoScottSecondOrder2b2(proportions,
-                               counts,
-                               variance,
-                               b[["Base n"]],
-                               a[["Base n"]],
-                               is.weighted = length(unique(w)) > 1)
-    return(p)
-}
 
-# Functions - these are all from the c# SamplingVariance class (albeit in slightly different forms)
-computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.observations)
-{
-    if (is.binary) # Numerical precision
-    {
-        if (mean < 0.00000001)
-            mean = 0
-        else if (mean > 0.99999999)
-            mean = 1
-    }
-    bessel.correction = n.observations / (n.observations - 1)
-    mean2 = mean * mean
-    sum_of_squares = sum.xxw - 2 * mean * sum.xw + mean2 * sum.w
-    sum_of_squares.w = sum.xxww - 2 * mean * sum.xww + mean2 * sum.ww
-    #cat("sum.xxww:", sum.xxww, "sum.xww:", sum.xww, "sum.w:", sum.w, "\n") 
-
-    taylor = sum_of_squares.w / (sum.w * sum.w) * bessel.correction
-
-    naive = if (is.binary) mean * (1 - mean) else sum_of_squares / sum.w
-    naive = naive * bessel.correction / n.observations
-    ess = if (!is.na(taylor) && taylor < 0.000001) # Due to numeric precision issues
-        sum.w * sum.w / sum.ww
-        else n.observations * naive / taylor
-
-    v1 <- sum_of_squares.w / (sum.w * sum.w)
-    v2 <- mean * (1-mean) / n.observations
-    #cat("v1:", v1, "v2:", v2, "sum.ww * (v1 - v2):", (v1 - v2) * sum.ww, 
-     #   "sum.w:", sum.w, "sum.ww:", sqrt(sum.ww), "\n")
-    list(taylor = taylor,
-         naive = naive,
-         ess = ess,
-         se = sqrt(taylor))
-}
-
-# A simplification of RaoScottSecondOrder2b2 from Q's C#
-raoScottSecondOrder2b2 <- function(proportions,
-                       counts,
-                       variance,
-                       n0,
-                       n1,
-                       is.weighted)
-{
-    group_sizes = colSums(counts) # sample size
-    row.totals = rowSums(counts)  # sum(sample size * 1 - prop), sum(sample size * prop)
+    # If not weighted, this reduces to a chi-square test
+    group_sizes = colSums(counts)
+    row.totals = rowSums(counts)
     total = sum(row.totals)
-    n = n0 + n1;
+    n = a[["Base n"]] + b[["Base n"]]
     expected = matrix(c(group_sizes[1]*row.totals[1]/total,
                         group_sizes[1]*row.totals[2]/total,
                         group_sizes[2]*row.totals[1]/total,
@@ -156,6 +134,8 @@ raoScottSecondOrder2b2 <- function(proportions,
     if (!is.weighted)
         return(pchisq(pearson.statistic, 1, lower.tail = FALSE))
 
+    variance = multinomialCovarianceMatrix(proportions, 
+            sums.ww, sum.ww, sum.w, n.observations)
     if (!is.na(pearson.statistic)) # If not a missing value
     {
         a = matrix(0, 4, 1)
@@ -210,9 +190,18 @@ independentSamplesTTestMeans <- function(mean1,
     return(p)
 }
 
+# a and b contain the summary statistics for each sample
 tTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel = 0)
 {
-    if (is.binary && !is.weighted)
+    if (!is.binary)
+    {
+        v1 <- se1 * se1
+        v2 <- se2 * se2
+        v <- v1 + v2
+        se <- sqrt(v)
+        df <- v * v / (v1 * v1 / (n1 - 1) + v2 * v2 / (n2 - 1))
+
+    } else if (is.binary && !is.weighted)
     {
         m12 <- (n1 * mean1 + n2 * mean2)/(n1 + n2)
         se <- sqrt(m12 * (1 - m12) * (1/n1 + 1/n2))
@@ -224,12 +213,12 @@ tTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel
         df <- (se1 * se1 / n1 + se2 * se2 / n2)^2 / 
             ((se1 * se1/n1)^2/(n1-bessel) + (se2 * se2 / n2)^2/(n2-bessel))
     }
-
     t = (mean1 - mean2)/se
     p = pt(-abs(t), df) * 2
     return(p)
 }
 
+#' @importFrom stats pnorm
 zTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel = 0)
 {
     if (is.binary && !is.weighted)
@@ -237,9 +226,8 @@ zTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel
         m12 <- (n1 * mean1 + n2 * mean2)/(n1 + n2)
         se <- sqrt(m12 * (1 - m12) * (n1 + n2) / (n1 + n2 - 2*bessel) * (1/n1 + 1/n2))
     
-    } else if (is.binary && weighted)
+    } else if (is.binary && is.weighted)
     {
-        cat("line 234: is.weighted\n")
         se <- sqrt(se1 * se1 + se2 * se2)
     }
     z = (mean1 - mean2)/se
@@ -309,45 +297,28 @@ computeNumericVarStats <- function(x, w)
     sum.xxww = sum(xxww)
     mean.x = sum.xw / sum.w
 
-    #population.variance = sum.xxw / sum.w - mean.x * mean.x
     n.used.in.bessel.correction = n.observations
     var = computeVariances(mean.x, FALSE, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.used.in.bessel.correction)
-
-    #S2 <- (1 - mean.x)^2
-    #S.tmp <- 1 - 2*mean.x + mean.x * mean.x
-    #S2a <- 1 - 2 * sum.xw/sum.w + sum.xxww/(sum.w * sum.w)
-    #cat("mean.x:", mean.x, "sum.xw/sum.w:", sum.xw/sum.w, "\n")
-    #cat("mean.x^2:", mean.x * mean.x, "sum.xxww/(sum.w)^2:", sum.xxww/(sum.w * sum.w), "\n")
-    #cat("S2:", S2, "S2a:", S2a, "S.tmp:", S.tmp, "\n")
-
-    #S1 <- (var$se * var$se) * (n.observations - 1)/n.observations
-    #S2 <- sum((w*(x - mean.x))^2) / (sum.w * sum.w)
-    #S3 <- ((1 - mean.x)^2 * sum.xww + (mean.x * mean.x * (sum.ww - sum.xww)))/(sum.w * sum.w)
-    #S4 <- mean.x * (1 - mean.x) / (sum.w - 1)
-    #S5 <- (sum(x) * (1 - 2 * mean.x) + (mean.x * mean.x)) * sum.ww / (sum.w * sum.w)
-    #cat("S1:", S1, "S2:", S2, "S3:", S3, "S5:", S5, "\n")
 
     return(c("Average" = mean.x, "Base n" = n.observations,
         sumW = sum.w, sumWW = sum.ww, sumXWW = sum.xww,
         "Standard Error" = var$se))
 }
 
-# Checks for binary variables and weights are applied beforehand
-# If the test has been changed, the warning should be applied
-# in the function calling this - otherwise the warning
-# message is generated at every cell
-compareTwoSamples <- function(test.type, mean_1, mean_2, se_1, se_2, n1, n2, 
-    sumW_1 = NA, sumW_2 = NA, sumWW_1 = NA, sumWW_2 = NA, 
+# a and b are lists which contain the summary statistics of each sample
+compareTwoSamples <- function(test.type, a, b,
     is.binary = TRUE, is.weighted = FALSE, bessel = 0)
 {
     if (test.type == "tTest")
-        return(tTest(mean_1, mean_2, se_1, se_2, n1, n2, 
-               is.binary, is.weighted))
+        return(tTest(a[["Average"]], b[["Average"]], a[["Standard Error"]],
+            b[["Standard Error"]], a[["Base n"]], b[["Base n"]],
+            is.binary, is.weighted))
     else if (test.type == "zTest")
-        return(zTest(mean_1, mean_2, se_1, se_2, n1, n2,
-               is.binary, is.weighted, bessel))
-    else # Nonparametric of Chisquare
-        return(raoScottSecondOrder2b2(a, b, is.weighted))
+        return(zTest(a[["Average"]], b[["Average"]], a[["Standard Error"]],
+            b[["Standard Error"]], a[["Base n"]], b[["Base n"]],
+            is.binary, is.weighted, bessel))
+    else # Nonparametric or Chisquare
+        return(raoScottSecondOrderChiSquareTest(a, b, is.weighted))
     # Non-parametric tests for numeric variables are handled before
     # getting to this function
 }    

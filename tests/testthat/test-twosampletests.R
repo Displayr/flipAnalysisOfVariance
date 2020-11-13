@@ -78,14 +78,14 @@ tb.AgeFW <- structure(c(12.6447804903137, 12.3129028403221, 11.1051949289579,
 
 test_that("Proportions (unweighted)",
 {
-    res <- TableOfDifferences(tb.AgeM, tb.AgeF, "tTest")
+    res <- TableOfDifferences(tb.AgeM, tb.AgeF, proportions.test = "tTest")
     expect_equal(attr(res, "p-value"), c(`18 to 24` = 0.536259477922785,
         `25 to 29` = 0.927843374978388, `30 to 34` = 0.639799144128667,
         `35 to 39` = 0.0776989620280411, `40 to 44` = 0.262600176287746,
         `45 to 49` = 0.814540424544341, `50 to 54` = 0.197038245890513,
         `55 to 64` = 0.728676640369952, `65 or more` = 0.0419679190057229))
 
-    res <- TableOfDifferences(tb.AgeM, tb.AgeF, "zTest")
+    res <- TableOfDifferences(tb.AgeM, tb.AgeF, proportions.test = "zTest")
     expect_equal(attr(res, "p-value"), c(`18 to 24` = 0.536082900256781,
         `25 to 29` = 0.927820642717578, `30 to 34` = 0.639671305972617,
         `35 to 39` = 0.0773167026691302, `40 to 44` = 0.26226293246625,
@@ -95,7 +95,7 @@ test_that("Proportions (unweighted)",
 
 test_that("Proportions (weighted)",
 {
-    res <- TableOfDifferences(tb.AgeMW, tb.AgeFW, "zTest")
+    res <- TableOfDifferences(tb.AgeMW, tb.AgeFW, proportions.test = "zTest")
     #expect_equal(attr(res, "p-value"),
 
 })

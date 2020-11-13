@@ -115,7 +115,7 @@
 TableOfDifferences <- function(table1,
                                table2,
                                means.test = "tTest",
-                               proportion.test = "zTest",
+                               proportions.test = "zTest",
                                output = c("widget", "qtable"),
                                show = c("Primary statistic of Table 2 with differences"),
                                cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
@@ -229,7 +229,7 @@ TableOfDifferences <- function(table1,
     # Compute significance of differences
     is.percentage <- grepl("%", stat1[1], fixed = TRUE)
     denom <- if (is.percentage) 100 else 1
-    test.type <- if (is.percentage) proportion.test else means.test
+    test.type <- if (is.percentage) proportions.test else means.test
     if (is.percentage && test.type %in% c("Nonparametric", "Chisquare") && is.weighted)
     {
         warning("The tables were compared using the Z-test.")
@@ -241,9 +241,10 @@ TableOfDifferences <- function(table1,
         test.type <- "tTest"
     }
     cell.diff <- table2[,,1] - table1[,,1]
-    pvals <- compareTwoSamples(test.type, table2[,,1]/denom, table1[,,1]/denom,
-                 table2[,,ind2.se], table1[,,ind1.se],
-                 table2[,,ind2.n], table1[,,ind1.n], is.weighted, bessel = bessel)
+    pvals <- compareTwoSamples(test.type, a = list(Average = table2[,,1]/denom, 
+         "Standard Error" = table2[,,ind2.se], "Base n" = table2[,,ind2.n]),
+         b = list(Average = table1[,,1]/denom, "Standard Error" = table1[,,ind1.se], 
+         "Base n" = table1[,,ind1.n]), is.percentage, is.weighted, bessel)
 
     if (output == "qtable")
     {

@@ -7,6 +7,8 @@
 TableOfDifferences(
   table1,
   table2,
+  means.test = "tTest",
+  proportions.test = "zTest",
   output = c("widget", "qtable"),
   show = c("Primary statistic of Table 2 with differences"),
   cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
@@ -52,6 +54,7 @@ TableOfDifferences(
   cond.box.padding.bottom = 0,
   row.names.to.remove = "NET, Total, Sum",
   column.names.to.remove = "NET, Total, Sum",
+  bessel = 0,
   ...
 )
 }
@@ -62,6 +65,14 @@ and \code{table2}, with values to highlight cells which are
 significantly different.}
 
 \item{table2}{A Q Table with the same labels as \code{table1}.}
+
+\item{means.test}{The type of test used to compare a table of means 
+(i.e. from numeric variable). Usually taken from QSettings. 
+One of "tTest", "zTest", "Nonparametric".}
+
+\item{proportions.test}{The type of test used to compare a table of proportions 
+(i.e. from PickOne or PickAny variable). Usually taken from QSettings. 
+One of "tTest", "zTest", "Nonparametric".}
 
 \item{output}{The type of output to return. The default is "htmlwidget" that
 visualizes the significance levels of the differences. The alternative
@@ -197,6 +208,9 @@ row labels specifying rows to remove from the returned table.}
 
 \item{column.names.to.remove}{Character vector or delimited string of
 column labels specifying columns to remove from the returned table.}
+
+\item{bessel}{Either a 0 or 1 which is a correction factor used in some tests.
+Usually taken from QSettings.}
 
 \item{...}{Other parameters passed to \link[flipFormat]{CreateCustomTable}.}
 }
