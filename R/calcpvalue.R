@@ -99,96 +99,87 @@ computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, su
 
 # A simplification of RaoScottSecondOrder2b2 from Q's C#
 # a and b contain summary statistics for each sample
-raoScottSecondOrderChiSquareTest <- function(a, b, is.weighted)
+raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
 {
-    n.observations <- a[["Base n"]] + b[["Base n"]]
-    sum.w <- a[["sumW"]] + b[["sumW"]]
-    sum.ww <- a[["sumWW"]] + b[["sumWW"]]
-    p.a <- a[["sumW"]] / sum.w
-    p.b <- 1 - p.a
+    if (!is.null(dim(aa[["Average"]])))
+        pvals <- matrix(NA, nrow = NROW(aa[["Average"]]), ncol = NCOL(aa[["Average"]]))
+    else
+        pvals <- rep(NA, length = length(aa[["Average"]]))
+    if (length(aa[["Average"]]) == 0)
+        return(pvals)
 
-    proportiony = p.a
-    mean.a <- a[["Average"]]
-    if (is.na(mean.a))
-        mean.a <- 0
-    mean.b <- b[["Average"]]
-    if (is.na(mean.b))
-        mean.b <- 0
-
-    sums.ww <- c(b[["sumWW"]] - b[["sumXWW"]], b[["sumXWW"]], 
-                 a[["sumWW"]] - a[["sumXWW"]], a[["sumXWW"]])
-    proportions <- c(p.b * (1-mean.b), p.b * mean.b,
-                     p.a * (1-mean.a), p.a * mean.a)
-    counts = matrix(proportions * n.observations, 2)
-
-    # If not weighted, this reduces to a chi-square test
-    group_sizes = colSums(counts)
-    row.totals = rowSums(counts)
-    total = sum(row.totals)
-    n = a[["Base n"]] + b[["Base n"]]
-    expected = matrix(c(group_sizes[1]*row.totals[1]/total,
-                        group_sizes[1]*row.totals[2]/total,
-                        group_sizes[2]*row.totals[1]/total,
-                        group_sizes[2]*row.totals[2]/total), 2)
-    pearson.statistic = sum((counts - expected)^2/expected)
-    if (!is.weighted)
-        return(pchisq(pearson.statistic, 1, lower.tail = FALSE))
-
-    variance = multinomialCovarianceMatrix(proportions, 
-            sums.ww, sum.ww, sum.w, n.observations)
-    if (!is.na(pearson.statistic)) # If not a missing value
+    for (i in 1:length(aa[["Average"]]))
     {
-        a = matrix(0, 4, 1)
-        id_mat = d_mat = matrix(0, 4, 4)
-        denominator = 0.0;
-        for (i in 1:4)
+        n.observations <- aa[["Base n"]][i] + bb[["Base n"]][i]
+        if (is.weighted)
         {
-            prop = proportions[i];
-            d_mat[i, i] = prop;
-            prop_is_0 = prop < 1e-12
-            i_prop = if (prop_is_0) 0 else 1.0 / prop;
-            if (!prop_is_0) id_mat[i, i] = i_prop;
-            a[i, 1] = i_prop / 4.0;
-            denominator = denominator + i_prop;
+            sum.w <- aa[["sumW"]][i] + bb[["sumW"]][i]
+            sum.ww <- aa[["sumWW"]][i] + bb[["sumWW"]][i]
+            p.a <- aa[["sumW"]][i] / sum.w
+        } else
+            p.a <- aa[["Base n"]][i] / n.observations
+        p.b <- 1 - p.a
+
+        proportiony = p.a
+        mean.a <- aa[["Average"]][i]
+        if (is.na(mean.a))
+            mean.a <- 0
+        mean.b <- bb[["Average"]][i]
+        if (is.na(mean.b))
+            mean.b <- 0
+
+        sums.ww <- c(bb[["sumWW"]][i] - bb[["sumXWW"]][i], bb[["sumXWW"]][i], 
+                     aa[["sumWW"]][i] - aa[["sumXWW"]][i], aa[["sumXWW"]][i])
+        proportions <- c(p.b * (1-mean.b), p.b * mean.b,
+                         p.a * (1-mean.a), p.a * mean.a)
+        counts = matrix(proportions * n.observations, 2)
+
+        # If not weighted, this reduces to a chi-square test
+        group_sizes = colSums(counts)
+        row.totals = rowSums(counts)
+        total = sum(row.totals)
+
+        expected = matrix(c(group_sizes[1]*row.totals[1]/total,
+                            group_sizes[1]*row.totals[2]/total,
+                            group_sizes[2]*row.totals[1]/total,
+                            group_sizes[2]*row.totals[2]/total), 2)
+
+        pearson.statistic = sum((counts - expected)^2/expected)
+        if (!is.weighted)
+            pvals[i] <- pchisq(pearson.statistic, 1, lower.tail = FALSE)
+        else
+        {
+            variance = multinomialCovarianceMatrix(proportions, 
+                    sums.ww, sum.ww, sum.w, n.observations)
+            if (!is.na(pearson.statistic)) # If not a missing value
+            {
+                a = matrix(0, 4, 1)
+                id_mat = d_mat = matrix(0, 4, 4)
+                denominator = 0.0;
+                for (j in 1:4)
+                {
+                    prop = proportions[j];
+                    d_mat[j, j] = prop;
+                    prop_is_0 = prop < 1e-12
+                    j_prop = if (prop_is_0) 0 else 1.0 / prop;
+                    if (!prop_is_0) id_mat[j, j] = j_prop;
+                    a[j, 1] = j_prop / 4.0;
+                    denominator = denominator + j_prop;
+                }
+                a[2, 1] = -a[2, 1];
+                a[3, 1] = -a[3, 1];
+                denominator = denominator * .0625 / n.observations;
+                numerator = t(a) %*% variance %*% a
+                delta = numerator / denominator;
+                f = pearson.statistic / delta
+            } else
+                f <- NA
+            pvals[i] <- (1 - pf(f, 1, n.observations - 1))
         }
-        a[2, 1] = -a[2, 1];
-        a[3, 1] = -a[3, 1];
-        denominator = denominator * .0625 / n;
-        numerator = t(a) %*% variance %*% a
-        delta = numerator / denominator;
-        f = pearson.statistic / delta
-        1 - pf(f, 1, n - 1)
-    } else
-        f <- NA
-    return(1 - pf(f, 1, n - 1))
+    }
+    return(pvals)
 }
 
-independentSamplesTTestMeans <- function(mean1,
-                                        mean2,
-                                        standard_error_1,
-                                        standard_error_2,
-                                        n1,
-                                        n2)
-{
-    .ComputeStandardError <- function(se_1, se_2)
-    {
-        var1 = se_1 * se_1;
-        var2 = se_2 * se_2
-        sqrt(var1 + var2)
-    }
-    .WelchDegreesOfFreedom <- function(se_1, se_2, n_1, n_2)
-    {
-        var1 = se_1 * se_1;
-        var2 = se_2 * se_2;
-        (var1 + var2) * (var1 + var2) / (var1 * var1 / (n_1 - 1) + var2 * var2 / (n_2 - 1));
-    }
-    se = .ComputeStandardError(standard_error_1,  standard_error_2)
-    t = (mean1 - mean2) / se
-    df = .WelchDegreesOfFreedom(standard_error_1, standard_error_2, n1, n2)
-    p = pt(-abs(t), df)  * 2
-    #cat(sprintf("p=%.4f, t=%.2f, se=%.3f\n", p, t, se))
-    return(p)
-}
 
 # a and b contain the summary statistics for each sample
 tTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel = 0)
