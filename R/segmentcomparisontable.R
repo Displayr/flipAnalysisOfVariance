@@ -272,7 +272,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         {
             tmp.var <- if (row.vcol[i] == 0) v.list[[row.vvi[i]]]
                        else                  v.list[[row.vvi[i]]][,row.vcol[i]]
-            pvals[i,] <- pvalsByGroup(tmp.var, group, weights, is.binary = row.format[i] != "numeric",
+            pvals[i,] <- calcPvaluesForOneVariable(tmp.var, group, weights, is.binary = row.format[i] != "numeric",
                                       non.parametric = font.color.nonparametric)
         }
         if (font.color.FDRcorrection)

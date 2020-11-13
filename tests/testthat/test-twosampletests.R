@@ -124,10 +124,6 @@ tb.IdFW <- structure(c(2395.23786279264, 405, 41.7193008886669),
     "SUMMARY"), weight.name = "UniqueID", weight.label = "Unique Identifier")
 
 
-
-
-
-
 test_that("Proportions (unweighted)",
 {
     res <- TableOfDifferences(tb.AgeM, tb.AgeF, proportions.test = "tTest")
@@ -153,7 +149,7 @@ test_that("Proportions (unweighted)",
 test_that("Proportions (weighted)",
 {
     expect_warning(res <- TableOfDifferences(tb.AgeMW, tb.AgeFW,
-        proportions.test = "Nonparametric"), "The tables were compared using a z-Test.")
+        proportions.test = "Nonparametric"), "The tables were compared using a Z-test.")
     res <- TableOfDifferences(tb.AgeMW, tb.AgeFW, proportions.test = "zTest")
     expect_equal(attr(res, "p-value"), c(`18 to 24` = 0.782116695108154,
         `25 to 29` = 0.517309654384073, `30 to 34` = 0.908927558498363,
@@ -161,7 +157,18 @@ test_that("Proportions (weighted)",
         `45 to 49` = 0.877964821892863, `50 to 54` = 0.149067724568697,
         `55 to 64` = 0.782969208284808, `65 or more` = 0.0434567774432414))
     res <- TableOfDifferences(tb.AgeMW, tb.AgeFW, proportions.test = "tTest")
-
+    expect_equal(attr(res, "p-value"), c(`18 to 24` = 0.782188139696132,
+        `25 to 29` = 0.517495431817181, `30 to 34` = 0.908956312979854,
+        `35 to 39` = 0.423863979150505, `40 to 44` = 0.263857148203807,
+        `45 to 49` = 0.878003833497863, `50 to 54` = 0.149465148615311,
+        `55 to 64` = 0.783040502870338, `65 or more` = 0.043839516211105))
+    res <- TableOfDifferences(tb.AgeMW, tb.AgeFW, proportions.test = "tTest",
+        bessel.constant = 1, design.effect.constant = 2)
+    expect_equal(attr(res, "p-value"), c(`18 to 24` = 0.845005427791467,
+        `25 to 29` = 0.647184671321731, `30 to 34` = 0.93555220825436,
+        `35 to 39` = 0.571696699895595, `40 to 44` = 0.42939797867007,
+        `45 to 49` = 0.913566283687338, `50 to 54` = 0.30793026001672,
+        `55 to 64` = 0.845619737885007, `65 or more` = 0.15378292542027))
 })
 
 test_that("Averages (unweighted)",

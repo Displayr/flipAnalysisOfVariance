@@ -54,7 +54,8 @@ TableOfDifferences(
   cond.box.padding.bottom = 0,
   row.names.to.remove = "NET, Total, Sum",
   column.names.to.remove = "NET, Total, Sum",
-  bessel = 0,
+  bessel.constant = 0,
+  design.effect.constant = 1,
   ...
 )
 }
@@ -209,8 +210,11 @@ row labels specifying rows to remove from the returned table.}
 \item{column.names.to.remove}{Character vector or delimited string of
 column labels specifying columns to remove from the returned table.}
 
-\item{bessel}{Either a 0 or 1 which is a correction factor used in some tests.
-Usually taken from QSettings.}
+\item{bessel.constant}{Either a 0 or 1 which is a correction factor used in some tests.
+Usually taken from QSettings$StatisticalAssumptions.}
+
+\item{design.effect.constant}{Another value taken from QSettings$StatisticalAssumptions
+used to account for the effect of of the design.}
 
 \item{...}{Other parameters passed to \link[flipFormat]{CreateCustomTable}.}
 }

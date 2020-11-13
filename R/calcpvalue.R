@@ -1,7 +1,7 @@
 #' @importFrom stats pt qnorm pchisq
 #' @importFrom survey svydesign svyranktest
 #' @importFrom stats kruskal.test
-pvalsByGroup <- function(x, group, weights, is.binary = FALSE, non.parametric = FALSE)
+calcPvaluesForOneVariable <- function(x, group, weights, is.binary = FALSE, non.parametric = FALSE)
 {
     if (!is.factor(group))
         group <- factor(group)
@@ -25,12 +25,12 @@ pvalsByGroup <- function(x, group, weights, is.binary = FALSE, non.parametric = 
             }
         }
         else 
-            pval[i] <- calcPvalueForVariable(x, x.is.binary = is.binary, y = y, w = weights)
+            pval[i] <- calcPvaluesForOneVarOneLevel(x, x.is.binary = is.binary, y = y, w = weights)
     }
     return(pval)
 }
 
-calcPvalueForVariable = function(x,             # A binary or numeric variable
+calcPvaluesForOneVarOneLevel = function(x,             # A binary or numeric variable
                       x.is.binary = TRUE,       # TRUE if x is a binary variable
                       y,                        # A binary variable
                       w = rep(1, length(x)))    # weight variable (same length as x)
@@ -68,6 +68,23 @@ calcPvalueForVariable = function(x,             # A binary or numeric variable
            is.weighted = length(unique(w)) > 1, bessel = 0))
 }
 
+# a and b are lists which contain the summary statistics of each sample
+compareTwoSamples <- function(test.type, a, b,
+    is.binary = TRUE, is.weighted = FALSE, bessel = 0, dEff = 1)
+{
+    if (test.type == "tTest")
+        return(tTest(a[["Average"]], b[["Average"]], a[["Standard Error"]],
+            b[["Standard Error"]], a[["Base n"]], b[["Base n"]],
+            is.binary, is.weighted, bessel, dEff))
+    else if (test.type == "zTest")
+        return(zTest(a[["Average"]], b[["Average"]], a[["Standard Error"]],
+            b[["Standard Error"]], a[["Base n"]], b[["Base n"]],
+            is.binary, is.weighted, bessel))
+    else # Nonparametric or Chisquare
+        return(raoScottSecondOrderChiSquareTest(a, b, is.weighted))
+    # Non-parametric tests for numeric variables are handled before
+    # getting to this function
+} 
 # Functions - these are all from the c# SamplingVariance class (albeit in slightly different forms)
 computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.observations)
 {
@@ -98,7 +115,7 @@ computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, su
 }
 
 # A simplification of RaoScottSecondOrder2b2 from Q's C#
-# a and b contain summary statistics for each sample
+# aa and bb contain summary statistics for each sample
 raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
 {
     if (!is.null(dim(aa[["Average"]])))
@@ -180,9 +197,12 @@ raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
     return(pvals)
 }
 
-
-# a and b contain the summary statistics for each sample
-tTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel = 0)
+# Formulas are for binary variables (proportions):
+# https://wiki.q-researchsoftware.com/wiki/Independent_Sample_Tests_-_Comparing_Two_Proportions
+# And for numeric variables (means):
+# https://wiki.q-researchsoftware.com/wiki/Related_Samples_Tests_-_Comparing_Two_Means
+tTest <- function(mean1, mean2, se1, se2, n1, n2,
+                  is.binary, is.weighted, bessel = 0, dEff = 1)
 {
     if (!is.binary)
     {
@@ -194,15 +214,20 @@ tTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel
 
     } else if (is.binary && !is.weighted)
     {
+        # https://wiki.q-researchsoftware.com/wiki/Independent_Samples_T-Test_-_Comparing_Two_Proportions 
         m12 <- (n1 * mean1 + n2 * mean2)/(n1 + n2)
         se <- sqrt(m12 * (1 - m12) * (1/n1 + 1/n2))
         df <- n1 + n2 - 2
 
     } else if (is.binary && is.weighted)
     {
-        se <- sqrt(se1 * se1 + se2 * se2)
-        df <- (se1 * se1 / n1 + se2 * se2 / n2)^2 / 
-            ((se1 * se1/n1)^2/(n1-bessel) + (se2 * se2 / n2)^2/(n2-bessel))
+        # There seems to be some inaccuracy in the p-values
+        # after around 5 or 6 decimals with this method
+        se <- sqrt(dEff * (se1 * se1 + se2 * se2))
+        s1c <- se1 * se1/n1
+        s2c <- se2 * se2/n2
+        df <- (s1c + s2c)^2 / 
+            ((s1c * s1c/(n1-bessel) + (s2c * s2c)/(n2-bessel)))
     }
     t = (mean1 - mean2)/se
     p = pt(-abs(t), df) * 2
@@ -298,20 +323,4 @@ computeNumericVarStats <- function(x, w)
         "Standard Error" = var$se))
 }
 
-# a and b are lists which contain the summary statistics of each sample
-compareTwoSamples <- function(test.type, a, b,
-    is.binary = TRUE, is.weighted = FALSE, bessel = 0)
-{
-    if (test.type == "tTest")
-        return(tTest(a[["Average"]], b[["Average"]], a[["Standard Error"]],
-            b[["Standard Error"]], a[["Base n"]], b[["Base n"]],
-            is.binary, is.weighted))
-    else if (test.type == "zTest")
-        return(zTest(a[["Average"]], b[["Average"]], a[["Standard Error"]],
-            b[["Standard Error"]], a[["Base n"]], b[["Base n"]],
-            is.binary, is.weighted, bessel))
-    else # Nonparametric or Chisquare
-        return(raoScottSecondOrderChiSquareTest(a, b, is.weighted))
-    # Non-parametric tests for numeric variables are handled before
-    # getting to this function
-}    
+   

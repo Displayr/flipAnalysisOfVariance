@@ -105,8 +105,10 @@
 #' @param proportions.test The type of test used to compare a table of proportions 
 #'  (i.e. from PickOne or PickAny variable). Usually taken from QSettings. 
 #'  One of "tTest", "zTest", "Nonparametric".
-#' @param bessel Either a 0 or 1 which is a correction factor used in some tests.
-#'  Usually taken from QSettings.
+#' @param bessel.constant Either a 0 or 1 which is a correction factor used in some tests.
+#'  Usually taken from QSettings$StatisticalAssumptions.
+#' @param design.effect.constant Another value taken from QSettings$StatisticalAssumptions
+#'  used to account for the effect of of the design.
 #' @param ... Other parameters passed to \link[flipFormat]{CreateCustomTable}.
 #' @importFrom flipFormat CreateCustomTable
 #' @importFrom flipTables RemoveRowsAndOrColumns
@@ -161,7 +163,8 @@ TableOfDifferences <- function(table1,
                                cond.box.padding.bottom = 0,
                                row.names.to.remove = "NET, Total, Sum",
                                column.names.to.remove = "NET, Total, Sum",
-                               bessel = 0,
+                               bessel.constant = 0,
+                               design.effect.constant = 1,
                                ...)
 {
     # Check input data
@@ -244,7 +247,8 @@ TableOfDifferences <- function(table1,
     pvals <- compareTwoSamples(test.type, a = list(Average = table2[,,1]/denom, 
          "Standard Error" = table2[,,ind2.se], "Base n" = table2[,,ind2.n]),
          b = list(Average = table1[,,1]/denom, "Standard Error" = table1[,,ind1.se], 
-         "Base n" = table1[,,ind1.n]), is.percentage, is.weighted, bessel)
+         "Base n" = table1[,,ind1.n]), is.percentage, is.weighted, 
+         bessel.constant, design.effect.constant)
 
     if (output == "qtable")
     {
