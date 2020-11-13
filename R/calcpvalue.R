@@ -214,7 +214,6 @@ tTest <- function(mean1, mean2, se1, se2, n1, n2,
 
     } else if (is.binary && !is.weighted)
     {
-        # https://wiki.q-researchsoftware.com/wiki/Independent_Samples_T-Test_-_Comparing_Two_Proportions 
         m12 <- (n1 * mean1 + n2 * mean2)/(n1 + n2)
         se <- sqrt(m12 * (1 - m12) * (1/n1 + 1/n2))
         df <- n1 + n2 - 2
