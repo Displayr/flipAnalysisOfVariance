@@ -212,7 +212,9 @@ tTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel
 #' @importFrom stats pnorm
 zTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel = 0)
 {
-    if (is.binary && !is.weighted)
+    if (!is.binary)
+        se <- sqrt(se1 * se1 + se2 * se2)
+    else if(is.binary && !is.weighted)
     {
         m12 <- (n1 * mean1 + n2 * mean2)/(n1 + n2)
         se <- sqrt(m12 * (1 - m12) * (n1 + n2) / (n1 + n2 - 2*bessel) * (1/n1 + 1/n2))

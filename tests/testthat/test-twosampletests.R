@@ -74,6 +74,58 @@ tb.AgeFW <- structure(c(12.6447804903137, 12.3129028403221, 11.1051949289579,
     10L))), name = "table.Age.5", questions = c("Age", "SUMMARY"),
     weight.name = "UniqueID", weight.label = "Unique Identifier")
 
+tb.IdM <- structure(c(1567.88101265823, 395, 56.5379276030432),
+    .Dim = c(1L, 3L), .Dimnames = list("Unique Identifier",
+    c("Average", "Sample Size", "Standard Error")),
+    basedescriptiontext = "sample size = 395; 51% filtered out",
+    basedescription = list(Minimum = 395L, Maximum = 395L,
+    Range = FALSE, Total = 395L, Missing = 0L,
+    EffectiveSampleSize = 395L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 50.625), questiontypes = "Number",
+    span = list(rows = structure(list("Unique Identifier"), class = "data.frame",
+    .Names = "", row.names = 1L)), name = "table.Unique.Identifier",
+    questions = c("Unique Identifier", "SUMMARY"))
+
+tb.IdF <- structure(c(1632.31358024691, 405, 55.520303731914),
+    .Dim = c(1L, 3L), .Dimnames = list("Unique Identifier",
+    c("Average", "Sample Size", "Standard Error")),
+    basedescriptiontext = "sample size = 405; 49% filtered out",
+    basedescription = list(Minimum = 405L, Maximum = 405L, Range = FALSE,
+    Total = 405L, Missing = 0L, EffectiveSampleSize = 405L,
+    EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 49.375), questiontypes = "Number",
+    span = list(rows = structure(list("Unique Identifier"),
+    class = "data.frame", .Names = "", row.names = 1L)),
+    name = "table.Unique.Identifier.2", questions = c("Unique Identifier",
+    "SUMMARY"))
+
+tb.IdMW <- structure(c(2371.15349911919, 395, 43.5121014397073),
+    .Dim = c(1L, 3L), .Dimnames = list("Unique Identifier",
+    c("Average", "Sample Size", "Standard Error")),
+    basedescriptiontext = "sample size = 395; effective sample size = 344 (87%); 51% filtered out",
+    basedescription = list(Minimum = 395L, Maximum = 395L, Range = FALSE,
+    Total = 395L, Missing = 0L, EffectiveSampleSize = 344L,
+    EffectiveSampleSizeProportion = 87, FilteredProportion = 50.625),
+    questiontypes = "Number", span = list(rows = structure(list("Unique Identifier"),
+    class = "data.frame", .Names = "", row.names = 1L)),
+    name = "table.Unique.Identifier.3", questions = c("Unique Identifier",
+    "SUMMARY"), weight.name = "UniqueID", weight.label = "Unique Identifier")
+
+tb.IdFW <- structure(c(2395.23786279264, 405, 41.7193008886669),
+    .Dim = c(1L, 3L), .Dimnames = list("Unique Identifier",
+    c("Average", "Sample Size", "Standard Error")),
+    basedescriptiontext = "sample size = 405; effective sample size = 364 (90%); 49% filtered out",
+    basedescription = list(Minimum = 405L, Maximum = 405L, Range = FALSE,
+    Total = 405L, Missing = 0L, EffectiveSampleSize = 364L,
+    EffectiveSampleSizeProportion = 90, FilteredProportion = 49.375),
+    questiontypes = "Number", span = list(rows = structure(list("Unique Identifier"),
+    class = "data.frame", .Names = "", row.names = 1L)),
+    name = "table.Unique.Identifier.4", questions = c("Unique Identifier",
+    "SUMMARY"), weight.name = "UniqueID", weight.label = "Unique Identifier")
+
+
+
+
 
 
 test_that("Proportions (unweighted)",
@@ -100,7 +152,34 @@ test_that("Proportions (unweighted)",
 
 test_that("Proportions (weighted)",
 {
+    expect_warning(res <- TableOfDifferences(tb.AgeMW, tb.AgeFW,
+        proportions.test = "Nonparametric"), "The tables were compared using a z-Test.")
     res <- TableOfDifferences(tb.AgeMW, tb.AgeFW, proportions.test = "zTest")
-    #expect_equal(attr(res, "p-value"),
+    expect_equal(attr(res, "p-value"), c(`18 to 24` = 0.782116695108154,
+        `25 to 29` = 0.517309654384073, `30 to 34` = 0.908927558498363,
+        `35 to 39` = 0.423626439759687, `40 to 44` = 0.263512930438365,
+        `45 to 49` = 0.877964821892863, `50 to 54` = 0.149067724568697,
+        `55 to 64` = 0.782969208284808, `65 or more` = 0.0434567774432414))
+    res <- TableOfDifferences(tb.AgeMW, tb.AgeFW, proportions.test = "tTest")
 
+})
+
+test_that("Averages (unweighted)",
+{
+    expect_warning(res <- TableOfDifferences(tb.IdM, tb.IdF,
+        means.test = "Nonparametric"), "The tables were compared using a t-Test.")
+    res <- TableOfDifferences(tb.IdM, tb.IdF, means.test = "tTest")
+    expect_equal(attr(res, "p-value"), 0.416387593497747)
+    res <- TableOfDifferences(tb.IdM, tb.IdF, means.test = "zTest")
+    expect_equal(attr(res, "p-value"), 0.416144836438102)
+})
+
+test_that("Averages (weighted)",
+{
+    expect_warning(res <- TableOfDifferences(tb.IdMW, tb.IdFW,
+        means.test = "Nonparametric"), "The tables were compared using a t-Test.")
+    res <- TableOfDifferences(tb.IdMW, tb.IdFW, means.test = "tTest")
+    expect_equal(attr(res, "p-value"), 0.689606500592584)
+    res <- TableOfDifferences(tb.IdMW, tb.IdFW, means.test = "zTest")
+    expect_equal(attr(res, "p-value"), 0.689499274166147)
 })

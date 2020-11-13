@@ -232,7 +232,7 @@ TableOfDifferences <- function(table1,
     test.type <- if (is.percentage) proportions.test else means.test
     if (is.percentage && test.type %in% c("Nonparametric", "Chisquare") && is.weighted)
     {
-        warning("The tables were compared using the Z-test.")
+        warning("The tables were compared using a Z-test.")
         test.type <- "zTest"
     }
     if (!is.percentage && test.type == "Nonparametric")
