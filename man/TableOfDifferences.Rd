@@ -67,13 +67,15 @@ significantly different.}
 
 \item{table2}{A Q Table with the same labels as \code{table1}.}
 
-\item{means.test}{The type of test used to compare a table of means 
-(i.e. from numeric variable). Usually taken from QSettings. 
-One of "tTest", "zTest", "Nonparametric".}
+\item{means.test}{The type of test used to compare a table of means
+(i.e. from numeric variable). One of "tTest", "zTest", "Nonparametric".
+More details available in the \href{https://wiki.q-researchsoftware.com/wiki/Independent_Sample_Tests_-_Comparing_Two_Means}{Q Wiki}.
+The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.}
 
-\item{proportions.test}{The type of test used to compare a table of proportions 
-(i.e. from PickOne or PickAny variable). Usually taken from QSettings. 
-One of "tTest", "zTest", "Nonparametric".}
+\item{proportions.test}{The type of test used to compare a table of proportions
+(i.e. from PickOne or PickAny variable). One of "tTest", "zTest", "Nonparametric".
+More details available in the \href{https://wiki.q-researchsoftware.com/wiki/Independent_Sample_Tests_-_Comparing_Two_Proportions}{Q Wiki}.
+The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.}
 
 \item{output}{The type of output to return. The default is "htmlwidget" that
 visualizes the significance levels of the differences. The alternative
@@ -211,10 +213,11 @@ row labels specifying rows to remove from the returned table.}
 column labels specifying columns to remove from the returned table.}
 
 \item{bessel.constant}{Either a 0 or 1 which is a correction factor used in some tests.
-Usually taken from QSettings$StatisticalAssumptions.}
+The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.}
 
-\item{design.effect.constant}{Another value taken from QSettings$StatisticalAssumptions
-used to account for the effect of of the design.}
+\item{design.effect.constant}{A constant used to account for the expected sampling
+error in a survey. More details available in the \href{https://docs.displayr.com/wiki/Design_Effects_and_Effective_Sample_Size.}{Q Wiki}.
+The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.}
 
 \item{...}{Other parameters passed to \link[flipFormat]{CreateCustomTable}.}
 }

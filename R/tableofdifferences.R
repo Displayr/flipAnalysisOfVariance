@@ -99,16 +99,19 @@
 #'     row labels specifying rows to remove from the returned table.
 #' @param column.names.to.remove Character vector or delimited string of
 #'     column labels specifying columns to remove from the returned table.
-#' @param means.test The type of test used to compare a table of means 
-#'  (i.e. from numeric variable). Usually taken from QSettings. 
-#'  One of "tTest", "zTest", "Nonparametric".  
-#' @param proportions.test The type of test used to compare a table of proportions 
-#'  (i.e. from PickOne or PickAny variable). Usually taken from QSettings. 
-#'  One of "tTest", "zTest", "Nonparametric".
+#' @param means.test The type of test used to compare a table of means
+#'  (i.e. from numeric variable). One of "tTest", "zTest", "Nonparametric".
+#'  More details available in the \href{https://wiki.q-researchsoftware.com/wiki/Independent_Sample_Tests_-_Comparing_Two_Means}{Q Wiki}.
+#'  The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.
+#' @param proportions.test The type of test used to compare a table of proportions
+#'  (i.e. from PickOne or PickAny variable). One of "tTest", "zTest", "Nonparametric".
+#'  More details available in the \href{https://wiki.q-researchsoftware.com/wiki/Independent_Sample_Tests_-_Comparing_Two_Proportions}{Q Wiki}.
+#'  The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.
 #' @param bessel.constant Either a 0 or 1 which is a correction factor used in some tests.
-#'  Usually taken from QSettings$StatisticalAssumptions.
-#' @param design.effect.constant Another value taken from QSettings$StatisticalAssumptions
-#'  used to account for the effect of of the design.
+#'  The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.
+#' @param design.effect.constant A constant used to account for the expected sampling
+#'  error in a survey. More details available in the \href{https://docs.displayr.com/wiki/Design_Effects_and_Effective_Sample_Size.}{Q Wiki}.
+#'  The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.
 #' @param ... Other parameters passed to \link[flipFormat]{CreateCustomTable}.
 #' @importFrom flipFormat CreateCustomTable
 #' @importFrom flipTables RemoveRowsAndOrColumns
@@ -244,10 +247,10 @@ TableOfDifferences <- function(table1,
         test.type <- "tTest"
     }
     cell.diff <- table2[,,1] - table1[,,1]
-    pvals <- compareTwoSamples(test.type, a = list(Average = table2[,,1]/denom, 
+    pvals <- compareTwoSamples(test.type, a = list(Average = table2[,,1]/denom,
          "Standard Error" = table2[,,ind2.se], "Base n" = table2[,,ind2.n]),
-         b = list(Average = table1[,,1]/denom, "Standard Error" = table1[,,ind1.se], 
-         "Base n" = table1[,,ind1.n]), is.percentage, is.weighted, 
+         b = list(Average = table1[,,1]/denom, "Standard Error" = table1[,,ind1.se],
+         "Base n" = table1[,,ind1.n]), is.percentage, is.weighted,
          bessel.constant, design.effect.constant)
 
     if (output == "qtable")

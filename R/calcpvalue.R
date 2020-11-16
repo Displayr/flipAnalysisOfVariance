@@ -24,7 +24,7 @@ calcPvaluesForOneVariable <- function(x, group, weights, is.binary = FALSE, non.
                 pval[i] <- svyranktest(x ~ y, svydesign(ids = ~1, weights = ~w, data = df))$p.value
             }
         }
-        else 
+        else
             pval[i] <- calcPvaluesForOneVarOneLevel(x, x.is.binary = is.binary, y = y, w = weights)
     }
     return(pval)
@@ -46,7 +46,7 @@ calcPvaluesForOneVarOneLevel = function(x,             # A binary or numeric var
     }
 
     # Identifying missing values; these are values that are:
-    # - Missing in  x (e.g., if x is Pick Any and x = Coke | Pepsi, 
+    # - Missing in  x (e.g., if x is Pick Any and x = Coke | Pepsi,
     #       if either coke or Pepsi have missing values, then x is missing.
     # - Missing in y
     # - Missing or <= 0 in w
@@ -62,7 +62,7 @@ calcPvaluesForOneVarOneLevel = function(x,             # A binary or numeric var
     # Here, the test.type for SegmentComparisonTable is determined based on
     # variable type but we will update this later to use the statistical
     # assumptions in QSettings
-    # Need to update function signature and tests 
+    # Need to update function signature and tests
     test.type <- if (!x.is.binary) "tTest" else "Nonparametric"
     return(compareTwoSamples(test.type, a, b, x.is.binary,
            is.weighted = length(unique(w)) > 1, bessel = 0))
@@ -84,7 +84,7 @@ compareTwoSamples <- function(test.type, a, b,
         return(raoScottSecondOrderChiSquareTest(a, b, is.weighted))
     # Non-parametric tests for numeric variables are handled before
     # getting to this function
-} 
+}
 # Functions - these are all from the c# SamplingVariance class (albeit in slightly different forms)
 computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.observations)
 {
@@ -145,7 +145,7 @@ raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
         if (is.na(mean.b))
             mean.b <- 0
 
-        sums.ww <- c(bb[["sumWW"]][i] - bb[["sumXWW"]][i], bb[["sumXWW"]][i], 
+        sums.ww <- c(bb[["sumWW"]][i] - bb[["sumXWW"]][i], bb[["sumXWW"]][i],
                      aa[["sumWW"]][i] - aa[["sumXWW"]][i], aa[["sumXWW"]][i])
         proportions <- c(p.b * (1-mean.b), p.b * mean.b,
                          p.a * (1-mean.a), p.a * mean.a)
@@ -166,7 +166,7 @@ raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
             pvals[i] <- pchisq(pearson.statistic, 1, lower.tail = FALSE)
         else
         {
-            variance = multinomialCovarianceMatrix(proportions, 
+            variance = multinomialCovarianceMatrix(proportions,
                     sums.ww, sum.ww, sum.w, n.observations)
             if (!is.na(pearson.statistic)) # If not a missing value
             {
@@ -197,10 +197,6 @@ raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
     return(pvals)
 }
 
-# Formulas are for binary variables (proportions):
-# https://wiki.q-researchsoftware.com/wiki/Independent_Sample_Tests_-_Comparing_Two_Proportions
-# And for numeric variables (means):
-# https://wiki.q-researchsoftware.com/wiki/Related_Samples_Tests_-_Comparing_Two_Means
 tTest <- function(mean1, mean2, se1, se2, n1, n2,
                   is.binary, is.weighted, bessel = 0, dEff = 1)
 {
@@ -225,7 +221,7 @@ tTest <- function(mean1, mean2, se1, se2, n1, n2,
         se <- sqrt(dEff * (se1 * se1 + se2 * se2))
         s1c <- se1 * se1/n1
         s2c <- se2 * se2/n2
-        df <- (s1c + s2c)^2 / 
+        df <- (s1c + s2c)^2 /
             ((s1c * s1c/(n1-bessel) + (s2c * s2c)/(n2-bessel)))
     }
     t = (mean1 - mean2)/se
@@ -242,7 +238,7 @@ zTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel
     {
         m12 <- (n1 * mean1 + n2 * mean2)/(n1 + n2)
         se <- sqrt(m12 * (1 - m12) * (n1 + n2) / (n1 + n2 - 2*bessel) * (1/n1 + 1/n2))
-    
+
     } else if (is.binary && is.weighted)
     {
         se <- sqrt(se1 * se1 + se2 * se2)
@@ -322,4 +318,4 @@ computeNumericVarStats <- function(x, w)
         "Standard Error" = var$se))
 }
 
-   
+
