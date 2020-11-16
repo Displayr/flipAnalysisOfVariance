@@ -1,7 +1,7 @@
 #' @importFrom stats pt qnorm pchisq
 #' @importFrom survey svydesign svyranktest
 #' @importFrom stats kruskal.test
-pvalsByGroup <- function(x, group, weights, is.binary = FALSE, non.parametric = FALSE)
+calcPvaluesForOneVariable <- function(x, group, weights, is.binary = FALSE, non.parametric = FALSE)
 {
     if (!is.factor(group))
         group <- factor(group)
@@ -14,22 +14,23 @@ pvalsByGroup <- function(x, group, weights, is.binary = FALSE, non.parametric = 
     for (i in 1:n.levels)
     {
         y <- group == levs[i]
-        pval[i] <- if (non.parametric && !is.binary)
+        if (non.parametric && !is.binary)
         {
             if (is.null(weights))
-                kruskal.test(x, y)$p.value
+                pval[i] <- kruskal.test(x, y)$p.value
             else
-                {
-                    df <- data.frame(x = x, y = y, w = weights)
-                    svyranktest(x ~ y, svydesign(ids = ~1, weights = ~w, data = df))$p.value
-                }
+            {
+                df <- data.frame(x = x, y = y, w = weights)
+                pval[i] <- svyranktest(x ~ y, svydesign(ids = ~1, weights = ~w, data = df))$p.value
+            }
         }
-        else calcPvalue(x, x.is.binary = is.binary, y = y, w = weights)
+        else
+            pval[i] <- calcPvaluesForOneVarOneLevel(x, x.is.binary = is.binary, y = y, w = weights)
     }
     return(pval)
 }
 
-calcPvalue = function(x,                        # A binary or numeric variable
+calcPvaluesForOneVarOneLevel = function(x,             # A binary or numeric variable
                       x.is.binary = TRUE,       # TRUE if x is a binary variable
                       y,                        # A binary variable
                       w = rep(1, length(x)))    # weight variable (same length as x)
@@ -44,81 +45,46 @@ calcPvalue = function(x,                        # A binary or numeric variable
         x[f]
     }
 
-    if (!x.is.binary)
-    {
-        filters = list(which(y == 1), which(y==0))
-        a = computeNumericVarStats(Filter(x, filters[[1]]), Filter(w, filters[[1]]))
-        b = computeNumericVarStats(Filter(x, filters[[2]]), Filter(w, filters[[2]]))
-        return(independentSamplesTTestMeans(a["Average"], b["Average"], a["Standard Error"], b["Standard Error"], a["Base n"], b["Base n"]))
-    }
-
     # Identifying missing values; these are values that are:
-    # - Missing in  x (e.g., if x is Pick Any and x = Coke | Pepsi, if either coke or Pepsi have missing values, then x is missing.
+    # - Missing in  x (e.g., if x is Pick Any and x = Coke | Pepsi,
+    #       if either coke or Pepsi have missing values, then x is missing.
     # - Missing in y
     # - Missing or <= 0 in w
     m = is.na(x) | if(is.null(y)) FALSE else is.na(y) | is.na(w) | w <= 0
-
-    # Filtering data to removing missing values
     x = Filter(x, !m)
     y = Filter(y, !m)
     w = Filter(w, !m)
 
-    # variables
-    ww = w * w # This is a multiplication of each element by each other element
-    xw = x * w
-    xxw = x * xw
-    xww = xw * w
-    xxww = xxw * w
-    yw = y * w # This is a multiplication of each element by each other element
-    yyw = y * yw
-    yww = yw * w
-    yyww = yyw * w
-    xy = x * y
-    xyw = xy * w
-    xyww = xyw * w
+    filters = list(which(y == 1), which(y == 0))
+    a = computeNumericVarStats(Filter(x, filters[[1]]), Filter(w, filters[[1]]))
+    b = computeNumericVarStats(Filter(x, filters[[2]]), Filter(w, filters[[2]]))
 
-    # Summations of variables
-    n.observations = length(x)
-    n.missing = sum(m)
-    sum.w = sum(w)
-    sum.ww = sum(ww)
-    sum.x = sum(x)
-    sum.xw = sum(xw)
-    sum.xxw = sum(xxw)
-    sum.xww = sum(xww)
-    sum.xxww = sum(xxww)
-    sum.y = sum(y)
-    sum.yw = sum(yw)
-    sum.yyw = sum(yyw)
-    sum.yww = sum(yww)
-    sum.yyww = sum(yyww)
-    sum.xy = sum(xy)
-    sum.xyw = sum(xyw)
-    sum.xyww = sum(xyww)
-
-    proportionxy = sum.xyw / sum.w
-    proportiony = sum.yw / sum.w
-    proportionNotxy = proportiony - proportionxy
-    proportionx = sum.xw / sum.w
-    proportionyNotxy = proportionx - proportionxy
-    proportionyNotxNoty = 1 - proportionxy - proportionNotxy - proportionyNotxy
-    sum.Notxyww = sum.yww -sum.xyww
-    sum.xNotyww = sum.xww -sum.xyww
-    sum.NotxNotyww = sum.ww - sum.Notxyww - sum.xNotyww - sum.xyww
-    sums.ww = c(sum.NotxNotyww, sum.xNotyww, sum.Notxyww, sum.xyww)
-    proportions = c(proportionyNotxNoty, proportionyNotxy,proportionNotxy, proportionxy)
-    counts = matrix(proportions * n.observations, 2)
-
-    variance = multinomialCovarianceMatrix(proportions, sums.ww, sum.ww, sum.w, n.observations)
-    p = raoScottSecondOrder2b2(proportions,
-                               counts,
-                               variance,
-                               n.observations - sum.y,
-                               sum.y,
-                               is.weighted = length(unique(w)) > 1)
-    return(p)
+    # Here, the test.type for SegmentComparisonTable is determined based on
+    # variable type but we will update this later to use the statistical
+    # assumptions in QSettings
+    # Need to update function signature and tests
+    test.type <- if (!x.is.binary) "tTest" else "Nonparametric"
+    return(compareTwoSamples(test.type, a, b, x.is.binary,
+           is.weighted = length(unique(w)) > 1, bessel = 0))
 }
 
+# a and b are lists which contain the summary statistics of each sample
+compareTwoSamples <- function(test.type, a, b,
+    is.binary = TRUE, is.weighted = FALSE, bessel = 0, dEff = 1)
+{
+    if (test.type == "tTest")
+        return(tTest(a[["Average"]], b[["Average"]], a[["Standard Error"]],
+            b[["Standard Error"]], a[["Base n"]], b[["Base n"]],
+            is.binary, is.weighted, bessel, dEff))
+    else if (test.type == "zTest")
+        return(zTest(a[["Average"]], b[["Average"]], a[["Standard Error"]],
+            b[["Standard Error"]], a[["Base n"]], b[["Base n"]],
+            is.binary, is.weighted, bessel))
+    else # Nonparametric or Chisquare
+        return(raoScottSecondOrderChiSquareTest(a, b, is.weighted))
+    # Non-parametric tests for numeric variables are handled before
+    # getting to this function
+}
 # Functions - these are all from the c# SamplingVariance class (albeit in slightly different forms)
 computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.observations)
 {
@@ -141,6 +107,7 @@ computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, su
     ess = if (!is.na(taylor) && taylor < 0.000001) # Due to numeric precision issues
         sum.w * sum.w / sum.ww
         else n.observations * naive / taylor
+
     list(taylor = taylor,
          naive = naive,
          ess = ess,
@@ -148,84 +115,139 @@ computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, su
 }
 
 # A simplification of RaoScottSecondOrder2b2 from Q's C#
-raoScottSecondOrder2b2 <- function(proportions,
-                       counts,
-                       variance,
-                       n0,
-                       n1,
-                       is.weighted)
+# aa and bb contain summary statistics for each sample
+raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
 {
-    group_sizes = colSums(counts)
-    row.totals = rowSums(counts)
-    total = sum(row.totals)
-    n = n0 + n1;
-    expected = matrix(c(group_sizes[1]*row.totals[1]/total,
-                        group_sizes[1]*row.totals[2]/total,
-                        group_sizes[2]*row.totals[1]/total,
-                        group_sizes[2]*row.totals[2]/total), 2)
-    pearson.statistic = sum((counts - expected)^2/expected)
-    if (!is.weighted)
-        return(pchisq(pearson.statistic, 1, lower.tail = FALSE))
+    if (!is.null(dim(aa[["Average"]])))
+        pvals <- matrix(NA, nrow = NROW(aa[["Average"]]), ncol = NCOL(aa[["Average"]]))
+    else
+        pvals <- rep(NA, length = length(aa[["Average"]]))
+    if (length(aa[["Average"]]) == 0)
+        return(pvals)
 
-    if (!is.na(pearson.statistic)) # If not a missing value
+    for (i in 1:length(aa[["Average"]]))
     {
-        a = matrix(0, 4, 1)
-        id_mat = d_mat = matrix(0, 4, 4)
-        denominator = 0.0;
-        for (i in 1:4)
+        n.observations <- aa[["Base n"]][i] + bb[["Base n"]][i]
+        if (is.weighted)
         {
-            prop = proportions[i];
-            d_mat[i, i] = prop;
-            prop_is_0 = prop < 1e-12
-            i_prop = if (prop_is_0) 0 else 1.0 / prop;
-            if (!prop_is_0) id_mat[i, i] = i_prop;
-            a[i, 1] = i_prop / 4.0;
-            denominator = denominator + i_prop;
+            sum.w <- aa[["sumW"]][i] + bb[["sumW"]][i]
+            sum.ww <- aa[["sumWW"]][i] + bb[["sumWW"]][i]
+            p.a <- aa[["sumW"]][i] / sum.w
+        } else
+            p.a <- aa[["Base n"]][i] / n.observations
+        p.b <- 1 - p.a
+
+        proportiony = p.a
+        mean.a <- aa[["Average"]][i]
+        if (is.na(mean.a))
+            mean.a <- 0
+        mean.b <- bb[["Average"]][i]
+        if (is.na(mean.b))
+            mean.b <- 0
+
+        sums.ww <- c(bb[["sumWW"]][i] - bb[["sumXWW"]][i], bb[["sumXWW"]][i],
+                     aa[["sumWW"]][i] - aa[["sumXWW"]][i], aa[["sumXWW"]][i])
+        proportions <- c(p.b * (1-mean.b), p.b * mean.b,
+                         p.a * (1-mean.a), p.a * mean.a)
+        counts = matrix(proportions * n.observations, 2)
+
+        # If not weighted, this reduces to a chi-square test
+        group_sizes = colSums(counts)
+        row.totals = rowSums(counts)
+        total = sum(row.totals)
+
+        expected = matrix(c(group_sizes[1]*row.totals[1]/total,
+                            group_sizes[1]*row.totals[2]/total,
+                            group_sizes[2]*row.totals[1]/total,
+                            group_sizes[2]*row.totals[2]/total), 2)
+
+        pearson.statistic = sum((counts - expected)^2/expected)
+        if (!is.weighted)
+            pvals[i] <- pchisq(pearson.statistic, 1, lower.tail = FALSE)
+        else
+        {
+            variance = multinomialCovarianceMatrix(proportions,
+                    sums.ww, sum.ww, sum.w, n.observations)
+            if (!is.na(pearson.statistic)) # If not a missing value
+            {
+                a = matrix(0, 4, 1)
+                id_mat = d_mat = matrix(0, 4, 4)
+                denominator = 0.0;
+                for (j in 1:4)
+                {
+                    prop = proportions[j];
+                    d_mat[j, j] = prop;
+                    prop_is_0 = prop < 1e-12
+                    j_prop = if (prop_is_0) 0 else 1.0 / prop;
+                    if (!prop_is_0) id_mat[j, j] = j_prop;
+                    a[j, 1] = j_prop / 4.0;
+                    denominator = denominator + j_prop;
+                }
+                a[2, 1] = -a[2, 1];
+                a[3, 1] = -a[3, 1];
+                denominator = denominator * .0625 / n.observations;
+                numerator = t(a) %*% variance %*% a
+                delta = numerator / denominator;
+                f = pearson.statistic / delta
+            } else
+                f <- NA
+            pvals[i] <- (1 - pf(f, 1, n.observations - 1))
         }
-        a[2, 1] = -a[2, 1];
-        a[3, 1] = -a[3, 1];
-        denominator = denominator * .0625 / n;
-        numerator = t(a) %*% variance %*% a
-        delta = numerator / denominator;
-        f = pearson.statistic / delta
-        1 - pf(f, 1, n - 1)
-    } else
-        f <- NA
-    return(1 - pf(f, 1, n - 1))
+    }
+    return(pvals)
 }
 
-independentSamplesTTestMeans <- function(mean1,
-                                        mean2,
-                                        standard_error_1,
-                                        standard_error_2,
-                                        n1,
-                                        n2,
-                                        two.sided = TRUE)
+tTest <- function(mean1, mean2, se1, se2, n1, n2,
+                  is.binary, is.weighted, bessel = 0, dEff = 1)
 {
-    .ComputeStandardError <- function(se_1, se_2)
+    if (!is.binary)
     {
-        var1 = se_1 * se_1;
-        var2 = se_2 * se_2
-        sqrt(var1 + var2)
-    }
-    .WelchDegreesOfFreedom <- function(se_1, se_2, n_1, n_2)
+        v1 <- se1 * se1
+        v2 <- se2 * se2
+        v <- v1 + v2
+        se <- sqrt(v)
+        df <- v * v / (v1 * v1 / (n1 - 1) + v2 * v2 / (n2 - 1))
+
+    } else if (is.binary && !is.weighted)
     {
-        var1 = se_1 * se_1;
-        var2 = se_2 * se_2;
-        (var1 + var2) * (var1 + var2) / (var1 * var1 / (n_1 - 1) + var2 * var2 / (n_2 - 1));
+        m12 <- (n1 * mean1 + n2 * mean2)/(n1 + n2)
+        se <- sqrt(m12 * (1 - m12) * (1/n1 + 1/n2))
+        df <- n1 + n2 - 2
+
+    } else if (is.binary && is.weighted)
+    {
+        # There seems to be some inaccuracy in the p-values
+        # after around 5 or 6 decimals with this method
+        se <- sqrt(dEff * (se1 * se1 + se2 * se2))
+        s1c <- se1 * se1/n1
+        s2c <- se2 * se2/n2
+        df <- (s1c + s2c)^2 /
+            ((s1c * s1c/(n1-bessel) + (s2c * s2c)/(n2-bessel)))
     }
-    se = .ComputeStandardError(standard_error_1,  standard_error_2)
-    t = (mean1 - mean2) / se
-    df = .WelchDegreesOfFreedom(standard_error_1, standard_error_2, n1, n2)
-  
-    # By default return the two-sided test
-    # Note that the one-sided test in this case does not correspond to testing
-    # diff > 0 or diff < 0 but is conditional on the correct sign being chosen 
-    m <- if (two.sided) 2 else 1
-    p = pt(-abs(t), df)  * m
-    #cat(sprintf("p=%.4f, t=%.2f, se=%.3f\n", p, t, se))
+    t = (mean1 - mean2)/se
+    p = pt(-abs(t), df) * 2
     return(p)
 }
+
+#' @importFrom stats pnorm
+zTest <- function(mean1, mean2, se1, se2, n1, n2, is.binary, is.weighted, bessel = 0)
+{
+    if (!is.binary)
+        se <- sqrt(se1 * se1 + se2 * se2)
+    else if(is.binary && !is.weighted)
+    {
+        m12 <- (n1 * mean1 + n2 * mean2)/(n1 + n2)
+        se <- sqrt(m12 * (1 - m12) * (n1 + n2) / (n1 + n2 - 2*bessel) * (1/n1 + 1/n2))
+
+    } else if (is.binary && is.weighted)
+    {
+        se <- sqrt(se1 * se1 + se2 * se2)
+    }
+    z = (mean1 - mean2)/se
+    p = pnorm(-abs(z)) * 2
+    return(p)
+}
+
 
 multinomialCovarianceMatrix <- function(proportions, ww, ww_total, w_total, n)
 {
@@ -288,9 +310,12 @@ computeNumericVarStats <- function(x, w)
     sum.xxww = sum(xxww)
     mean.x = sum.xw / sum.w
 
-    population.variance = sum.xxw / sum.w - mean.x * mean.x
     n.used.in.bessel.correction = n.observations
     var = computeVariances(mean.x, FALSE, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.used.in.bessel.correction)
-    return(c("Average" = mean.x, "Base n" = n.observations, "Standard Error" = var$se))
+
+    return(c("Average" = mean.x, "Base n" = n.observations,
+        sumW = sum.w, sumWW = sum.ww, sumXWW = sum.xww,
+        "Standard Error" = var$se))
 }
+
 
