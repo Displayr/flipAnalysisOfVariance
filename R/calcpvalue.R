@@ -216,13 +216,9 @@ tTest <- function(mean1, mean2, se1, se2, n1, n2,
 
     } else if (is.binary && is.weighted)
     {
-        # There seems to be some inaccuracy in the p-values
-        # after around 5 or 6 decimals with this method
         se <- sqrt(dEff * (se1 * se1 + se2 * se2))
-        s1c <- se1 * se1/n1
-        s2c <- se2 * se2/n2
-        df <- (s1c + s2c)^2 /
-            ((s1c * s1c/(n1-bessel) + (s2c * s2c)/(n2-bessel)))
+        df <- (se1^2 + se2^2)^2 /
+            ((se1^4)/(n1-bessel) + (se2^4)/(n2-bessel))
     }
     t = (mean1 - mean2)/se
     p = pt(-abs(t), df) * 2
