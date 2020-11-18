@@ -107,7 +107,10 @@
 #'  (i.e. from PickOne or PickAny variable). One of "tTest", "zTest", "Nonparametric".
 #'  More details available in the \href{https://wiki.q-researchsoftware.com/wiki/Independent_Sample_Tests_-_Comparing_Two_Proportions}{Q Wiki}.
 #'  The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.
-#' @param bessel.constant Either a 0 or 1 which is a correction factor used in some tests.
+#' @param means.bessel Logical, specifying whether Bessel's correction is used to compare means.
+#'  The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.
+#' @param proportions.bessel Logical, specifying whether Bessel's correction
+#'  is used to compare proportions.
 #'  The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.
 #' @param design.effect.constant A constant used to account for the expected sampling
 #'  error in a survey. More details available in the \href{https://docs.displayr.com/wiki/Design_Effects_and_Effective_Sample_Size.}{Q Wiki}.
@@ -120,7 +123,9 @@
 TableOfDifferences <- function(table1,
                                table2,
                                means.test = "tTest",
+                               means.bessel = TRUE,
                                proportions.test = "zTest",
+                               proportions.bessel = FALSE,
                                output = c("widget", "qtable"),
                                show = c("Primary statistic of Table 2 with differences"),
                                cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
@@ -166,7 +171,6 @@ TableOfDifferences <- function(table1,
                                cond.box.padding.bottom = 0,
                                row.names.to.remove = "NET, Total, Sum",
                                column.names.to.remove = "NET, Total, Sum",
-                               bessel.constant = 0,
                                design.effect.constant = 1,
                                ...)
 {
@@ -236,6 +240,7 @@ TableOfDifferences <- function(table1,
     is.percentage <- grepl("%", stat1[1], fixed = TRUE)
     denom <- if (is.percentage) 100 else 1
     test.type <- if (is.percentage) proportions.test else means.test
+    bessel.constant <- if (is.percentage) proportions.bessel else means.bessel
     if (is.percentage && test.type %in% c("Nonparametric", "Chisquare") && is.weighted)
     {
         warning("The tables were compared using a Z-test.")

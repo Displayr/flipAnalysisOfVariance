@@ -85,7 +85,10 @@ compareTwoSamples <- function(test.type, a, b,
     # Non-parametric tests for numeric variables are handled before
     # getting to this function
 }
+
+
 # Functions - these are all from the c# SamplingVariance class (albeit in slightly different forms)
+# https://github.com/Displayr/q/blob/master/Flip/DataAnalysis/Inference/StandardErrors/SamplingVariance.cs
 computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, sum.xxw, sum.xxww, n.observations)
 {
     if (is.binary) # Numerical precision
@@ -115,6 +118,7 @@ computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, su
 }
 
 # A simplification of RaoScottSecondOrder2b2 from Q's C#
+# https://github.com/Displayr/q/blob/master/Flip/DataAnalysis/Inference/Tests/ChiSquareTests.cs
 # aa and bb contain summary statistics for each sample
 raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
 {
@@ -197,6 +201,9 @@ raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
     return(pvals)
 }
 
+
+# Code modified from https://github.com/Displayr/q/blob/master/Flip/DataAnalysis/Inference/Tests/TTests.cs and
+# https://github.com/Displayr/q/blob/master/Flip/DataAnalysis/Inference/Tests/CombinedZandTTest.cs
 tTest <- function(mean1, mean2, se1, se2, n1, n2,
                   is.binary, is.weighted, bessel = 0, dEff = 1)
 {

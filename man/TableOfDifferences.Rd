@@ -8,7 +8,9 @@ TableOfDifferences(
   table1,
   table2,
   means.test = "tTest",
+  means.bessel = TRUE,
   proportions.test = "zTest",
+  proportions.bessel = FALSE,
   output = c("widget", "qtable"),
   show = c("Primary statistic of Table 2 with differences"),
   cond.shade = c("None", "Cell colors", "Arrows", "Boxes")[2],
@@ -54,7 +56,6 @@ TableOfDifferences(
   cond.box.padding.bottom = 0,
   row.names.to.remove = "NET, Total, Sum",
   column.names.to.remove = "NET, Total, Sum",
-  bessel.constant = 0,
   design.effect.constant = 1,
   ...
 )
@@ -72,9 +73,16 @@ significantly different.}
 More details available in the \href{https://wiki.q-researchsoftware.com/wiki/Independent_Sample_Tests_-_Comparing_Two_Means}{Q Wiki}.
 The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.}
 
+\item{means.bessel}{Logical, specifying whether Bessel's correction is used to compare means.
+The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.}
+
 \item{proportions.test}{The type of test used to compare a table of proportions
 (i.e. from PickOne or PickAny variable). One of "tTest", "zTest", "Nonparametric".
 More details available in the \href{https://wiki.q-researchsoftware.com/wiki/Independent_Sample_Tests_-_Comparing_Two_Proportions}{Q Wiki}.
+The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.}
+
+\item{proportions.bessel}{Logical, specifying whether Bessel's correction
+is used to compare proportions.
 The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.}
 
 \item{output}{The type of output to return. The default is "htmlwidget" that
@@ -211,9 +219,6 @@ row labels specifying rows to remove from the returned table.}
 
 \item{column.names.to.remove}{Character vector or delimited string of
 column labels specifying columns to remove from the returned table.}
-
-\item{bessel.constant}{Either a 0 or 1 which is a correction factor used in some tests.
-The Standard R output will use the value in \code{QSettings$StatisticalAssumptions}.}
 
 \item{design.effect.constant}{A constant used to account for the expected sampling
 error in a survey. More details available in the \href{https://docs.displayr.com/wiki/Design_Effects_and_Effective_Sample_Size.}{Q Wiki}.

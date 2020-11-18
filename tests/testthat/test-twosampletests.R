@@ -46,7 +46,7 @@ test_that("Comparing Proportions (weighted)",
         `45 to 49` = 0.878003756320718, `50 to 54` = 0.14946639542492,
         `55 to 64` = 0.783040428342354, `65 or more` = 0.043836773319435))
     res <- TableOfDifferences(tb.AgeMalesW, tb.AgeFemalesW, proportions.test = "tTest",
-        bessel.constant = 1, design.effect.constant = 2)
+        proportions.bessel = 1, design.effect.constant = 2)
     expect_equal(attr(res, "p-value"), c(`18 to 24` = 0.845005420958658,
         `25 to 29` = 0.64718472112193, `30 to 34` = 0.935552189832649,
         `35 to 39` = 0.571696705430036, `40 to 44` = 0.429397093937519,
