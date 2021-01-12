@@ -260,11 +260,13 @@ TableOfDifferences <- function(table1,
 
     if (output == "qtable")
     {
-        output <- array(NA, dim = c(nrow(table2), ncol(table2), 3),
-            dimnames = list(rownames(table2), colnames(table2), c(stat2[1], "Differences", "p")))
+        output <- array(NA, dim = c(nrow(table2), ncol(table2), 4),
+            dimnames = list(rownames(table2), colnames(table2),
+            c(stat2[1], "Differences", "p", "z-Statistic")))
         output[,,1] <- table2[,,1]
         output[,,2] <- cell.diff
         output[,,3] <- pvals
+        output[,,4] <- sign(cell.diff) * abs(qnorm(pvals/2))
         return(CopyAttributes(output, table2, c("name", "basedescription",
             "basedescriptiontext", "dimnames", "names", "row.names",
             "dim", "class", "levels")))
@@ -467,8 +469,8 @@ autoFontColor <- function (colors)
 # or it does not contain multiple statistics
 convertToTableWithStatistics <- function(x)
 {
-    if (is.null(attr(x, "questions")) || is.null(attr(x, "name")))
-        stop("Input tables must be Q Tables showing statistics computed from questions or variable sets")
+    #if (is.null(attr(x, "questions")) || is.null(attr(x, "name")))
+    #    stop("Input tables must be Q Tables showing statistics computed from questions or variable sets")
     if (is.character(x))
         x <- array(suppressWarnings(as.numeric(x)), dim = dim(x), dimnames = dimnames(x))
     if (length(dim(x)) > 3)
