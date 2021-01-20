@@ -30,7 +30,8 @@ Remotes:
     Displayr/flipStatistics,
     Displayr/flipTables,
     Displayr/flipTransformations,
-    Displayr/flipU
+    Displayr/flipU,
+    Displayr/verbs
 RoxygenNote: 7.1.1
 Depends: R (>= 3.5.0)
 Encoding: UTF-8
