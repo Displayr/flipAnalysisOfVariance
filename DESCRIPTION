@@ -16,7 +16,8 @@ Imports:
     flipTransformations,
     flipU (>= 1.1.0),
     multcomp,
-    survey
+    survey,
+    verbs
 LazyData: NA
 Suggests:
     testthat,

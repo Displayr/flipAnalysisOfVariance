@@ -18,7 +18,12 @@ test_that("Fallback due to problems with underlying sandwich variance estimates"
           {
               ## test removed due to DS-2353, which converts unit-vector of weights to NULL
               ## suppressWarnings(flipU::ExpectWarning(OneWayANOVA(colas$Q5_7_1, colas$d1, weights = rep(1, 327)),"technical problem"))
-              suppressWarnings(flipU::ExpectWarning(OneWayANOVA(colas$Q5_7_1, colas$d1, robust.se = TRUE), "technical problem"))
+              captured.warnings <- capture_warnings(OneWayANOVA(colas$Q5_7_1, colas$d1, robust.se = TRUE))
+              expect_setequal(captured.warnings,
+                              c("Data has been automatically converted to numeric. Values are assigned in the order of the categories: 1, 2, 3, ...; To use alternative numeric values, transform the data prior including it in this analysis (e.g. by changing its structure). The variable health-conscious - Coke has been converted.",
+                                "There is a technical problem with the parameter variance-covariance matrix that has been corrected.This is most likely due to either a problem or the appropriateness of the statistical model (e.g., using weights or robust standard errors where a sub-group in the analysis has no variation in its residuals, or lack of variation in one or more predictors.)",
+                                "Numerical precision of p-value calcuations exceeds threshold. Treat p-values with caution.",
+                                "Robust standard errors have not been implemented for this model."))
           })
 
 test_that("One Way ANOVA - with a weight that removes a category in the predictor",
@@ -45,7 +50,7 @@ test_that("One Way ANOVA - Comparing options", {
     # Correction
     z = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1, return.all = TRUE))
     z1 = OneWayANOVA(colas$like.coke, colas$d1, correction = "Bonferroni", return.all = TRUE)
-    expect_true(all(z$coefs[, 4] <= z1$coefs[, 4]) & sum(z$coefs[, 4] < z1$coefs[, 4]) > 0)
+    expect_true(all(z$coefs[, 4] <= z1$coefs[, 4]) & Sum(z$coefs[, 4] < z1$coefs[, 4], remove.missing = FALSE) > 0)
     # Alternative
     z = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1, return.all = TRUE))
     z1 = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1, alternative = "Greater", return.all = TRUE))
@@ -66,11 +71,8 @@ test_that("One Way ANOVA - Comparing options", {
     # Imputation
     expect_error(OneWayANOVA(colas$like.coke, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean"), NA)
     expect_error(OneWayANOVA(colas$like.cokeMISSING, colas$d1MISSING, missing = "Imputation (replace missing values with estimates)", compare = "To mean"), NA)
-    tryCatch(OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Imputation (replace missing values with estimates)", compare = "To mean"),
-             warning = function(w){
-                 if (!grepl("Imputation has been selected, but the data has no missing values.", w$message))
-                     stop("OneWayAnova(...) did not throw a warning.")
-             })
+    expect_warning(OneWayANOVA(colas$like.cokeMISSING, colas$d1, missing = "Imputation (replace missing values with estimates)", compare = "To mean"),
+                   "Imputation has been selected, but the data has no missing values.")
     # Show Labels
     z <- OneWayANOVA(colas$like.coke, colas$d1MISSING, show.labels = TRUE, compare = "To first", return.all = TRUE)
     expect_equal(z$title,  "One-way ANOVA: Like Coca-Cola by Age")

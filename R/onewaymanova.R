@@ -182,6 +182,7 @@ computePillai <- function(outcomes, predictor, weighted, df, n.variables, weight
 }
 
 #' @importFrom flipTransformations Factor
+#' @importFrom verbs Sum
 #' @return A data.frame containing the outcomes
 #' @noRd
 prepareData <- function(outcomes, predictor, covariate, subset, weights, binary, missing)
@@ -197,7 +198,7 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
         subset <- rep(TRUE, n.total)
     else
         subset.label <- Labels(subset)
-    n.subset <- sum(subset)
+    n.subset <- Sum(subset, remove.missing = FALSE)
     outcomes <- AsNumeric(data.frame(outcomes), binary = binary, remove.first = TRUE)
     if (is.null(covariate))
         covariate <- rep(-1, n.total) # A fudge to ensure complete.cases does not fail

@@ -85,6 +85,7 @@
 #' @importFrom flipStatistics WeightedTable Table StatisticsByGroup Mean StandardDeviation
 #' @importFrom flipRegression PValueAdjustFDR
 #' @importFrom flipTransformations AsDataFrame FactorToNumeric
+#' @importFrom verbs Sum SumColumns
 #' @export
 SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    row.names.to.remove = "",
@@ -157,7 +158,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
     c.n <- nlevels(group)
     counts <-t(WeightedTable(group, weights = weights, useNA = "always"))
     counts <- counts[1:c.n]
-    result <- rbind(counts, counts/sum(counts))
+    result <- rbind(counts, counts/Sum(counts, remove.missing = FALSE))
     row.labels <- c("Sample size", "Percentage")
     if (length(weights) > 1)
     {
@@ -201,7 +202,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             colnames(vv) <- attr(x[[vvi]], "label")
 
         # Remove variables
-        if (sum(nchar(row.names.to.remove), na.rm = TRUE) > 0)
+        if (Sum(nchar(row.names.to.remove), remove.missing = TRUE) > 0)
         {
             rm.names <- ConvertCommaSeparatedStringToVector(row.names.to.remove, text.qualifier = "\"")
             rm.patt <- paste(c(paste0("^", rm.names, ", "), paste0(", ", rm.names, "$")), collapse = "|")
@@ -214,7 +215,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         # Compute main statistic (average/percentage)
         tmp <- t(StatisticsByGroup(vv, group = group, weights = weights))
         if (v.qtype %in% c("PickOne", "Date"))
-            tmp <- sweep(tmp, 2, colSums(tmp), "/")
+            tmp <- sweep(tmp, 2, SumColumns(tmp, remove.missing = FALSE), "/")
 
         if (NROW(tmp) == 1 && rownames(tmp)[1] == attr(x[[vvi]], "question"))
             rownames(tmp) <- ""
