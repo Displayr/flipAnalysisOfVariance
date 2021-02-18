@@ -202,7 +202,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
             colnames(vv) <- attr(x[[vvi]], "label")
 
         # Remove variables
-        if (Sum(nchar(row.names.to.remove), remove.missing = TRUE) > 0)
+        if (any(nzchar(row.names.to.remove, keepNA = TRUE), na.rm = TRUE))
         {
             rm.names <- ConvertCommaSeparatedStringToVector(row.names.to.remove, text.qualifier = "\"")
             rm.patt <- paste(c(paste0("^", rm.names, ", "), paste0(", ", rm.names, "$")), collapse = "|")
