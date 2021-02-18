@@ -50,7 +50,7 @@ test_that("One Way ANOVA - Comparing options", {
     # Correction
     z = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1, return.all = TRUE))
     z1 = OneWayANOVA(colas$like.coke, colas$d1, correction = "Bonferroni", return.all = TRUE)
-    expect_true(all(z$coefs[, 4] <= z1$coefs[, 4]) & Sum(z$coefs[, 4] < z1$coefs[, 4], remove.missing = FALSE) > 0)
+    expect_true(all(z$coefs[, 4] <= z1$coefs[, 4]) & sum(z$coefs[, 4] < z1$coefs[, 4]) > 0)
     # Alternative
     z = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1, return.all = TRUE))
     z1 = suppressWarnings(OneWayANOVA(colas$like.coke, colas$d1, alternative = "Greater", return.all = TRUE))

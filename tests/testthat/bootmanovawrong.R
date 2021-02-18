@@ -13,7 +13,7 @@ b.weights <- function(weights)
     m <- rep(0.00000000001, n) # Very small value to ensure degrees of freedom are not stuffed up in other models.
     m[as.integer(names(s))] <- s
     b.w <- weights * m
-    b.w / Sum(b.w, remove.missing = FALSE) * Sum(weights, remove.missing = FALSE)
+    b.w / sum(b.w) * sum(weights)
 }
 
 result <- NULL
