@@ -30,7 +30,7 @@ for (i in 1:1000)
 }
 asymptotic <- summary(manova(mod))
 asymptotic
-sum(result > asymptotic$stats[1,2])
+Sum(result > asymptotic$stats[1,2], remove.missing = FALSE)
 hist(result)
 
 

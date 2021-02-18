@@ -85,6 +85,7 @@
 #' @importFrom multcomp glht mcp adjusted
 #' @importFrom survey regTermTest
 #' @importFrom stats aov pf vcov ptukey
+#' @importFrom verbs Sum
 #' @export
 OneWayANOVA <- function(outcome,
                         predictor,
@@ -121,7 +122,7 @@ OneWayANOVA <- function(outcome,
 
                 # Overwrite pvalues with adjusted
                 compare <- attr(comparisons$linfct, "type")
-                MSE <- sum(comparisons$model$residuals^2) / comparisons$model$df.residual
+                MSE <- Sum(comparisons$model$residuals^2, remove.missing = FALSE) / comparisons$model$df.residual
                 means <- comparisons$model$coefficients
                 means[-1] <- means[-1] + means[1]
                 counts <- table(comparisons$model$model$predictor)
@@ -227,7 +228,7 @@ OneWayANOVA <- function(outcome,
         k <- nrow(rcoefs)
         r$coefficients[1:k] <- rcoefs[1:k, 1] # Retaining the labels.
         r$sigma <- rcoefs[, 2]
-        if (sum(abs(r$tstat - rcoefs[, 3]) > .1))
+        if (Sum(abs(r$tstat - rcoefs[, 3]) > .1, remove.missing = FALSE))
         {
             print(rbind(svyglm = r$tstat, multcomp = rcoefs[, 3]))
             stop("Unreliable inference in one-way ANOVA.")

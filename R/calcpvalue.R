@@ -1,6 +1,7 @@
 #' @importFrom stats pt qnorm pchisq
 #' @importFrom survey svydesign svyranktest
 #' @importFrom stats kruskal.test
+#' @importFrom verbs Sum
 calcPvaluesForOneVariable <- function(x, group, weights, is.binary = FALSE, non.parametric = FALSE)
 {
     if (!is.factor(group))
@@ -120,6 +121,7 @@ computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, su
 # A simplification of RaoScottSecondOrder2b2 from Q's C#
 # https://github.com/Displayr/q/blob/master/Flip/DataAnalysis/Inference/Tests/ChiSquareTests.cs
 # aa and bb contain summary statistics for each sample
+#' @importFrom verbs Sum SumRows SumColumns
 raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
 {
     if (!is.null(dim(aa[["Average"]])))
@@ -156,16 +158,16 @@ raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
         counts = matrix(proportions * n.observations, 2)
 
         # If not weighted, this reduces to a chi-square test
-        group_sizes = colSums(counts)
-        row.totals = rowSums(counts)
-        total = sum(row.totals)
+        group_sizes = SumColumns(counts, remove.missing = FALSE)
+        row.totals = SumRows(counts, remove.missing = FALSE)
+        total = Sum(row.totals, remove.missing = FALSE)
 
         expected = matrix(c(group_sizes[1]*row.totals[1]/total,
                             group_sizes[1]*row.totals[2]/total,
                             group_sizes[2]*row.totals[1]/total,
                             group_sizes[2]*row.totals[2]/total), 2)
 
-        pearson.statistic = sum((counts - expected)^2/expected)
+        pearson.statistic = Sum((counts - expected)^2/expected, remove.missing = FALSE)
         if (!is.weighted)
             pvals[i] <- pchisq(pearson.statistic, 1, lower.tail = FALSE)
         else
@@ -297,6 +299,7 @@ samplingCovariance <- function(proportion1,  proportion2,  ww1,  ww2,  ww_total,
     return(ww_sums_of_squares / (w_total * w_total) * (n / (n - 1)))
 }
 
+#' @importFrom verbs Sum
 computeNumericVarStats <- function(x, w)
 {
     n.observations <- length(x)
@@ -305,12 +308,12 @@ computeNumericVarStats <- function(x, w)
     xxw = x * xw
     xww = xw * w
     xxww = xxw * w
-    sum.w = sum(w)
-    sum.xw = sum(xw)
-    sum.ww = sum(ww)
-    sum.xxw = sum(xxw)
-    sum.xww = sum(xww)
-    sum.xxww = sum(xxww)
+    sum.w = Sum(w, remove.missing = FALSE)
+    sum.xw = Sum(xw, remove.missing = FALSE)
+    sum.ww = Sum(ww, remove.missing = FALSE)
+    sum.xxw = Sum(xxw, remove.missing = FALSE)
+    sum.xww = Sum(xww, remove.missing = FALSE)
+    sum.xxww = Sum(xxww, remove.missing = FALSE)
     mean.x = sum.xw / sum.w
 
     n.used.in.bessel.correction = n.observations
