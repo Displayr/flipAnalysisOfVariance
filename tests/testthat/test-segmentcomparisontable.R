@@ -17,6 +17,8 @@ test_that("No missing values",
         font.color.FDRcorrection = TRUE), NA)
     expect_error(segcmp.mean <- SegmentComparisonTable(all.var, formSegmentation,
         cond.shade = "Boxes"), NA)
+    expect_error(segcmp.mean <- SegmentComparisonTable(all.var, formSegmentation,
+        cond.shade = "Bars"), NA)
 
     expect_error(segcmp.mean <- SegmentComparisonTable(all.var, formSegmentation), NA)
     expect_equal(attr(segcmp.mean, "ChartData"), structure(c(99, 0.12375, 0.464646464646465, 0.535353535353535,
