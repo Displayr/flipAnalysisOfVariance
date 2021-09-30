@@ -267,8 +267,10 @@ OneWayANOVA <- function(outcome,
                                     se.name = if (result$robust.se) "Robust SE" else "Standard Error",
                                     p.name = p.name,
                                     p.cutoff = result$p.cutoff)
+    coefs <- result$coefs
     if (!return.all)
         result <- list(table = result$table)
+    attr(result, "ChartData") <- coefs
     class(result) <- "OneWayANOVA"
     result
 }
