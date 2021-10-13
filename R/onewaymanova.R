@@ -153,10 +153,14 @@ OneWayMANOVA <- function(outcomes,
                     subtitle = result$subtitle,
                     footer = result$footer)
     anovas <- result$anovas
-    chart.data <- anovas[[1]]$coefs
+    chart.data <- rbind(NA, anovas[[1]]$coefs)
     if (length(anovas) > 1L)
         for (i in 2:length(anovas))
-            chart.data <- rbind(chart.data, anovas[[i]]$coefs)
+            chart.data <- rbind(chart.data, NA, anovas[[i]]$coefs)
+    coef.rownames <- rownames(anovas[[1L]]$coefs)
+    rownames(chart.data) <- as.vector(vapply(names(anovas),
+                                             function(nm) c(nm, coef.rownames),
+                                             character(length(coef.rownames) + 1)))
     if (!return.all)
         result <- list(table = result$table)
     attr(result, "ChartData") <- chart.data

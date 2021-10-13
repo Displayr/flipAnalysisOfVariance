@@ -20,6 +20,9 @@ test_that("MANOVA",{
         attr(dog, "question") <- "Soloman"
         z <- suppressWarnings(OneWayMANOVA(data.frame(dog, npk2$foo), npk2$block, show.labels = TRUE, pillai = TRUE, return.all = TRUE))
         expect_equal(summary(npk2.aov)$stats[1,6], z$manova$stats[1,6])
+        cd.rownames.expected <- c(names(z$anovas)[1], 1:6,
+                                  names(z$anovas)[2], 1:6)
+        expect_equal(rownames(attr(z, "ChartData")), cd.rownames.expected)
         # binary.
         z <- suppressWarnings(OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke, return.all = TRUE), colas$d1, binary = FALSE, show.labels = TRUE))
         z1 <- OneWayMANOVA(data.frame(colas$q4b, colas$d3, colas$like.coke), colas$d1, binary = TRUE, show.labels = TRUE, return.all = TRUE)
