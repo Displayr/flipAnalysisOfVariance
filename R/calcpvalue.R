@@ -121,7 +121,7 @@ computeVariances <- function(mean, is.binary, sum.w, sum.ww, sum.xw, sum.xww, su
 # A simplification of RaoScottSecondOrder2b2 from Q's C#
 # https://github.com/Displayr/q/blob/master/Flip/DataAnalysis/Inference/Tests/ChiSquareTests.cs
 # aa and bb contain summary statistics for each sample
-#' @importFrom verbs Sum SumRows SumEachColumn
+#' @importFrom verbs Sum SumEachRow SumEachColumn
 raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
 {
     if (!is.null(dim(aa[["Average"]])))
@@ -159,7 +159,7 @@ raoScottSecondOrderChiSquareTest <- function(aa, bb, is.weighted)
 
         # If not weighted, this reduces to a chi-square test
         group_sizes = SumEachColumn(counts, remove.missing = FALSE)
-        row.totals = SumRows(counts, remove.missing = FALSE)
+        row.totals = SumEachRow(counts, remove.missing = FALSE)
         total = Sum(row.totals, remove.missing = FALSE)
 
         expected = matrix(c(group_sizes[1]*row.totals[1]/total,
