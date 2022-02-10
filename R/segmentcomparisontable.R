@@ -85,7 +85,7 @@
 #' @importFrom flipStatistics WeightedTable Table StatisticsByGroup Mean StandardDeviation
 #' @importFrom flipRegression PValueAdjustFDR
 #' @importFrom flipTransformations AsDataFrame FactorToNumeric
-#' @importFrom verbs Sum SumColumns
+#' @importFrom verbs Sum SumEachColumn
 #' @export
 SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    row.names.to.remove = "",
@@ -215,7 +215,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
         # Compute main statistic (average/percentage)
         tmp <- t(StatisticsByGroup(vv, group = group, weights = weights))
         if (v.qtype %in% c("PickOne", "Date"))
-            tmp <- sweep(tmp, 2, SumColumns(tmp, remove.missing = FALSE), "/")
+            tmp <- sweep(tmp, 2, SumEachColumn(tmp, remove.missing = FALSE), "/")
 
         if (NROW(tmp) == 1 && rownames(tmp)[1] == attr(x[[vvi]], "question"))
             rownames(tmp) <- ""
