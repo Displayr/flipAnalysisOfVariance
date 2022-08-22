@@ -241,7 +241,7 @@ TableOfDifferences <- function(table1,
     denom <- if (is.percentage) 100 else 1
     test.type <- if (is.percentage) proportions.test else means.test
     bessel.constant <- if (is.percentage) proportions.bessel else means.bessel
-    if (is.percentage && test.type %in% c("Nonparametric", "Chisquare") && is.weighted)
+    if (is.percentage && test.type %in% c("Nonparametric", "ChiSquare") && is.weighted)
     {
         warning("The tables were compared using a Z-test.")
         test.type <- "zTest"
