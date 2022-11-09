@@ -22,7 +22,7 @@ LazyData: NA
 Suggests:
     testthat,
     flipExampleData,
-    car
+    car (<= 3.1-0)
 Remotes:
     Displayr/flipData,
     Displayr/flipFormat,

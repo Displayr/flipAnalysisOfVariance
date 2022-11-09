@@ -38,6 +38,7 @@ r_packages:
 r_github_packages:
   - Displayr/flipDevTools
   - Displayr/flipExampleData
+  - CRAN/car@3.1-0
 
 script:
   - R CMD build --no-manual --no-build-vignettes --no-resave-data .
