@@ -25,8 +25,9 @@ before_install:
   - rcode+="line.fail <- max(grep('FAIL', out)); "
   - rcode+="tmp <- unlist(strsplit(split='[[:space:]]+', out[line.fail])); "
   - rcode+="pos.fail <- grep('FAIL', tmp); n.fail <- as.numeric(tmp[pos.fail+1]); "
-  - rcode+="res <- as.data.frame(res); out <- data.frame(file = unlist(res[['file']]), warning = unlist(res[['warning']])); "
-  - rcode+="write.csv(out, file='test_results.csv'); "
+  - rcode+="res <- as.data.frame(res);"
+  - rcode+="out <- data.frame(fail = res[['failed']] + res[['error']], file = unlist(res[['file']]), warning = unlist(res[['warning']])); "
+  - rcode+="write.csv(out, file='test_results.csv', row.names = FALSE); "
   - rcode+="quit(status = !identical(n.fail, 0), save='no');"
   - Rscript tools/travis_run_before_install.R
 
@@ -38,7 +39,6 @@ r_packages:
 r_github_packages:
   - Displayr/flipDevTools
   - Displayr/flipExampleData
-  - CRAN/car@3.1-0
 
 script:
   - R CMD build --no-manual --no-build-vignettes --no-resave-data .
@@ -50,7 +50,7 @@ script:
 notifications:
   slack:
     rooms:
-      secure: pROsuhN1u0+628SNI/iVtIChJgaxACXh0hSqXZ0am7rKoltSG8WEYaAx9J0tt3j1Whiu2hzE7q3pE3CCrW9paAl/HNrzSkSTGF3w4AZhEKarUfZjz3Pp6EF8wD+MaMcc8jTEtWVH+Ra0I06tRfr4BNQARFtOVzkfA0gkmRKgz1BSVYWHQaYAdbTuMnAP3RwyuKaeJeqITVhN/r8voe6F8PWwfuAdw7RY815dzKMEsBD5Ei7xXPx3n3lKDirLv/e+pv+f/g5VyvJSXg5W9XKLrcWifz6a5ntB2jWwqjZ94FVdEwIKfB8vwPlOoJ5RgufDH9bw86gbObLqVfKFyQSdLABAayLFUMgRtcvqatOS+Gb8wkL/RzUn/xHdfWHkknC1rXyKM5fHB6XzjNwpJGeSGCMfKptS5+2+TJagpneASnxYwhvS1xGVLf0crkbtLGodZLiYekmqUsz6EXjkDe0MXxPfbc1kr/FCx+eDUnh2iSFYPnoUYPDZJpN053yCp3/LKQbRcJcOqEZX+tHSLF6Ks8foEh4usCD1ml2Yv2byJnr+72C+UyWiZh4kdD4Fm6xqOtXF3Nxum+CyVIPVjs9VkRRiOZnSya6/QwZtpzhqlji4gr+6GMAzhxIxvoWg6i3FS9lqN8NQgXYDL4VhmvQCwlcnRydb16IN50bjlfK72nE=
+      - displayr:FTgSTNHC2rpanhJMGTKMwZXM#github-notifications
     template:
       - "Build <%{build_url}|#%{build_number}> %{result} in %{repository_name}@%{branch} by %{author}: <%{compare_url}|%{commit_subject}>"
     on_success: change
@@ -62,3 +62,5 @@ notifications:
 after_success:
   - Rscript -e "require(flipDevTools); NotifyWarnings(); TriggerDownstreamBuilds()"
   - travis_wait Rscript -e "flipDevTools::CheckCoverage()"
+after_failure:
+  - Rscript -e "require(flipDevTools); NotifyWarnings()"
