@@ -178,11 +178,14 @@ OneWayANOVA <- function(outcome,
     model <- regression$original
     robust.se <- regression$robust.se
     contrasts <- mcp(predictor = switch(compare, "Pairwise" = "Tukey", "To mean" = "GrandMean", "To first" = "Dunnett"))
-    vcov <- vcov(regression, robust.se)
-    comparisons <- glht(model, linfct = contrasts, alternative = alternative, vcov = vcov)
-    set.seed(seed)
-    mcomp <- try(.multcompSummary(comparisons, correct, robust.se), silent = TRUE)
-    if (tryError(mcomp))
+    vcov <- try(vcov(regression, robust.se), silent = TRUE)
+    if (!tryError(vcov))
+    {
+        comparisons <- glht(model, linfct = contrasts, alternative = alternative, vcov = vcov)
+        set.seed(seed)
+        mcomp <- try(.multcompSummary(comparisons, correct, robust.se), silent = TRUE)
+    }
+    if (tryError(vcov) || tryError(mcomp))
     {
         if(robust.se)
         {
