@@ -654,3 +654,33 @@ test_that("Order Multi - Grid",
     res0 <- SegmentComparisonTable(brand.attitute, formSegmentation)
     expect_equal(attr(res, "p-value"), attr(res0, "p-value"), check.attributes = FALSE)
 })
+
+test_that("Empty Segments",
+{
+    segVar <- structure(c(1L, 6L, 3L, 4L, 2L, 1L, 4L, 3L, 2L, 2L, 3L, 4L, 5L,
+                  2L, 2L, 4L, 3L, 5L, 5L, 2L, 3L, 2L, 1L, 5L, 6L, 2L, 1L, 4L, 2L,
+                  2L, 4L, 3L, 6L, 2L, 2L, 3L, 2L, 6L, 4L, 3L, 4L, 1L, 2L, 6L, 5L),
+                  class = "factor", levels = c("Segment 1", "Segment 2", "Segment 3",
+                    "Segment 4", "Segment 5", "Segment 6"), questiontype = "PickOne",
+                  dataset = "FinalNausicaaSegmentation_V2.sav", values = c(`Not in tree` = NA,
+                    `Segment 1` = 1, `Segment 2` = 2, `Segment 3` = 3, `Segment 4` = 4,
+                    `Segment 5` = 5, `Segment 6` = 6), sourcevalues = c(`Not in tree` = NaN,
+                    `Segment 1` = 1, `Segment 2` = 2, `Segment 3` = 3, `Segment 4` = 4,
+                    `Segment 5` = 5, `Segment 6` = 6), codeframe = list(`Segment 1` = 1,
+                    `Segment 2` = 2, `Segment 3` = 3, `Segment 4` = 4, `Segment 5` = 5,
+                    `Segment 6` = 6, NET = c(1, 2, 3, 4, 5, 6)), name = "segmentsGINGV",
+                    label = "Segmentation_7th", question = "Segmentation_7th")
+    profVar <- list(`G8br22: Others, please specify - Please rank the list of information sources about BCL based on your frequency of visit? 1=Most frequent. You can select up to 5 sources.` = structure(c(NA,
+                   NA, 2L, NA, NA, NA, NA, 4L, NA, NA, NA, NA, NA, 1L, 1L, 4L, NA,
+                   NA, NA, NA, 5L, NA, NA, NA, NA, NA, 5L, 5L, 2L, NA, NA, NA, NA,
+                   NA, 3L, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA),
+                   class = c("ordered","factor"), levels = c("Rank 1", "Rank 2", "Rank 3", "Rank 4",
+                    "Rank 5"), questiontype = "PickOne", dataset = "FinalNausicaaSegmentation_V2.sav", values = c(`Rank 1` = 1,
+                      `Rank 2` = 2, `Rank 3` = 3, `Rank 4` = 4, `Rank 5` = 5), sourcevalues = c(`Rank 1` = 1,
+                    `Rank 2` = 2, `Rank 3` = 3, `Rank 4` = 4, `Rank 5` = 5), codeframe = list(
+                    `Rank 1` = 1, `Rank 2` = 2, `Rank 3` = 3, `Rank 4` = 4, `Rank 5` = 5,
+                    NET = c(1, 2, 3, 4, 5)), name = "G8br22",
+                  label = "G8br22: Others, please specify - Please rank the list of information sources about BCL based on your frequency of visit? 1=Most frequent. You can select up to 5 sources.", question = "G8br22: Others, please specify - Please rank the list of information sources about BCL based on your frequency of visit? 1=Most frequent. You can select up to 5 sources."))
+    expect_error(SegmentComparisonTable(profVar, group=segVar, font.color.set.if.nonsignificant = TRUE,
+                weights = rep(c(0.1, 0.2, 0.3), length=45)), NA)
+})

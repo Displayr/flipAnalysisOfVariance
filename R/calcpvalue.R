@@ -277,9 +277,11 @@ multinomialCovarianceMatrix <- function(proportions, ww, ww_total, w_total, n)
 computeSamplingVarianceForProportion <- function(input_proportion, ww, ww_total, w_total,sample_size)
 {
     proportion = input_proportion
-    if (proportion < 1E-8)
+    if (is.na(proportion)) {
+        proportion <- NA
+    } else if (proportion < 1E-8) {
         proportion = 0.0;
-    if (proportion > 1 - 1e-8)
+    } else if (proportion > 1 - 1e-8)
         proportion = 1.0;
     sumSquaredWeights = ww_total;
     n = sample_size;
