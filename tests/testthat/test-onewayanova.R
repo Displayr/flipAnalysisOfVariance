@@ -14,17 +14,23 @@ set.seed(123)
 colas$d1MISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 colas$like.cokeMISSING[runif(length(colas$d1MISSING)) > .75] <- NA
 
-test_that("Fallback due to problems with underlying sandwich variance estimates",
-          {
-              ## test removed due to DS-2353, which converts unit-vector of weights to NULL
-              ## suppressWarnings(flipU::ExpectWarning(OneWayANOVA(colas$Q5_7_1, colas$d1, weights = rep(1, 327)),"technical problem"))
-              captured.warnings <- capture_warnings(OneWayANOVA(colas$Q5_7_1, colas$d1, robust.se = TRUE))
-              expect_setequal(captured.warnings,
-                              c("Data has been automatically converted to numeric. Values are assigned in the order of the categories: 1, 2, 3, ...; To use alternative numeric values, transform the data prior including it in this analysis (e.g. by changing its structure). The variable health-conscious - Coke has been converted.",
-                                "There is a technical problem with the parameter variance-covariance matrix that has been corrected.This is most likely due to either a problem or the appropriateness of the statistical model (e.g., using weights or robust standard errors where a sub-group in the analysis has no variation in its residuals, or lack of variation in one or more predictors.)",
-                                "Numerical precision of p-value calcuations exceeds threshold. Treat p-values with caution.",
-                                "Robust standard errors have not been implemented for this model."))
-          })
+test_that("Fallback due to problems with underlying sandwich variance estimates", {
+    captured.warnings <- capture_warnings(OneWayANOVA(colas$Q5_7_1, colas$d1, robust.se = TRUE))
+    convert.warn <- paste0("Data has been automatically converted to numeric. ",
+                           "Values are assigned in the order of the categories: ",
+                           "1, 2, 3, ...; To use alternative numeric values, ",
+                           "transform the data prior including it in this analysis ",
+                           "(e.g. by changing its structure). The variable ",
+                           "health-conscious - Coke has been converted.")
+    tech.warn <- paste0("There is a technical problem with the parameter variance-covariance ",
+                        "matrix that has been corrected. This is most likely due to either a ",
+                        "problem or the appropriateness of the statistical model (e.g., ",
+                        "using weights or robust standard errors where a sub-group in ",
+                        "the analysis has no variation in its residuals, or lack of ",
+                        "variation in one or more predictors.)")
+    expected.warnings <- c(convert.warn, tech.warn)
+    expect_setequal(captured.warnings, expected.warnings)
+})
 
 test_that("One Way ANOVA - with a weight that removes a category in the predictor",
 {
