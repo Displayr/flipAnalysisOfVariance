@@ -161,10 +161,8 @@ test_that("One Way ANOVA - vs Stata",
 
 })
 
-test_that("DS-1914 compare p-values analytical vs numeric integration",
-          {
-              set.seed(1234)
-              z <- OneWayANOVA(runif(327), colas$like.coke, compare = "Pairwise", correction = "Tukey Range", return.all = TRUE)
-              expect_equal(z$coef[9, 4], 0.8944926, tolerance = 0.01)
-          })
-
+test_that("DS-1914 compare p-values analytical vs numeric integration", {
+    set.seed(1234)
+    z <- OneWayANOVA(runif(327), colas$like.coke, compare = "Pairwise", correction = "Tukey Range", return.all = TRUE)
+    expect_equal(z$coef[9, 4], 0.8944926, tolerance = 0.01)
+})
