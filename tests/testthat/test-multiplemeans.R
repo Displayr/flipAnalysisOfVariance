@@ -68,8 +68,11 @@ test_that("Multiple means data frame output",
     expect_equal(dimnames(result), list(expected.rownames, expected.colnames))
     # Means equal
     expect_equal(result[, 1:2, drop = FALSE], expected.means)
-    # R-squared equal
-    expect_equal(result[, 3, drop = FALSE], expected.r.square)
+    # R-squared equal, instability in LAPACk causes r-square to be either NA or small
+    unstable.idx <- c(11L, 14L)
+    expect_equal(result[-unstable.idx, 3, drop = FALSE], expected.r.square[-unstable.idx, 1, drop = FALSE])
+    unstable.r.square <- result[unstable.idx, 3]
+    expect_true(all(is.na(unstable.r.square) | abs(unstable.r.square) < 1e-14))
     # p-values equal
     expect_equal(result[, 4, drop = FALSE], expected.pvalues)
     # Overall all
