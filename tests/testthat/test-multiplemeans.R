@@ -68,7 +68,17 @@ test_that("Multiple means data frame output",
     expect_equal(dimnames(result), list(expected.rownames, expected.colnames))
     # Means equal
     expect_equal(result[, 1:2, drop = FALSE], expected.means)
-    # R-squared equal, instability in LAPACk causes r-square to be either NA or small
+    # R-squared equal, instability in internal cor function. Run below with do.call(corr, args)
+    # na.args <- list(x = c(`2` = 4.6, `3` = 4.6, `6` = 4.6, `8` = 4.6, `9` = 4.6,
+    #    `13` = 4.6, `14` = 4.6, `15` = 4.6, `18` = 4.6, `19` = 4.6),
+    #    y = c(4L, 5L, 4L, 5L, 4L, 5L, 5L, 4L, 5L, 5L))
+    #
+    #
+    #small.args <- list(x = c(`1` = 4.83333333333333, `4` = 4.83333333333333, `5` = 4.83333333333333,
+    #`8` = 4.83333333333333, `9` = 4.83333333333333, `10` = 4.83333333333333,
+    #`11` = 4.83333333333333, `12` = 4.83333333333333, `13` = 4.83333333333333,
+    #`14` = 4.83333333333333, `16` = 4.83333333333333, `19` = 4.83333333333333
+    #), y = c(5L, 5L, 5L, 5L, 5L, 5L, 5L, 4L, 5L, 5L, 5L, 4L))
     unstable.idx <- c(11L, 14L)
     expect_equal(result[-unstable.idx, 3, drop = FALSE], expected.r.square[-unstable.idx, 1, drop = FALSE])
     unstable.r.square <- result[unstable.idx, 3]
