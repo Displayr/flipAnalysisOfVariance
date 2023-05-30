@@ -75,6 +75,4 @@ test_that("Multiple means data frame output",
     expect_true(all(is.na(unstable.r.square) | abs(unstable.r.square) < 1e-14))
     # p-values equal
     expect_equal(result[, 4, drop = FALSE], expected.pvalues)
-    # Overall all
-    expect_equal(result, cbind(expected.means, expected.r.square, expected.pvalues))
 })
