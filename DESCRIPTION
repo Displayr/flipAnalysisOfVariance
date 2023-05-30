@@ -22,7 +22,7 @@ LazyData: NA
 Suggests:
     testthat,
     flipExampleData,
-    car (<= 3.1-0)
+    car
 Remotes:
     CRAN/survey@4.0,
     Displayr/flipData,
