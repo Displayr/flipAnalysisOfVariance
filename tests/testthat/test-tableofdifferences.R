@@ -205,36 +205,86 @@ test_that("Table of differences",
     expect_error(TableOfDifferences(tb1, tb2, cond.shade = "Cell colors"), NA)
 
     expect_equal(TableOfDifferences(tb1, tb2, output = "qtable"),
-            structure(c(0, 5.65217391304348, 8.69565217391304, 16.5217391304348,
-            27.3913043478261, 21.304347826087, 5.65217391304348, 10.4347826086957,
-            4.34782608695652, 0.884955752212389, 9.29203539823009, 6.63716814159292,
-            19.9115044247788, 23.8938053097345, 15.929203539823, 11.9469026548673,
-            3.53982300884956, 7.9646017699115, -2.75482093663912, -0.408432147562579,
-            -3.97652413462686, -1.9355611450473, 2.597915918074, 5.3263863935801,
-            -0.408432147562579, 2.17031979877834, -0.61085159899389, -2.89411401522947,
-            -6.69633669479321, -1.21166906770941, 1.8882486108253, 4.1263634492694,
-            2.8478081909858, 1.1910887013789, -0.52994443301091, 1.27855525828359,
-            0.0111279516250882, 0.837069992354198, 0.133543135976866, 0.547404380176119,
-            0.481104668946767, 0.10028147045814, 0.837069992354198, 0.370727585994163,
-            0.732557678283053, 0.0347279810662583, 0.0214152206853255, 0.588064335912059,
-            0.572251411336666, 0.240014678282952, 0.340821586189606, 0.659498756923685,
-            0.74798930260599, 0.563315541789081,
-            -2.53865494142727, -0.205642736068235,
-            -1.50027517987319, -0.601654143625052, 0.704526956251618, 1.64349059117384,
-            -0.205642736068235, 0.895111314919973, -0.341725236441594, -2.11151603579219,
-            -2.30058286158096, -0.541643185145334, 0.564738841003716, 1.17495010457587,
-            0.952543163770432, 0.44060531147734, -0.321291756880541, 0.577923836049367),
-            .Dim = c(9L, 2L, 4L), .Dimnames = list(c("Less than $15,000", "$15,001 to $30,000",
-            "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
-            "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
-            "$200,001 or more"), c("Male", "Female"), c("Column %", "Differences",
-            "p", "z-Statistic")),
-            questiontypes = c("PickOne", "PickOne"),
-            span = list(rows = structure(list(c("Less than $15,000", "$15,001 to $30,000",
-            "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
-            "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
-            "$200,001 or more", "NET")), class = "data.frame", .Names = "",
-            row.names = c(NA, 10L)), columns = structure(list(c("Male", "Female", "NET")),
-            class = "data.frame", .Names = "", row.names = c(NA, 3L))),
-            questions = c("Income", "Gender")))
+        structure(c(0, 5.65217391304348, 8.69565217391304, 16.5217391304348,
+        27.3913043478261, 21.304347826087, 5.65217391304348, 10.4347826086957,
+        4.34782608695652, 0.884955752212389, 9.29203539823009, 6.63716814159292,
+        19.9115044247788, 23.8938053097345, 15.929203539823, 11.9469026548673,
+        3.53982300884956, 7.9646017699115, -2.75482093663912, -0.408432147562579,
+        -3.97652413462686, -1.9355611450473, 2.597915918074, 5.3263863935801,
+        -0.408432147562579, 2.17031979877834, -0.61085159899389, -2.89411401522947,
+        -6.69633669479321, -1.21166906770941, 1.8882486108253, 4.1263634492694,
+        2.8478081909858, 1.1910887013789, -0.52994443301091, 1.27855525828359,
+        0.0111279516250882, 0.837069992354198, 0.133543135976866, 0.547404380176119,
+        0.481104668946767, 0.10028147045814, 0.837069992354198, 0.370727585994163,
+        0.732557678283053, 0.0347279810662583, 0.0214152206853255, 0.588064335912059,
+        0.572251411336666, 0.240014678282952, 0.340821586189606, 0.659498756923685,
+        0.74798930260599, 0.563315541789081,
+        -2.53865494142727, -0.205642736068235,
+        -1.50027517987319, -0.601654143625052, 0.704526956251618, 1.64349059117384,
+        -0.205642736068235, 0.895111314919973, -0.341725236441594, -2.11151603579219,
+        -2.30058286158096, -0.541643185145334, 0.564738841003716, 1.17495010457587,
+        0.952543163770432, 0.44060531147734, -0.321291756880541, 0.577923836049367),
+        .Dim = c(9L, 2L, 4L), .Dimnames = list(c("Less than $15,000", "$15,001 to $30,000",
+        "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+        "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+        "$200,001 or more"), c("Male", "Female"), c("Column %", "Differences",
+        "p", "z-Statistic")),
+        questiontypes = c("PickOne", "PickOne"),
+        span = list(rows = structure(list(c("Less than $15,000", "$15,001 to $30,000",
+        "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+        "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+        "$200,001 or more", "NET")), class = "data.frame", .Names = "",
+        row.names = c(NA, 10L)), columns = structure(list(c("Male", "Female", "NET")),
+        class = "data.frame", .Names = "", row.names = c(NA, 3L))),
+        questions = c("Income", "Gender")))
+})
+
+test_that("DS-5117 Table of differences warns for unsuported test types", {
+
+    expect_warning(
+        TableOfDifferences(tb1, tb2, proportions.test = "ChrisTest"),
+        "The selected test.type 'ChrisTest' is not supported by the Table of Differences."
+    )
+    expect_warning(
+        TableOfDifferences(tb1, tb2, proportions.test = "Quantum"),
+        "Quantum and Survey Reporter tests are not supported by the Table of Differences."
+    )
+    expect_warning(
+        TableOfDifferences(tb.1num, tb.1num, means.test = "Quantum"),
+        "Quantum and Survey Reporter tests are not supported by the Table of Differences."
+    )
+    expect_warning(
+        TableOfDifferences(tb1, tb2, proportions.test = "SurveyReporter"),
+        "Quantum and Survey Reporter tests are not supported by the Table of Differences."
+    )
+    expect_warning(
+        TableOfDifferences(tb.1num, tb.1num, means.test = "SurveyReporter"),
+        "Quantum and Survey Reporter tests are not supported by the Table of Differences."
+    )
+
+    tb1.weighted <- tb1
+    attr(tb1.weighted, "weight.name") = "This is a weight"
+    tb2.weighted <- tb2
+    attr(tb2.weighted, "weight.name") = "This is a weight"
+    expect_warning(
+        TableOfDifferences(tb1.weighted, tb2.weighted, proportions.test = "Nonparametric"),
+        "Non-parametric tests for weighted proportions are not supported by the Table of Differences."
+    )
+
+    tb.1num.weighted <- tb.1num
+    attr(tb.1num.weighted, "weight.name") = "This is a weight"
+    expect_warning(
+        TableOfDifferences(tb.1num.weighted, tb.1num.weighted, means.test = "Nonparametric"),
+        "Non-parametric tests for means are not supported by the Table of Differences."
+    )
+})
+
+test_that("DS-5117 Table of differences warns if weighting is ambiguous", {
+
+    tb1.no.attributes <- tb1
+    attr(tb1.no.attributes, "questions") <- NULL
+    expect_warning(
+        TableOfDifferences(tb1.no.attributes, tb1.no.attributes),
+        "Could not determine if the input tables contain weighted data"
+    )
 })

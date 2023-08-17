@@ -6,6 +6,20 @@ findInstDirFile <- function(file)
 }
 load(findInstDirFile("twosampletests.rda"))
 
+# Append Dummy QTable atributes for tests
+appendDummyQTableAttributes <- function(x) {
+    attr(x, "questions") = "non null attribute for testing"
+    x
+}
+tb.AgeFemales <- appendDummyQTableAttributes(tb.AgeFemales)
+tb.AgeFemalesW <- appendDummyQTableAttributes(tb.AgeFemalesW)
+tb.AgeMales <- appendDummyQTableAttributes(tb.AgeMales)
+tb.AgeMalesW <- appendDummyQTableAttributes(tb.AgeMalesW)
+tb.IdFemales <- appendDummyQTableAttributes(tb.IdFemales)
+tb.IdFemalesW <- appendDummyQTableAttributes(tb.IdFemalesW)
+tb.IdMales <- appendDummyQTableAttributes(tb.IdMales)
+tb.IdMalesW <- appendDummyQTableAttributes(tb.IdMalesW)
+
 
 test_that("Comparing Proportions (unweighted)",
 {
@@ -32,7 +46,7 @@ test_that("Comparing Proportions (unweighted)",
 test_that("Comparing Proportions (weighted)",
 {
     expect_warning(res <- TableOfDifferences(tb.AgeMalesW, tb.AgeFemalesW,
-        proportions.test = "Nonparametric"), "The tables were compared using a Z-test.")
+        proportions.test = "Nonparametric"), "A z-test has been used instead.")
     res <- TableOfDifferences(tb.AgeMalesW, tb.AgeFemalesW, proportions.test = "zTest")
     expect_equal(attr(res, "p-value"), c(`18 to 24` = 0.782116695108154,
         `25 to 29` = 0.517309654384073, `30 to 34` = 0.908927558498363,
@@ -57,7 +71,7 @@ test_that("Comparing Proportions (weighted)",
 test_that("Comparing Averages (unweighted)",
 {
     expect_warning(res <- TableOfDifferences(tb.IdMales, tb.IdFemales,
-        means.test = "Nonparametric"), "The tables were compared using a t-Test.")
+        means.test = "Nonparametric"), "A t-test has been used instead.")
     res <- TableOfDifferences(tb.IdMales, tb.IdFemales, means.test = "tTest")
     expect_equal(attr(res, "p-value"), 0.416387593497747)
     res <- TableOfDifferences(tb.IdMales, tb.IdFemales, means.test = "zTest")
@@ -67,7 +81,7 @@ test_that("Comparing Averages (unweighted)",
 test_that("Comparing Averages (weighted)",
 {
     expect_warning(res <- TableOfDifferences(tb.IdMalesW, tb.IdFemalesW,
-        means.test = "Nonparametric"), "The tables were compared using a t-Test.")
+        means.test = "Nonparametric"), "A t-test has been used instead.")
     res <- TableOfDifferences(tb.IdMalesW, tb.IdFemalesW, means.test = "tTest")
     expect_equal(attr(res, "p-value"), 0.689606500592584)
     res <- TableOfDifferences(tb.IdMalesW, tb.IdFemalesW, means.test = "zTest")
