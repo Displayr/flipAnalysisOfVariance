@@ -186,7 +186,7 @@ TableOfDifferences <- function(table1,
     # have been obliterated by R. 
     if (!is.weighted && 
         is.null(attr(table1, "questions")) || 
-        is.null(attr(table1, "questions"))) 
+        is.null(attr(table2, "questions"))) 
     {
         warning("Could not determine if the input tables contain weighted data because their ",
             "table attributes are missing. If the tables have been constructed using R Code ",
