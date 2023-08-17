@@ -181,6 +181,19 @@ TableOfDifferences <- function(table1,
         stop("Input tables must contain cell statistics for the sample size and standard error.")
     is.weighted <- !is.null(attr(table1, "weight.name")) || !is.null(attr(table2, "weight.name"))
 
+    # Check key QTable attributes exist. Otherwise there is ambiguity as to whether
+    # the tables are unweighted tables, or they are weighted tables whose attributes
+    # have been obliterated by R. 
+    if (!is.weighted && 
+        is.null(attr(table1, "questions")) || 
+        is.null(attr(table2, "questions"))) 
+    {
+        warning("Could not determine if the input tables contain weighted data because their ",
+            "table attributes are missing. If the tables have been constructed using R Code ",
+            "and are meant to contain weighted data, please ensure to set ",
+            "attr(<tablename>, 'weight.name') = <weightname>). Tests have been conducted ",
+            "assuming the data is not weighted.")
+    }
 
     table1 <- convertToTableWithStatistics(table1)
     table2 <- convertToTableWithStatistics(table2)
@@ -241,16 +254,9 @@ TableOfDifferences <- function(table1,
     denom <- if (is.percentage) 100 else 1
     test.type <- if (is.percentage) proportions.test else means.test
     bessel.constant <- if (is.percentage) proportions.bessel else means.bessel
-    if (is.percentage && test.type %in% c("Nonparametric", "ChiSquare") && is.weighted)
-    {
-        warning("The tables were compared using a Z-test.")
-        test.type <- "zTest"
-    }
-    if (!is.percentage && test.type == "Nonparametric")
-    {
-        warning("The tables were compared using a t-Test.")
-        test.type <- "tTest"
-    }
+
+    test.type <- validateTestTypeForTableOfDifferences(test.type, is.percentage, is.weighted)
+
     cell.diff <- table2[,,1] - table1[,,1]
     pvals <- compareTwoSamples(test.type, a = list(Average = table2[,,1]/denom,
          "Standard Error" = table2[,,ind2.se], "Base n" = table2[,,ind2.n]),
@@ -504,4 +510,41 @@ findIndexOfStat <- function(stat.names, target)
             break
     }
     return(ind)
+}
+
+# A number of tests that are used by Displayr's tables require access to the
+# raw data in order to compute test statistics. These are not supported by
+# the Table of Differences.
+validateTestTypeForTableOfDifferences <- function(test.type, is.percentage, is.weighted) {
+    valid.displayr.test.types <- c("tTest", "zTest", "Nonparametric", "ChiSquare", "Quantum", "SurveyReporter")
+    test.valid <- test.type %in% valid.displayr.test.types
+    fallback.msg <- if (is.percentage) "A z-test has been used instead." else "A t-test has been used instead."
+    fallback.type <- if (is.percentage) "zTest" else "tTest"
+    if (!test.valid) {
+        msg <- paste0(
+            "The selected test.type '", 
+            test.type, 
+            "' is not supported by the Table of Differences. ",
+            fallback.msg)
+        warning(msg)
+        return(fallback.type)
+    }
+
+    if (test.type %in% c("Quantum", "SurveyReporter")) {
+        warning("Quantum and Survey Reporter tests are not supported by the Table of Differences. ", fallback.msg)
+        return(fallback.type)
+    }
+
+    if (is.percentage && test.type %in% c("Nonparametric", "ChiSquare") && is.weighted)
+    {
+        warning("Non-parametric tests for weighted proportions are not supported by the Table of Differences. ", fallback.msg)
+        return(fallback.type)
+    }
+    if (!is.percentage && test.type == "Nonparametric")
+    {
+        warning("Non-parametric tests for means are not supported by the Table of Differences. ", fallback.msg)
+        return(fallback.type)
+    }
+
+    test.type
 }
