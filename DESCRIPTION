@@ -24,7 +24,6 @@ Suggests:
     flipExampleData,
     car
 Remotes:
-    CRAN/survey@4.0,
     Displayr/flipData,
     Displayr/flipExampleData,
     Displayr/flipFormat,
@@ -34,7 +33,7 @@ Remotes:
     Displayr/flipTransformations,
     Displayr/flipU,
     Displayr/verbs,
-    cran/car@3.1-0
+    svn::svn://r-forge.r-project.org/svnroot/r-survey/pkg/survey
 RoxygenNote: 7.1.2
 Depends: R (>= 3.5.0)
 Encoding: UTF-8
