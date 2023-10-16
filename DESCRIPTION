@@ -24,7 +24,6 @@ Suggests:
     flipExampleData,
     car
 Remotes:
-    CRAN/survey@4.0,
     Displayr/flipData,
     Displayr/flipExampleData,
     Displayr/flipFormat,
