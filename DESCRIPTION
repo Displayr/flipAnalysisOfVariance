@@ -32,8 +32,7 @@ Remotes:
     Displayr/flipTables,
     Displayr/flipTransformations,
     Displayr/flipU,
-    Displayr/verbs,
-    svn::svn://r-forge.r-project.org/svnroot/r-survey/pkg/survey
+    Displayr/verbs
 RoxygenNote: 7.1.2
 Depends: R (>= 3.5.0)
 Encoding: UTF-8
