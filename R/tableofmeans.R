@@ -33,9 +33,6 @@ TableOfMeans <- function(outcome,
                          p.cutoff = 0.05,
                          ...)
 {
-    outcome <- ProcessQVariables(outcome)
-    row <- ProcessQVariables(row)
-    column <- ProcessQVariables(column)
 
     # Removing missing values and filtering weights.
     df <- prepareData(outcome, row, column, subset, weights, FALSE, "Exclude cases with missing data")
