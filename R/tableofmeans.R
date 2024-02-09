@@ -118,6 +118,10 @@ validateInputs <- function(outcome, row, column, subset, weight)
     {
         err.msg <- paste0("All values in %s are identical.",
                           " Please check your inputs are correct.")
+        ## We allow a factor in Rows may be subset to a single value
+        ## See test-tableofmeans.R#L10
+        if (is.factor(x) && gui.ctrl.name == "Rows")
+            return()
         if (all(duplicated(x)[-1L]))
             stop(gettextf(err.msg, gui.ctrl.name), call. = FALSE)
         return()
