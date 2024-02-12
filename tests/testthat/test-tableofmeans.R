@@ -34,3 +34,41 @@ test_that("TableOfMeans", {
     detach(bank)
 
     })
+
+outcome <- rnorm(10)
+row.input <- as.factor(letters[rep(1:2,times=5)])
+test_that("DS-4284: Check for constant inputs",
+{
+    const <- integer(length(outcome))
+    expect_error(TableOfMeans(const, row.input, outcome),
+                 "All values in Outcome are identical.")
+    expect_error(TableOfMeans(outcome, const, row.input),
+                 "All values in Rows are identical.")
+    expect_error(TableOfMeans(outcome, row.input, const),
+                 "All values in Columns are identical.")
+})
+
+test_that("DS-4284: Check for identical inputs",
+{
+    expect_error(TableOfMeans(outcome, row.input, row.input),
+                 "The variables in Rows and Columns contain identical values")
+    expect_error(TableOfMeans(outcome, row.input, outcome),
+                 "The variables in Outcome and Columns contain identical values")
+    expect_error(TableOfMeans(outcome, outcome, row.input),
+                 "The variables in Outcome and Rows contain identical values")
+})
+
+test_that("DS-4284: Check inputs have same length (are from same dataset)",
+{
+    input.wrong.n <- c(1, outcome)
+    expect_error(TableOfMeans(outcome, row.input, input.wrong.n),
+                 "The variables in Outcome and Columns are different lengths.")
+    expect_error(TableOfMeans(outcome, input.wrong.n, row.input),
+                 "The variables in Outcome and Rows are different lengths.")
+    expect_error(TableOfMeans(outcome, row.input, row.input,
+                              subset = logical(length(outcome)+1)),
+                 "The variables in Outcome and Filter\\(s\\) are different lengths.")
+    expect_error(TableOfMeans(outcome, row.input, row.input,
+                              weight = numeric(length(outcome)+1)),
+                 "The variables in Outcome and Weight are different lengths.")
+})

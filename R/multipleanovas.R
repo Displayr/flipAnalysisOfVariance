@@ -179,6 +179,8 @@ FormattableANOVAs <- function(anovas, title, subtitle, footer)
 #' @export
 ANOVAsAsTable <- function(x)
 {
+    if (all(vapply(x, is.null, logical(1L))))
+        stop("All ANOVAs in 'x' have errored/are NULL. No table can be created.")  
     for (i in x)
         if (!is.null(i))
         {
