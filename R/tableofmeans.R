@@ -88,25 +88,28 @@ TableOfMeans <- function(outcome,
                            footer = attr(df, "footer"))
 }
 
+#' @importFrom flipData CleanWeights CleanSubset
 validateInputs <- function(outcome, row, column, subset, weight)
 {
     n <- length(outcome)
-    if (isTRUE(subset) || is.null(subset))
-        subset <- rep(TRUE, n)
-
     .checkLengths <- function(x.len, y.len, x.ctrl.name, y.ctrl.name)
     {
-        err.msg <- paste0("The variables in %s and %s are different lengths.",
-                          " Please check that they come from the same dataset.")
         if (x.len != y.len)
+        {
+            err.msg <- paste0("The variables in %s and %s are different lengths.",
+                              " Please check that they come from the same dataset.")
+
             stop(gettextf(err.msg, x.ctrl.name, y.ctrl.name), call. = FALSE)
-        return()
+        }
     }
     .checkLengths(n, length(row), "Outcome", "Rows")
     .checkLengths(n, length(column), "Outcome", "Columns")
-    .checkLengths(n, length(subset), "Outcome", "Filter(s)")
+    if (length(subset) > 1)
+        .checkLengths(n, length(subset), "Outcome", "Filter(s)")
+    subset <- CleanSubset(subset, n)
     if (!is.null(weight))
     {
+        weight <- CleanWeights(weight)
         .checkLengths(n, length(weight), "Outcome", "Weight")
         subset[weight == 0] <- FALSE
     }
@@ -116,15 +119,16 @@ validateInputs <- function(outcome, row, column, subset, weight)
 
     .checkForConstantVariable <- function(x, gui.ctrl.name)
     {
-        err.msg <- paste0("All values in %s are identical.",
-                          " Please check your inputs are correct.")
         ## We allow a factor in Rows may be subset to a single value
         ## See test-tableofmeans.R#L10
         if (is.factor(x) && gui.ctrl.name == "Rows")
             return()
         if (all(duplicated(x)[-1L]))
+        {
+            err.msg <- paste0("All values in %s are identical.",
+                          " Please check your inputs are correct.")    
             stop(gettextf(err.msg, gui.ctrl.name), call. = FALSE)
-        return()
+        }
     }
     .checkForConstantVariable(outcome, "Outcome")
     .checkForConstantVariable(row, "Rows")
@@ -132,11 +136,12 @@ validateInputs <- function(outcome, row, column, subset, weight)
 
     .checkAllValuesEqual <- function(x, y, x.ctrl.name, y.ctrl.name)
     {
-        err.msg <- paste0("The variables in %s and %s contain identical values.",
-                          " Please check your inputs are correct.")
         if (isTRUE(all.equal(x, y)))
+        {
+            err.msg <- paste0("The variables in %s and %s contain identical values.",
+                          " Please check your inputs are correct.")
             stop(gettextf(err.msg, x.ctrl.name, y.ctrl.name), call. = FALSE)
-        return()
+        }
     }
     .checkAllValuesEqual(outcome, row, "Outcome", "Rows")
     .checkAllValuesEqual(outcome, column, "Outcome", "Columns")
