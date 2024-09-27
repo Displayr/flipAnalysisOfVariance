@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  r-packages: displayr/r-packages@dev:alpha
+  r-packages: displayr/r-packages@dev:48ef1159bd5cb5c8bd1be0a25ed80747cf95d14b
 parameters:
   trigger-message:
     type: string
@@ -17,7 +17,7 @@ parameters:
   executor:
     type: enum
     enum: [nightly, rocker, machine]
-    default: nightly
+    default: rocker
 
 workflows:
   build-and-check-R-package:
