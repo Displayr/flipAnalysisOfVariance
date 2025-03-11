@@ -82,6 +82,7 @@
 #' @importFrom flipStatistics Frequency
 #' @importFrom flipTransformations AsNumeric Factor ProcessQVariables
 #' @importFrom flipRegression PValueAdjustFDR
+#' @importFrom flipU StopForUserError
 #' @importFrom multcomp glht mcp adjusted
 #' @importFrom survey regTermTest
 #' @importFrom stats aov pf vcov ptukey
@@ -193,7 +194,7 @@ OneWayANOVA <- function(outcome,
             mcomp <- .multcompSummary(glht(model, linfct = contrasts, alternative = alternative), correct, FALSE)
         }
         else if (!is.null(weights))
-            stop("Weights cannot be used with this model. Remove weights to compute the unweighted model.")
+            StopForUserError("Weights cannot be used with this model. Remove weights to compute the unweighted model.")
     }
     f.test <- FTest(regression)
     sub <- if (is.null(subset)) rep(TRUE, length(predictor)) else subset
@@ -234,7 +235,7 @@ OneWayANOVA <- function(outcome,
         if (Sum(abs(r$tstat - rcoefs[, 3]) > .1, remove.missing = FALSE))
         {
             print(rbind(svyglm = r$tstat, multcomp = rcoefs[, 3]))
-            stop("Unreliable inference in one-way ANOVA.")
+            StopForUserError("Unreliable inference in one-way ANOVA.")
         }
         r$tstat <- rcoefs[, 3]
         r$pvalues <- rcoefs[, 4]
@@ -341,4 +342,3 @@ print.OneWayANOVA <- function(x, ...)
 {
     print(x$table)
 }
-

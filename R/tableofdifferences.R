@@ -118,8 +118,8 @@
 #' @param ... Other parameters passed to \link[flipFormat]{CreateCustomTable}.
 #' @importFrom flipFormat CreateCustomTable
 #' @importFrom flipTables RemoveRowsAndOrColumns
+#' @importFrom flipU StopForUserError
 #' @export
-
 TableOfDifferences <- function(table1,
                                table2,
                                means.test = "tTest",
@@ -178,15 +178,15 @@ TableOfDifferences <- function(table1,
     output <- match.arg(output)
     q.type <- attr(table1, "questiontype")
     if (!is.null(attr(table1, "statistic")) || !is.null(attr(table2, "statistic")))
-        stop("Input tables must contain cell statistics for the sample size and standard error.")
+        StopForUserError("Input tables must contain cell statistics for the sample size and standard error.")
     is.weighted <- !is.null(attr(table1, "weight.name")) || !is.null(attr(table2, "weight.name"))
 
     # Check key QTable attributes exist. Otherwise there is ambiguity as to whether
     # the tables are unweighted tables, or they are weighted tables whose attributes
-    # have been obliterated by R. 
-    if (!is.weighted && 
-        is.null(attr(table1, "questions")) || 
-        is.null(attr(table2, "questions"))) 
+    # have been obliterated by R.
+    if (!is.weighted &&
+        is.null(attr(table1, "questions")) ||
+        is.null(attr(table2, "questions")))
     {
         warning("Could not determine if the input tables contain weighted data because their ",
             "table attributes are missing. If the tables have been constructed using R Code ",
@@ -200,9 +200,9 @@ TableOfDifferences <- function(table1,
     table1 <- RemoveRowsAndOrColumns(table1, row.names.to.remove, column.names.to.remove)
     table2 <- RemoveRowsAndOrColumns(table2, row.names.to.remove, column.names.to.remove)
     if (any(rownames(table1) != rownames(table2)))
-        stop("Row names of Table 1 and Table 2 should be identical and in the same order.")
+        StopForUserError("Row names of Table 1 and Table 2 should be identical and in the same order.")
     if (any(colnames(table1) != colnames(table2)))
-        stop("Column names of Table 1 and Table 2 should be identical and in the same order.")
+        StopForUserError("Column names of Table 1 and Table 2 should be identical and in the same order.")
 
 
     # Check that input tables contain the required statistics
@@ -210,17 +210,17 @@ TableOfDifferences <- function(table1,
     stat1 <- dimnames(table1)[[3]]
     stat2 <- dimnames(table2)[[3]]
     if (stat1[1] != stat2[1])
-        stop("The primary statistic of Table 1 (", stat1[1],
-        ") does not match the primary statistic of Table 2 (",
-        stat2[1], ").")
+        StopForUserError("The primary statistic of Table 1 (", stat1[1],
+                         ") does not match the primary statistic of Table 2 (",
+                         stat2[1], ").")
 
     allowed.primary <- c("Average", "%", "Total %", "Column %")
     if (isTRUE(q.type == "PickOneMulti"))
         allowed.primary <- c(allowed.primary, "Row %")
     if (!(stat1[1] %in% allowed.primary))
-        stop("The primary statistic in the input table cannot be '", stat1[1],
-             "'. A t-test can only be computed on '",
-             paste(allowed.primary, collapse = "', '"), "'.")
+        StopForUserError("The primary statistic in the input table cannot be '", stat1[1],
+                         "'. A t-test can only be computed on '",
+                         paste(allowed.primary, collapse = "', '"), "'.")
 
     if (stat1[1] == "Column %")
     {
@@ -245,9 +245,9 @@ TableOfDifferences <- function(table1,
     ind2.se <- findIndexOfStat(stat2, se.stat.name)
     if (length(ind1.n) == 0 || length(ind1.se) == 0 ||
         length(ind2.n) == 0 || length(ind2.se) == 0)
-        stop("To test whether the difference in the primary statistic '",
-            stat1[1], "' is significant, input tables need to contain the cell statistic '",
-            se.stat.name, "' and one of '", n.stat.name[1], "' or '", n.stat.name[2], "'.")
+        StopForUserError("To test whether the difference in the primary statistic '",
+                        stat1[1], "' is significant, input tables need to contain the cell statistic '",
+                        se.stat.name, "' and one of '", n.stat.name[1], "' or '", n.stat.name[2], "'.")
 
     # Compute significance of differences
     is.percentage <- grepl("%", stat1[1], fixed = TRUE)
@@ -473,6 +473,7 @@ autoFontColor <- function (colors)
 # Tries to convert the QTable into a 3d array
 # An error will be thrown if the input is not a QTable
 # or it does not contain multiple statistics
+#' @importFrom flipU StopForUserError
 convertToTableWithStatistics <- function(x)
 {
     #if (is.null(attr(x, "questions")) || is.null(attr(x, "name")))
@@ -480,9 +481,9 @@ convertToTableWithStatistics <- function(x)
     if (is.character(x))
         x <- array(suppressWarnings(as.numeric(x)), dim = dim(x), dimnames = dimnames(x))
     if (length(dim(x)) > 3)
-        stop("Output cannot be produced because the input table has too many dimensions. ",
-             "Try removing one of the questions from the crosstab or ",
-             "splitting up the multinomial question.")
+        StopForUserError("Output cannot be produced because the input table has too many dimensions. ",
+                         "Try removing one of the questions from the crosstab or ",
+                         "splitting up the multinomial question.")
 
     # 1-column table with multiple stats in 2nd dimension
     if (length(dim(x)) == 2)
@@ -492,7 +493,7 @@ convertToTableWithStatistics <- function(x)
         x <- array(x, dim = sapply(dn, length), dimnames = dn)
 
     } else if (length(dim(x)) < 2)
-        stop("Input tables must be Q Tables showing statistics computed from questions or variable sets")
+        StopForUserError("Input tables must be Q Tables showing statistics computed from questions or variable sets")
 
     return(x)
 }
@@ -522,8 +523,8 @@ validateTestTypeForTableOfDifferences <- function(test.type, is.percentage, is.w
     fallback.type <- if (is.percentage) "zTest" else "tTest"
     if (!test.valid) {
         msg <- paste0(
-            "The selected test.type '", 
-            test.type, 
+            "The selected test.type '",
+            test.type,
             "' is not supported by the Table of Differences. ",
             fallback.msg)
         warning(msg)

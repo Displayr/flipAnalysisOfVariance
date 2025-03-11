@@ -81,7 +81,7 @@
 #' @param corner.fill Background color of corner cells.
 #' @param ... Other parameters passed to \link[flipFormat]{CreateCustomTable}.
 #' @importFrom flipFormat CreateCustomTable
-#' @importFrom flipU ConvertCommaSeparatedStringToVector CopyAttributes
+#' @importFrom flipU ConvertCommaSeparatedStringToVector CopyAttributes StopForUserError
 #' @importFrom flipStatistics WeightedTable Table StatisticsByGroup Mean StandardDeviation
 #' @importFrom flipRegression PValueAdjustFDR
 #' @importFrom flipTransformations AsDataFrame FactorToNumeric
@@ -130,7 +130,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                                    ...)
 {
     if (!is.list(x) || length(x[[1]]) <= 1)
-        stop("Input should be a list of variables or variable sets.")
+        StopForUserError("Input should be a list of variables or variable sets.")
     group.label <- attr(group, "label") # group should be a variable not a variable set
     if (is.null(group.label))
         group.label <- " "

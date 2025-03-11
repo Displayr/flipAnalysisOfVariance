@@ -113,8 +113,8 @@ OneWayMANOVA <- function(outcomes,
     if (pillai)
     {
         if (!is.data.frame(dat))  # partial data, can't compute Pillai Trace
-            stop("Pillai's Trace cannot be computed with partial data. ",
-                 "Please set 'pillai' to 'FALSE' to run the analysis.")
+            StopForUserError("Pillai's Trace cannot be computed with partial data. ",
+                             "Please set 'pillai' to 'FALSE' to run the analysis.")
         result$manova <- computePillai(outcomes, predictor,  weighted, dat, n.outcomes,
                                        weights)
     }
@@ -223,24 +223,24 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
     if (!use.partial || !any.na)
     {
         if (missing == "Error if missing data" && any.na)
-            stop("By default, MANOVA only operates on complete data, but the supplied data ",
-             "contains missing values. Change 'Missing data' to 'Exclude cases with missing data' ",
-             "or 'Use partial data' to run the analysis.")
+            StopForUserError("By default, MANOVA only operates on complete data, but the supplied data ",
+                             "contains missing values. Change 'Missing data' to 'Exclude cases with missing data' ",
+                             "or 'Use partial data' to run the analysis.")
 
         out <- makeDF(outcomes, predictor, covariate, weights)
         n.estimation <- nrow(out)
         if (n.estimation == 0)
-            stop("After removing cases with missing data, there are no ",
-                 "observations to use in the ANOVA. Switch 'Missing Data' to ",
-                 "'Use partial data' to run the analysis.")
+            StopForUserError("After removing cases with missing data, there are no ",
+                             "observations to use in the ANOVA. Switch 'Missing Data' to ",
+                             "'Use partial data' to run the analysis.")
     }else
     {  # use partial data
         out <- lapply(outcomes, makeDF, predictor, covariate, weights)
         n.estimations <- vapply(out, nrow, 0L)
         n.estimation <- min(n.estimations)
         if (n.estimation == 0)
-            stop("After removing observations with missing data, there are no ",
-                 "observations to use in the ANOVA for at least one outcome variable.")
+            StopForUserError("After removing observations with missing data, there are no ",
+                             "observations to use in the ANOVA for at least one outcome variable.")
         if (length(out) == 1L)
             out <- out[[1L]]
     }
@@ -261,6 +261,8 @@ prepareData <- function(outcomes, predictor, covariate, subset, weights, binary,
 
 #' removeMissingLevels
 #' @param x A factor
+#' @importFrom flipU StopForUserError
+#' @noRd
 removeMissingLevels <- function(x)
 {
     tbl <- table(x)
@@ -285,4 +287,3 @@ print.OneWayMANOVA <- function(x, ...)
 {
     print(x$table)
 }
-

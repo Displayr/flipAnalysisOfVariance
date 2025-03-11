@@ -89,6 +89,7 @@ TableOfMeans <- function(outcome,
 }
 
 #' @importFrom flipData CleanWeights CleanSubset
+#' @importFrom flipU StopForUserError
 validateInputs <- function(outcome, row, column, subset, weight)
 {
     n <- length(outcome)
@@ -99,7 +100,7 @@ validateInputs <- function(outcome, row, column, subset, weight)
             err.msg <- paste0("The variables in %s and %s are different lengths.",
                               " Please check that they come from the same dataset.")
 
-            stop(gettextf(err.msg, x.ctrl.name, y.ctrl.name), call. = FALSE)
+            StopForUserError(gettextf(err.msg, x.ctrl.name, y.ctrl.name), call. = FALSE)
         }
     }
     .checkLengths(n, length(row), "Outcome", "Rows")
@@ -126,8 +127,8 @@ validateInputs <- function(outcome, row, column, subset, weight)
         if (all(duplicated(x)[-1L]))
         {
             err.msg <- paste0("All values in %s are identical.",
-                          " Please check your inputs are correct.")    
-            stop(gettextf(err.msg, gui.ctrl.name), call. = FALSE)
+                          " Please check your inputs are correct.")
+            StopForUserError(gettextf(err.msg, gui.ctrl.name), call. = FALSE)
         }
     }
     .checkForConstantVariable(outcome, "Outcome")
@@ -140,7 +141,7 @@ validateInputs <- function(outcome, row, column, subset, weight)
         {
             err.msg <- paste0("The variables in %s and %s contain identical values.",
                           " Please check your inputs are correct.")
-            stop(gettextf(err.msg, x.ctrl.name, y.ctrl.name), call. = FALSE)
+            StopForUserError(gettextf(err.msg, x.ctrl.name, y.ctrl.name), call. = FALSE)
         }
     }
     .checkAllValuesEqual(outcome, row, "Outcome", "Rows")
