@@ -42,6 +42,7 @@
 #' @importFrom flipFormat Labels
 #' @importFrom flipTransformations ProcessQVariables
 #' @importFrom flipRegression PValueAdjustFDR
+#' @importFrom flipU StopForUserError
 #' @export
 MultipleANOVAs <- function(dependents,
                            independent,
@@ -89,8 +90,8 @@ MultipleANOVAs <- function(dependents,
     }else
     {
         if (!all(c("dependent.name", "dependent", "independent") %in% colnames(data)))
-            stop(sQuote("data"), " must contain columns named \"dependent\", ",
-                 "\"independent\", and \"dependent.name\".")
+            StopForUserError(sQuote("data"), " must contain columns named \"dependent\", ",
+                             "\"independent\", and \"dependent.name\".")
         weighted <- "weights" %in% colnames(data)
         dep.names <- data[, "dependent.name"]
         dep.names.unique <- unique(dep.names)
@@ -176,11 +177,12 @@ FormattableANOVAs <- function(anovas, title, subtitle, footer)
 #' Converts a list of ANOVAs into a format that can be prettily formatted.
 #' @param x The list of ANOVAs.
 #' @importFrom flipTables Rbind
+#' @importFrom flipU StopForUserError
 #' @export
 ANOVAsAsTable <- function(x)
 {
     if (all(vapply(x, is.null, logical(1L))))
-        stop("All ANOVAs in 'x' have errored/are NULL. No table can be created.")  
+        StopForUserError("All ANOVAs in 'x' have errored/are NULL. No table can be created.")
     for (i in x)
         if (!is.null(i))
         {
@@ -207,7 +209,7 @@ ANOVAsAsTable <- function(x)
     if (!is.matrix(means))
     {
         if (is.null(means))
-            stop("Unable to estimate anova. Possibly due to insufficient sample sizes.")
+            StopForUserError("Unable to estimate anova. Possibly due to insufficient sample sizes.")
         means <- t(as.matrix(means))
         zs <- t(as.matrix(zs))
         ps <- t(as.matrix(ps))
@@ -224,4 +226,3 @@ ANOVAsAsTable <- function(x)
                 p.cutoff = p.cutoff,
                 posthoc = posthoc))
 }
-
