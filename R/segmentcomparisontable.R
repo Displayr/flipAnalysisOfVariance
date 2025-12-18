@@ -423,6 +423,7 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                       num.header.rows = 2, row.height = row.height,
                       cell.prefix = prefix, cell.suffix = suffix,
                       cell.align.horizontal = cell.align, cell.pad = cell.pad,
+                      scrollbar.width = 17,
                       global.font.color = font.color, ...)
     result.rows <- trimws(unlist(sapply(row.span, function(r) rep(r$label, r$height))))
     tmp.minchar <- pmin(nchar(result.rows), nchar(row.labels))
