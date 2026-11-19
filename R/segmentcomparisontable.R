@@ -369,7 +369,8 @@ SegmentComparisonTable <- function(x, group, weights = NULL, subset = TRUE,
                     else if (cond.shade == "Bars")
                     {
                         tmp.prefix <- ""
-                        if (any(is.finite(f.vals)) && any(f.vals > 0))
+                        # f.vals is NaN for a segment with no data in this row
+                        if (any(is.finite(f.vals)) && any(f.vals > 0, na.rm = TRUE))
                         {
                             max.val <- max(abs(as.numeric(f.vals)), na.rm = TRUE)
                             tmp.vals <- round(abs(f.vals[c.ind[[j]]])/max.val * 100)

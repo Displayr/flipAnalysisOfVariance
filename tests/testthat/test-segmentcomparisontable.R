@@ -684,3 +684,19 @@ test_that("Empty Segments",
     expect_error(SegmentComparisonTable(profVar, group=segVar, font.color.set.if.nonsignificant = TRUE,
                 weights = rep(c(0.1, 0.2, 0.3), length=45)), NA)
 })
+
+test_that("Bars shading with a segment that has no data",
+{
+    gender <- formVariables[["Gender"]]
+
+    asked.of.one.segment <- gender
+    asked.of.one.segment[formSegmentation != "18 to 24"] <- NA
+    expect_error(SegmentComparisonTable(list(asked.of.one.segment), formSegmentation,
+        cond.shade = "Bars", cond.shade.sig.only = TRUE), NA)
+
+    # liv.missing has a level with no cases
+    same.answer <- gender
+    same.answer[] <- levels(gender)[1]
+    expect_error(SegmentComparisonTable(list(same.answer), liv.missing,
+        cond.shade = "Bars", cond.shade.sig.only = TRUE), NA)
+})
