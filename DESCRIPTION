@@ -22,7 +22,8 @@ LazyData: NA
 Suggests:
     testthat,
     flipExampleData,
-    car
+    car,
+    Deriv
 Remotes:
     Displayr/flipData,
     Displayr/flipExampleData,
