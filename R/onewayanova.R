@@ -281,7 +281,7 @@ OneWayANOVA <- function(outcome,
 
 #' rSquared
 #'
-#' @param  object A \link{FitRegression} object.
+#' @param  object A \link[flipRegression]{FitRegression} object.
 #' @import flipRegression
 #' @importFrom flipData Observed
 #' @importFrom flipStatistics Correlation
@@ -300,7 +300,7 @@ tryError <- function(x)
 
 #' politeWeightedFTest
 #'
-#' Computes \link{regTermTest}, but fails savely when an error occurs.
+#' Computes \link[survey]{regTermTest}, but fails savely when an error occurs.
 #' @param fit A FitRegression object.
 #' @importFrom flipU OutcomeName
 #' @importFrom survey regTermTest
@@ -318,7 +318,7 @@ politeWeightedFTest <- function(fit)
 #' \code{FTest}
 #'
 #' An F-Test from a \code{lm} or linear \code{svyglm} object.
-#' @param fit An object created by \link{FitRegression}.
+#' @param fit An object created by \link[flipRegression]{FitRegression}.
 #' @importFrom stats aov
 #' @export
 FTest <- function(fit)

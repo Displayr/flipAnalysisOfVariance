@@ -10,5 +10,5 @@ politeWeightedFTest(fit)
 \item{fit}{A FitRegression object.}
 }
 \description{
-Computes \link{regTermTest}, but fails savely when an error occurs.
+Computes \link[survey]{regTermTest}, but fails savely when an error occurs.
 }
