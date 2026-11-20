@@ -7,7 +7,7 @@
 rSquared(object)
 }
 \arguments{
-\item{object}{A \link{FitRegression} object.}
+\item{object}{A \link[flipRegression]{FitRegression} object.}
 }
 \description{
 rSquared

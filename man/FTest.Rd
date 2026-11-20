@@ -7,7 +7,7 @@
 FTest(fit)
 }
 \arguments{
-\item{fit}{An object created by \link{FitRegression}.}
+\item{fit}{An object created by \link[flipRegression]{FitRegression}.}
 }
 \description{
 An F-Test from a \code{lm} or linear \code{svyglm} object.
